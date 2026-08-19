@@ -1,0 +1,9 @@
+D:/C++_Projects/2DGEngine/Build/CMakeFiles/2DGRuntime.dir
+D:/C++_Projects/2DGEngine/Build/CMakeFiles/ALL_BUILD.dir
+D:/C++_Projects/2DGEngine/Build/CMakeFiles/ZERO_CHECK.dir
+D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/SDL3-shared.dir
+D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/SDL3_test.dir
+D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/SDL_uclibc.dir
+D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/ALL_BUILD.dir
+D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL_image/CMakeFiles/SDL3_image-shared.dir
+D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL_image/CMakeFiles/ALL_BUILD.dir

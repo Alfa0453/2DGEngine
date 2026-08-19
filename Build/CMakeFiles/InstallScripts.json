@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"D:/C++_Projects/2DGEngine/Build/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL_image/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

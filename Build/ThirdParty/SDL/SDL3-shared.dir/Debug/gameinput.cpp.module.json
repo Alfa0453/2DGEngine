@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "SDL3-shared.dir\\Debug\\gameinput.obj",
+            "outputs": [
+                "D:\\C++_Projects\\2DGEngine\\Build\\ThirdParty\\SDL\\SDL3-shared.dir\\Debug\\vc145.pdb",
+                "SDL3-shared.dir\\Debug\\"
+            ],
+            "requires": []
+        }
+    ]
+}

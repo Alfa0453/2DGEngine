@@ -1,0 +1,10 @@
+^D:\C++_PROJECTS\2DGENGINE\BUILD\CMAKEFILES\5E058788CA42401C0BBA9E253CB04301\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/C++_Projects/2DGEngine -BD:/C++_Projects/2DGEngine/Build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file D:/C++_Projects/2DGEngine/Build/2DGEngine.slnx
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

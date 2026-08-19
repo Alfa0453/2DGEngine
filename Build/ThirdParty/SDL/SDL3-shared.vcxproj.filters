@@ -1,0 +1,2018 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\cmake_pch.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\cmake_pch.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_assert.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_error.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_guid.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_hashtable.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_hints.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_list.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_log.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_properties.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_utils.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\atomic\SDL_atomic.c">
+      <Filter>src\atomic</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\atomic\SDL_spinlock.c">
+      <Filter>src\atomic</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_audio.c">
+      <Filter>src\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_audiocvt.c">
+      <Filter>src\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_audiodev.c">
+      <Filter>src\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_audioqueue.c">
+      <Filter>src\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_audioresample.c">
+      <Filter>src\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_audiotypecvt.c">
+      <Filter>src\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_mixer.c">
+      <Filter>src\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_wave.c">
+      <Filter>src\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\camera\SDL_camera.c">
+      <Filter>src\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\SDL_core_unsupported.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\cpuinfo\SDL_cpuinfo.c">
+      <Filter>src\cpuinfo</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\dynapi\SDL_dynapi.c">
+      <Filter>src\dynapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_categories.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_clipboardevents.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_displayevents.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_dropevents.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_events.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_eventwatch.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_keyboard.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_keymap.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_keysym_to_keycode.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_keysym_to_scancode.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_mouse.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_notificationevents.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_pen.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_quit.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_scancode_tables.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_touch.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_windowevents.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\imKStoUCS.c">
+      <Filter>src\events</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\filesystem\SDL_filesystem.c">
+      <Filter>src\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\gpu\SDL_gpu.c">
+      <Filter>src\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\gpu\xr\SDL_gpu_openxr.c">
+      <Filter>src\gpu\xr</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\gpu\xr\SDL_openxrdyn.c">
+      <Filter>src\gpu\xr</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\haptic\SDL_haptic.c">
+      <Filter>src\haptic</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\hidapi\SDL_hidapi.c">
+      <Filter>src\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\io\SDL_asyncio.c">
+      <Filter>src\io</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\io\SDL_iostream.c">
+      <Filter>src\io</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\io\generic\SDL_asyncio_generic.c">
+      <Filter>src\io\generic</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\SDL_gamepad.c">
+      <Filter>src\joystick</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\SDL_joystick.c">
+      <Filter>src\joystick</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\SDL_steam_virtual_gamepad.c">
+      <Filter>src\joystick</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\controller_type.c">
+      <Filter>src\joystick</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\locale\SDL_locale.c">
+      <Filter>src\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\main\SDL_main_callbacks.c">
+      <Filter>src\main</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\main\SDL_runapp.c">
+      <Filter>src\main</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\misc\SDL_libusb.c">
+      <Filter>src\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\misc\SDL_url.c">
+      <Filter>src\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\notification\SDL_notification.c">
+      <Filter>src\notification</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\power\SDL_power.c">
+      <Filter>src\power</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\SDL_render.c">
+      <Filter>src\render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\SDL_render_unsupported.c">
+      <Filter>src\render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\SDL_yuv_sw.c">
+      <Filter>src\render</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d\SDL_render_d3d.c">
+      <Filter>src\render\direct3d</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d\SDL_shaders_d3d.c">
+      <Filter>src\render\direct3d</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d11\SDL_render_d3d11.c">
+      <Filter>src\render\direct3d11</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d11\SDL_shaders_d3d11.c">
+      <Filter>src\render\direct3d11</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\SDL_render_d3d12.c">
+      <Filter>src\render\direct3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\SDL_shaders_d3d12.c">
+      <Filter>src\render\direct3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\gpu\SDL_pipeline_gpu.c">
+      <Filter>src\render\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\gpu\SDL_render_gpu.c">
+      <Filter>src\render\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\gpu\SDL_shaders_gpu.c">
+      <Filter>src\render\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\ngage\SDL_render_ngage.c">
+      <Filter>src\render\ngage</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\opengl\SDL_render_gl.c">
+      <Filter>src\render\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\opengl\SDL_shaders_gl.c">
+      <Filter>src\render\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\opengles\SDL_render_gles.c">
+      <Filter>src\render\opengles</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\opengles2\SDL_render_gles2.c">
+      <Filter>src\render\opengles2</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\opengles2\SDL_shaders_gles2.c">
+      <Filter>src\render\opengles2</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\ps2\SDL_render_ps2.c">
+      <Filter>src\render\ps2</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\psp\SDL_render_psp.c">
+      <Filter>src\render\psp</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_blendfillrect.c">
+      <Filter>src\render\software</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_blendline.c">
+      <Filter>src\render\software</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_blendpoint.c">
+      <Filter>src\render\software</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_drawline.c">
+      <Filter>src\render\software</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_drawpoint.c">
+      <Filter>src\render\software</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_render_sw.c">
+      <Filter>src\render\software</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_triangle.c">
+      <Filter>src\render\software</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vitagxm\SDL_render_vita_gxm.c">
+      <Filter>src\render\vitagxm</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vitagxm\SDL_render_vita_gxm_memory.c">
+      <Filter>src\render\vitagxm</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vitagxm\SDL_render_vita_gxm_tools.c">
+      <Filter>src\render\vitagxm</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vulkan\SDL_render_vulkan.c">
+      <Filter>src\render\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vulkan\SDL_shaders_vulkan.c">
+      <Filter>src\render\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\sensor\SDL_sensor.c">
+      <Filter>src\sensor</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_crc16.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_crc32.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_getenv.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_iconv.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_malloc.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_memcpy.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_memmove.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_memset.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_mslibc.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_murmur3.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_qsort.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_random.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_stdlib.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_string.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_strtokr.c">
+      <Filter>src\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\storage\SDL_storage.c">
+      <Filter>src\storage</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\thread\SDL_thread.c">
+      <Filter>src\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\time\SDL_time.c">
+      <Filter>src\time</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\timer\SDL_timer.c">
+      <Filter>src\timer</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_RLEaccel.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_blit.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_blit_0.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_blit_1.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_blit_A.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_blit_N.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_blit_auto.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_blit_copy.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_blit_slow.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_bmp.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_clipboard.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_egl.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_fillrect.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_pixels.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_rect.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_rotate.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_stb.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_stretch.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_surface.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_video.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_video_unsupported.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_vulkan_utils.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_yuv.c">
+      <Filter>src\video</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\yuv2rgb\yuv_rgb_lsx.c">
+      <Filter>src\video\yuv2rgb</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\yuv2rgb\yuv_rgb_sse.c">
+      <Filter>src\video\yuv2rgb</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\yuv2rgb\yuv_rgb_std.c">
+      <Filter>src\video\yuv2rgb</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\dummy\SDL_dummyaudio.c">
+      <Filter>src\audio\dummy</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\disk\SDL_diskaudio.c">
+      <Filter>src\audio\disk</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\camera\dummy\SDL_camera_dummy.c">
+      <Filter>src\camera\dummy</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\virtual\SDL_virtualjoystick.c">
+      <Filter>src\joystick\virtual</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\dummy\SDL_nullevents.c">
+      <Filter>src\video\dummy</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\dummy\SDL_nullframebuffer.c">
+      <Filter>src\video\dummy</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\dummy\SDL_nullvideo.c">
+      <Filter>src\video\dummy</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\SDL_gameinput.cpp">
+      <Filter>src\core\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\SDL_hid.c">
+      <Filter>src\core\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\SDL_immdevice.c">
+      <Filter>src\core\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\SDL_windows.c">
+      <Filter>src\core\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\SDL_xinput.c">
+      <Filter>src\core\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\pch.c">
+      <Filter>src\core\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\pch_cpp.cpp">
+      <Filter>src\core\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\main\windows\SDL_sysmain_runapp.c">
+      <Filter>src\main\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\io\windows\SDL_asyncio_windows_ioring.c">
+      <Filter>src\io\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\misc\windows\SDL_sysurl.c">
+      <Filter>src\misc\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\gameinput\gameinput.cpp">
+      <Filter>src\core\windows\gameinput</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\directsound\SDL_directsound.c">
+      <Filter>src\audio\directsound</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\wasapi\SDL_wasapi.c">
+      <Filter>src\audio\wasapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsclipboard.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsevents.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsframebuffer.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsgameinput.cpp">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowskeyboard.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsmessagebox.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsmodes.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsmouse.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsopengl.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsopengles.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsrawinput.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsshape.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsvideo.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsvulkan.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowswindow.c">
+      <Filter>src\video\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\thread\generic\SDL_syscond.c">
+      <Filter>src\thread\generic</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\thread\generic\SDL_sysrwlock.c">
+      <Filter>src\thread\generic</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\thread\windows\SDL_syscond_cv.c">
+      <Filter>src\thread\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\thread\windows\SDL_sysmutex.c">
+      <Filter>src\thread\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\thread\windows\SDL_sysrwlock_srw.c">
+      <Filter>src\thread\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\thread\windows\SDL_syssem.c">
+      <Filter>src\thread\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\thread\windows\SDL_systhread.c">
+      <Filter>src\thread\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\thread\windows\SDL_systls.c">
+      <Filter>src\thread\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\sensor\windows\SDL_windowssensor.c">
+      <Filter>src\sensor\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\power\windows\SDL_syspower.c">
+      <Filter>src\power\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\locale\windows\SDL_syslocale.c">
+      <Filter>src\locale\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\filesystem\windows\SDL_sysfilesystem.c">
+      <Filter>src\filesystem\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\filesystem\windows\SDL_sysfsops.c">
+      <Filter>src\filesystem\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\storage\generic\SDL_genericstorage.c">
+      <Filter>src\storage\generic</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\storage\steam\SDL_steamstorage.c">
+      <Filter>src\storage\steam</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\time\windows\SDL_systime.c">
+      <Filter>src\time\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\timer\windows\SDL_systimer.c">
+      <Filter>src\timer\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\loadso\windows\SDL_sysloadso.c">
+      <Filter>src\loadso\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\tray\windows\SDL_tray.c">
+      <Filter>src\tray\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\notification\windows\SDL_windowsnotification.c">
+      <Filter>src\notification\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_8bitdo.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_combined.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_flydigi.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_gamecube.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_gamesir.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_gip.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_lg4ff.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_luna.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_ps3.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_ps4.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_ps5.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_rumble.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_shield.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_sinput.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_stadia.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_steam.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_steam_hori.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_steam_triton.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_steamdeck.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_switch.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_switch2.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_wii.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_xbox360.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_xbox360w.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_xboxone.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapi_zuiki.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_hidapijoystick.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\hidapi\SDL_report_descriptor.c">
+      <Filter>src\joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\haptic\hidapi\SDL_hidapihaptic.c">
+      <Filter>src\haptic\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\haptic\hidapi\SDL_hidapihaptic_lg4ff.c">
+      <Filter>src\haptic\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\windows\SDL_dinputjoystick.c">
+      <Filter>src\joystick\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\windows\SDL_rawinputjoystick.c">
+      <Filter>src\joystick\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\windows\SDL_windows_gaming_input.c">
+      <Filter>src\joystick\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\windows\SDL_windowsjoystick.c">
+      <Filter>src\joystick\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\windows\SDL_xinputjoystick.c">
+      <Filter>src\joystick\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\gdk\SDL_gameinputjoystick.cpp">
+      <Filter>src\joystick\gdk</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\haptic\windows\SDL_dinputhaptic.c">
+      <Filter>src\haptic\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\haptic\windows\SDL_windowshaptic.c">
+      <Filter>src\haptic\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\camera\mediafoundation\SDL_camera_mediafoundation.c">
+      <Filter>src\camera\mediafoundation</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\dialog\SDL_dialog.c">
+      <Filter>src\dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\dialog\SDL_dialog_utils.c">
+      <Filter>src\dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\dialog\windows\SDL_windowsdialog.c">
+      <Filter>src\dialog\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\process\SDL_process.c">
+      <Filter>src\process</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\process\windows\SDL_windowsprocess.c">
+      <Filter>src\process\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\offscreen\SDL_offscreenevents.c">
+      <Filter>src\video\offscreen</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\offscreen\SDL_offscreenframebuffer.c">
+      <Filter>src\video\offscreen</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\offscreen\SDL_offscreenopengles.c">
+      <Filter>src\video\offscreen</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\offscreen\SDL_offscreenvideo.c">
+      <Filter>src\video\offscreen</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\offscreen\SDL_offscreenvulkan.c">
+      <Filter>src\video\offscreen</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\offscreen\SDL_offscreenwindow.c">
+      <Filter>src\video\offscreen</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\tray\SDL_tray_utils.c">
+      <Filter>src\tray</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\gpu\d3d12\SDL_gpu_d3d12.c">
+      <Filter>src\gpu\d3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\gpu\vulkan\SDL_gpu_vulkan.c">
+      <Filter>src\gpu\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\main\generic\SDL_sysmain_callbacks.c">
+      <Filter>src\main\generic</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_assert_c.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_error_c.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_hashtable.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_hints_c.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_internal.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_list.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_log_c.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_menu.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_properties_c.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL_utils_c.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_audio_c.h">
+      <Filter>src\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_audio_channel_converters.h">
+      <Filter>src\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_audiodev_c.h">
+      <Filter>src\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_audioqueue.h">
+      <Filter>src\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_audioresample.h">
+      <Filter>src\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_sysaudio.h">
+      <Filter>src\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\SDL_wave.h">
+      <Filter>src\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\camera\SDL_camera_c.h">
+      <Filter>src\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\camera\SDL_syscamera.h">
+      <Filter>src\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\SDL_core_unsupported.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\cpuinfo\SDL_cpuinfo_c.h">
+      <Filter>src\cpuinfo</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\dynapi\SDL_dynapi.h">
+      <Filter>src\dynapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\dynapi\SDL_dynapi_overrides.h">
+      <Filter>src\dynapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\dynapi\SDL_dynapi_procs.h">
+      <Filter>src\dynapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\dynapi\SDL_dynapi_unsupported.h">
+      <Filter>src\dynapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_categories_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_clipboardevents_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_displayevents_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_dropevents_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_events_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_eventwatch_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_keyboard_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_keymap_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_keysym_to_keycode_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_keysym_to_scancode_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_mouse_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_notificationevents_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_pen_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_scancode_tables_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_touch_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\SDL_windowevents_c.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\blank_cursor.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\default_cursor.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\imKStoUCS.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\scancodes_darwin.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\scancodes_linux.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\scancodes_windows.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\events\scancodes_xfree86.h">
+      <Filter>src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\filesystem\SDL_filesystem_c.h">
+      <Filter>src\filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\filesystem\SDL_sysfilesystem.h">
+      <Filter>src\filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\gpu\SDL_sysgpu.h">
+      <Filter>src\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\gpu\xr\SDL_gpu_openxr.h">
+      <Filter>src\gpu\xr</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\gpu\xr\SDL_openxr_internal.h">
+      <Filter>src\gpu\xr</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\gpu\xr\SDL_openxrdyn.h">
+      <Filter>src\gpu\xr</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\gpu\xr\SDL_openxrsym.h">
+      <Filter>src\gpu\xr</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\haptic\SDL_haptic_c.h">
+      <Filter>src\haptic</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\haptic\SDL_syshaptic.h">
+      <Filter>src\haptic</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\hidapi\SDL_hidapi_android.h">
+      <Filter>src\hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\hidapi\SDL_hidapi_c.h">
+      <Filter>src\hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\hidapi\SDL_hidapi_ios.h">
+      <Filter>src\hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\hidapi\SDL_hidapi_libusb.h">
+      <Filter>src\hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\hidapi\SDL_hidapi_linux.h">
+      <Filter>src\hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\hidapi\SDL_hidapi_mac.h">
+      <Filter>src\hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\hidapi\SDL_hidapi_netbsd.h">
+      <Filter>src\hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\hidapi\SDL_hidapi_steamxbox.h">
+      <Filter>src\hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\hidapi\SDL_hidapi_windows.h">
+      <Filter>src\hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\io\SDL_asyncio_c.h">
+      <Filter>src\io</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\io\SDL_iostream_c.h">
+      <Filter>src\io</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\io\SDL_sysasyncio.h">
+      <Filter>src\io</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\SDL_gamepad_c.h">
+      <Filter>src\joystick</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\SDL_gamepad_db.h">
+      <Filter>src\joystick</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\SDL_joystick_c.h">
+      <Filter>src\joystick</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\SDL_steam_virtual_gamepad.h">
+      <Filter>src\joystick</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\SDL_sysjoystick.h">
+      <Filter>src\joystick</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\controller_list.h">
+      <Filter>src\joystick</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\controller_type.h">
+      <Filter>src\joystick</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\usb_ids.h">
+      <Filter>src\joystick</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\locale\SDL_syslocale.h">
+      <Filter>src\locale</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\main\SDL_main_callbacks.h">
+      <Filter>src\main</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\misc\SDL_libusb.h">
+      <Filter>src\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\misc\SDL_sysurl.h">
+      <Filter>src\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\notification\SDL_notification_c.h">
+      <Filter>src\notification</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\power\SDL_syspower.h">
+      <Filter>src\power</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\SDL_d3dmath.h">
+      <Filter>src\render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\SDL_render_debug_font.h">
+      <Filter>src\render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\SDL_sysrender.h">
+      <Filter>src\render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\SDL_yuv_sw_c.h">
+      <Filter>src\render</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d\D3D9_PixelShader_Palette.h">
+      <Filter>src\render\direct3d</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d\D3D9_PixelShader_Palette_Linear.h">
+      <Filter>src\render\direct3d</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d\D3D9_PixelShader_Palette_Nearest.h">
+      <Filter>src\render\direct3d</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d\D3D9_PixelShader_YUV.h">
+      <Filter>src\render\direct3d</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d\SDL_shaders_d3d.h">
+      <Filter>src\render\direct3d</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d11\D3D11_PixelShader_Advanced.h">
+      <Filter>src\render\direct3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d11\D3D11_PixelShader_Colors.h">
+      <Filter>src\render\direct3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d11\D3D11_PixelShader_Colors_PQ.h">
+      <Filter>src\render\direct3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d11\D3D11_PixelShader_Textures.h">
+      <Filter>src\render\direct3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d11\D3D11_PixelShader_Textures_PQ.h">
+      <Filter>src\render\direct3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d11\D3D11_PixelShader_Textures_Simple.h">
+      <Filter>src\render\direct3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d11\D3D11_VertexShader.h">
+      <Filter>src\render\direct3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d11\SDL_shaders_d3d11.h">
+      <Filter>src\render\direct3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\D3D12_PixelShader_Advanced.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\D3D12_PixelShader_Colors.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\D3D12_PixelShader_Colors_PQ.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\D3D12_PixelShader_Textures.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\D3D12_PixelShader_Textures_PQ.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\D3D12_PixelShader_Textures_Simple.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\D3D12_RootSig_Advanced.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\D3D12_RootSig_Color.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\D3D12_RootSig_Texture.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\D3D12_VertexShader_Advanced.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\D3D12_VertexShader_Color.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\D3D12_VertexShader_Texture.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\SDL_render_d3d12_xbox.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\direct3d12\SDL_shaders_d3d12.h">
+      <Filter>src\render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\gpu\SDL_gpu_util.h">
+      <Filter>src\render\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\gpu\SDL_pipeline_gpu.h">
+      <Filter>src\render\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\gpu\SDL_shaders_gpu.h">
+      <Filter>src\render\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\metal\SDL_shaders_metal_ios.h">
+      <Filter>src\render\metal</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\metal\SDL_shaders_metal_iphonesimulator.h">
+      <Filter>src\render\metal</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\metal\SDL_shaders_metal_macos.h">
+      <Filter>src\render\metal</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\metal\SDL_shaders_metal_tvos.h">
+      <Filter>src\render\metal</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\metal\SDL_shaders_metal_tvsimulator.h">
+      <Filter>src\render\metal</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\ngage\SDL_render_ngage_c.h">
+      <Filter>src\render\ngage</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\opengl\SDL_glfuncs.h">
+      <Filter>src\render\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\opengl\SDL_shaders_gl.h">
+      <Filter>src\render\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\opengles\SDL_glesfuncs.h">
+      <Filter>src\render\opengles</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\opengles2\SDL_gles2funcs.h">
+      <Filter>src\render\opengles2</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\opengles2\SDL_shaders_gles2.h">
+      <Filter>src\render\opengles2</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\psp\SDL_render_psp_c.h">
+      <Filter>src\render\psp</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_blendfillrect.h">
+      <Filter>src\render\software</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_blendline.h">
+      <Filter>src\render\software</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_blendpoint.h">
+      <Filter>src\render\software</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_draw.h">
+      <Filter>src\render\software</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_drawline.h">
+      <Filter>src\render\software</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_drawpoint.h">
+      <Filter>src\render\software</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_render_sw_c.h">
+      <Filter>src\render\software</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\software\SDL_triangle.h">
+      <Filter>src\render\software</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vitagxm\SDL_render_vita_gxm_memory.h">
+      <Filter>src\render\vitagxm</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vitagxm\SDL_render_vita_gxm_shaders.h">
+      <Filter>src\render\vitagxm</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vitagxm\SDL_render_vita_gxm_tools.h">
+      <Filter>src\render\vitagxm</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vitagxm\SDL_render_vita_gxm_types.h">
+      <Filter>src\render\vitagxm</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vulkan\SDL_shaders_vulkan.h">
+      <Filter>src\render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vulkan\VULKAN_PixelShader_Advanced.h">
+      <Filter>src\render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vulkan\VULKAN_PixelShader_Advanced_YUV.h">
+      <Filter>src\render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vulkan\VULKAN_PixelShader_Colors.h">
+      <Filter>src\render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vulkan\VULKAN_PixelShader_Colors_PQ.h">
+      <Filter>src\render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vulkan\VULKAN_PixelShader_Textures.h">
+      <Filter>src\render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vulkan\VULKAN_PixelShader_Textures_PQ.h">
+      <Filter>src\render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vulkan\VULKAN_PixelShader_Textures_Simple.h">
+      <Filter>src\render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vulkan\VULKAN_PixelShader_Textures_YUV.h">
+      <Filter>src\render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\render\vulkan\VULKAN_VertexShader.h">
+      <Filter>src\render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\sensor\SDL_sensor_c.h">
+      <Filter>src\sensor</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\sensor\SDL_syssensor.h">
+      <Filter>src\sensor</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_casefolding.h">
+      <Filter>src\stdlib</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_getenv_c.h">
+      <Filter>src\stdlib</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_sysstdlib.h">
+      <Filter>src\stdlib</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\stdlib\SDL_vacopy.h">
+      <Filter>src\stdlib</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\storage\SDL_sysstorage.h">
+      <Filter>src\storage</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\thread\SDL_systhread.h">
+      <Filter>src\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\thread\SDL_thread_c.h">
+      <Filter>src\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\time\SDL_time_c.h">
+      <Filter>src\time</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\timer\SDL_timer_c.h">
+      <Filter>src\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_RLEaccel_c.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_blit.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_blit_auto.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_blit_copy.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_blit_slow.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_clipboard_c.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_egl_c.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_pixels_c.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_rect_c.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_rect_impl.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_rotate.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_stb_c.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_surface_c.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_sysvideo.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_video_c.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_video_unsupported.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_vulkan_internal.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\SDL_yuv_c.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\miniz.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\stb_image.h">
+      <Filter>src\video</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\yuv2rgb\yuv_rgb.h">
+      <Filter>src\video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\yuv2rgb\yuv_rgb_common.h">
+      <Filter>src\video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\yuv2rgb\yuv_rgb_internal.h">
+      <Filter>src\video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\yuv2rgb\yuv_rgb_lsx.h">
+      <Filter>src\video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\yuv2rgb\yuv_rgb_lsx_func.h">
+      <Filter>src\video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\yuv2rgb\yuv_rgb_sse.h">
+      <Filter>src\video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\yuv2rgb\yuv_rgb_sse_func.h">
+      <Filter>src\video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\yuv2rgb\yuv_rgb_std.h">
+      <Filter>src\video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\yuv2rgb\yuv_rgb_std_func.h">
+      <Filter>src\video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\dummy\SDL_dummyaudio.h">
+      <Filter>src\audio\dummy</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\disk\SDL_diskaudio.h">
+      <Filter>src\audio\disk</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\virtual\SDL_virtualjoystick_c.h">
+      <Filter>src\joystick\virtual</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\dummy\SDL_nullevents_c.h">
+      <Filter>src\video\dummy</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\dummy\SDL_nullframebuffer_c.h">
+      <Filter>src\video\dummy</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\dummy\SDL_nullvideo.h">
+      <Filter>src\video\dummy</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\SDL_directx.h">
+      <Filter>src\core\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\SDL_gameinput.h">
+      <Filter>src\core\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\SDL_hid.h">
+      <Filter>src\core\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\SDL_immdevice.h">
+      <Filter>src\core\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\SDL_windows.h">
+      <Filter>src\core\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\SDL_xinput.h">
+      <Filter>src\core\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\directsound\SDL_directsound.h">
+      <Filter>src\audio\directsound</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\audio\wasapi\SDL_wasapi.h">
+      <Filter>src\audio\wasapi</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_msctf.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsclipboard.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsevents.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsframebuffer.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsgameinput.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowskeyboard.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsmessagebox.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsmodes.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsmouse.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsopengl.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsopengles.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsrawinput.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsshape.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsvideo.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowsvulkan.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\SDL_windowswindow.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\windows\wmmsg.h">
+      <Filter>src\video\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\thread\generic\SDL_syscond_c.h">
+      <Filter>src\thread\generic</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\thread\generic\SDL_sysrwlock_c.h">
+      <Filter>src\thread\generic</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\sensor\windows\SDL_windowssensor.h">
+      <Filter>src\sensor\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\storage\steam\SDL_steamstorage_proc.h">
+      <Filter>src\storage\steam</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\windows\SDL_dinputjoystick_c.h">
+      <Filter>src\joystick\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\windows\SDL_rawinputjoystick_c.h">
+      <Filter>src\joystick\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\windows\SDL_windowsjoystick_c.h">
+      <Filter>src\joystick\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\joystick\windows\SDL_xinputjoystick_c.h">
+      <Filter>src\joystick\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\haptic\windows\SDL_dinputhaptic_c.h">
+      <Filter>src\haptic\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\haptic\windows\SDL_windowshaptic_c.h">
+      <Filter>src\haptic\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\offscreen\SDL_offscreenevents_c.h">
+      <Filter>src\video\offscreen</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\offscreen\SDL_offscreenframebuffer_c.h">
+      <Filter>src\video\offscreen</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\offscreen\SDL_offscreenopengles.h">
+      <Filter>src\video\offscreen</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\offscreen\SDL_offscreenvideo.h">
+      <Filter>src\video\offscreen</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\offscreen\SDL_offscreenvulkan.h">
+      <Filter>src\video\offscreen</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\video\offscreen\SDL_offscreenwindow.h">
+      <Filter>src\video\offscreen</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\gpu\d3d12\D3D12_Blit.h">
+      <Filter>src\gpu\d3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\gpu\vulkan\SDL_gpu_vulkan_vkfuncs.h">
+      <Filter>src\gpu\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_assert.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_asyncio.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_atomic.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_audio.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_begin_code.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_bits.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_blendmode.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_camera.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_clipboard.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_close_code.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_copying.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_cpuinfo.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_dialog.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_dlopennote.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_egl.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_endian.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_error.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_events.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_filesystem.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_gamepad.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_gpu.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_guid.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_haptic.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_hidapi.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_hints.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_init.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_intrin.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_iostream.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_joystick.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_keyboard.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_keycode.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_loadso.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_locale.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_log.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_main.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_main_impl.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_messagebox.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_metal.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_misc.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_mouse.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_mutex.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_notification.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_oldnames.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_opengl.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_opengl_glext.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_opengles.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_opengles2.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_opengles2_gl2.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_opengles2_gl2ext.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_opengles2_gl2platform.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_opengles2_khrplatform.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_openxr.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_pen.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_pixels.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_platform.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_platform_defines.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_power.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_process.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_properties.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_rect.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_render.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_scancode.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_sensor.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_stdinc.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_storage.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_surface.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_system.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_thread.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_time.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_timer.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_touch.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_tray.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_version.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_video.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_vulkan.h">
+      <Filter>include\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision\SDL3\SDL_revision.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\Debug\cmake_pch.h">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\Debug\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\Release\cmake_pch.h">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\Release\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\MinSizeRel\cmake_pch.h">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\MinSizeRel\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\RelWithDebInfo\cmake_pch.h">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\RelWithDebInfo\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\core\windows\version.rc">
+      <Filter>src\core\windows</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{912567AF-0C51-3DAE-9B01-3FF572BFBE41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Precompile Header File">
+      <UniqueIdentifier>{92135B92-EFAF-3D26-8755-CE7B5A984C73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{80E71F26-3C27-39AF-91C1-F68C1FBF5B8D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{06924C44-5C13-32D0-9B6A-13AB2047C510}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\SDL3">
+      <UniqueIdentifier>{8FD45864-81AF-3BCB-84D6-57DAF26B443E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{63E0F407-C423-3FE2-B037-C79C105DFD8F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\atomic">
+      <UniqueIdentifier>{14D9BA96-4923-3F19-8D81-ADD346CC84A0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\audio">
+      <UniqueIdentifier>{28694DB7-D068-38C0-8A3A-9B1C69B3D340}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\audio\directsound">
+      <UniqueIdentifier>{573ABC95-5EDE-3EFE-9708-68889A3891FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\audio\disk">
+      <UniqueIdentifier>{A6D4D55E-954E-3D95-9776-110A2A206F01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\audio\dummy">
+      <UniqueIdentifier>{5A14E4AE-A483-38A9-A603-81AB188458A2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\audio\wasapi">
+      <UniqueIdentifier>{B125E2E7-EE49-3061-83B1-07E619EDE3B9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\camera">
+      <UniqueIdentifier>{37581F82-72EE-358C-99FD-1A3E928E9447}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\camera\dummy">
+      <UniqueIdentifier>{9A3941B8-4961-3319-93D4-4FD3B6E81B5C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\camera\mediafoundation">
+      <UniqueIdentifier>{83FF4857-FE4E-35FF-B9C2-CEA2C544A684}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core">
+      <UniqueIdentifier>{33176D3C-16EE-3415-9E27-772023529C5E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\windows">
+      <UniqueIdentifier>{CA48A49B-7727-3EBD-80B1-874830FCFE3E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\windows\gameinput">
+      <UniqueIdentifier>{2D885395-695C-3304-8367-F5B84D387960}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\cpuinfo">
+      <UniqueIdentifier>{0B629502-4FD5-320D-B3B0-335033C82685}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\dialog">
+      <UniqueIdentifier>{92792507-1791-3008-8BAC-EA4CF4EAFE0E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\dialog\windows">
+      <UniqueIdentifier>{898B0908-F616-3FA1-94D4-C03E7BFE6257}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\dynapi">
+      <UniqueIdentifier>{6D5FDF47-6529-3717-9E06-FC3433A2D6B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\events">
+      <UniqueIdentifier>{AAC2800C-83B5-3056-BF13-5DF175DFAF77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\filesystem">
+      <UniqueIdentifier>{AAD43816-3CF2-351D-8D27-B8B3967B13D6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\filesystem\windows">
+      <UniqueIdentifier>{AE8B8725-FF7C-3FCD-B0A3-02A2D968E02D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\gpu">
+      <UniqueIdentifier>{A815409B-1730-3E07-A8CC-36C9DEAAB254}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\gpu\d3d12">
+      <UniqueIdentifier>{EB01B187-036A-3136-8B9C-C640D7C5335A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\gpu\vulkan">
+      <UniqueIdentifier>{B2034DEA-B574-3BFF-A6FA-26C55CD6AFAC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\gpu\xr">
+      <UniqueIdentifier>{99923F4E-3E5A-3116-9E21-3C9F7DD5F0EB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\haptic">
+      <UniqueIdentifier>{AD153287-F8EB-31FF-A99D-BD7379517937}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\haptic\hidapi">
+      <UniqueIdentifier>{6138A4AD-104F-3F31-96ED-2D947080FD57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\haptic\windows">
+      <UniqueIdentifier>{D2EAE3D6-257E-3A87-B9C0-604FF43A45E0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\hidapi">
+      <UniqueIdentifier>{02B65DC4-A845-3E90-8B7B-8025C05E5785}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\io">
+      <UniqueIdentifier>{5B5FAC4A-5589-34D8-979F-433C06EA8C0E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\io\generic">
+      <UniqueIdentifier>{27491910-47F9-37E0-B072-A981D87B578E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\io\windows">
+      <UniqueIdentifier>{082EA2ED-6C1A-3E43-983A-50F10D33BF9C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\joystick">
+      <UniqueIdentifier>{3457A147-DC56-3CBA-AA16-E29C020F97CC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\joystick\gdk">
+      <UniqueIdentifier>{7FE7295A-12FE-3780-BA79-26559494EF16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\joystick\hidapi">
+      <UniqueIdentifier>{C4DA93E7-9F31-3A33-971C-B3BB3054CD37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\joystick\virtual">
+      <UniqueIdentifier>{9B436CF3-6D53-31CE-A842-5DD348D61548}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\joystick\windows">
+      <UniqueIdentifier>{3F2415DF-A41D-3E33-80F0-1521A02E57F7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\loadso">
+      <UniqueIdentifier>{82FC38A7-7E77-3D74-AD61-32AF125FEF35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\loadso\windows">
+      <UniqueIdentifier>{4D577925-87A0-301E-A71A-F7BC9BC127BD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\locale">
+      <UniqueIdentifier>{43E5B38B-F476-314B-8AB4-EEC9FAEB4785}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\locale\windows">
+      <UniqueIdentifier>{CF1FC6C0-29A8-30EC-A19E-F53BB749B1B1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\main">
+      <UniqueIdentifier>{4AA0A68F-34E9-335F-9003-388558192536}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\main\generic">
+      <UniqueIdentifier>{589AFD96-8601-338D-9F34-58FA42B1CB86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\main\windows">
+      <UniqueIdentifier>{082BE8EC-06F2-354C-BEAB-2C4CD704A8DB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\misc">
+      <UniqueIdentifier>{58B8721A-3722-361F-B8A4-B53B88648B4A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\misc\windows">
+      <UniqueIdentifier>{6C3A6FCF-15CB-383B-BB88-CAE4CF22B0A1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\notification">
+      <UniqueIdentifier>{67C06133-A048-3FED-8559-8F745CF10D0D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\notification\windows">
+      <UniqueIdentifier>{76A4EF1D-9934-3950-946A-A44E465AE7B0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\power">
+      <UniqueIdentifier>{727ED243-379E-3B56-9FCD-CA72E4BD748B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\power\windows">
+      <UniqueIdentifier>{DBB3C179-10B1-30BF-938B-D6DBD97EC0FD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\process">
+      <UniqueIdentifier>{FA23B023-ABE1-32C0-A0DA-9D70B0128B55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\process\windows">
+      <UniqueIdentifier>{A6A3EEA3-60B0-3B6C-B871-833F8B5CE801}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render">
+      <UniqueIdentifier>{CAFF49F7-498D-3658-AE44-9B56F7166F98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\direct3d">
+      <UniqueIdentifier>{26D02D7B-9DCB-3DBB-A91C-553FFCA65EAD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\direct3d11">
+      <UniqueIdentifier>{34FA2E48-D9FB-37F6-9385-A672668E87BB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\direct3d12">
+      <UniqueIdentifier>{37482F2F-0A9B-39A4-9F16-1998BF81187F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\gpu">
+      <UniqueIdentifier>{F1C53F94-000B-3B9F-B972-ED503CF54FAD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\metal">
+      <UniqueIdentifier>{ADB1F8B4-E491-3FEA-9470-878D82054EE8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\ngage">
+      <UniqueIdentifier>{2271E62F-A4B6-3E10-A5C4-CE6BFE5969BD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\opengl">
+      <UniqueIdentifier>{11378F0A-D95E-3D40-BBA3-94DF6879A38D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\opengles">
+      <UniqueIdentifier>{C1E26EC0-9967-3E1B-B497-8E0CF7E4454C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\opengles2">
+      <UniqueIdentifier>{B0A70D33-2396-383C-A1A1-861CA422F582}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\ps2">
+      <UniqueIdentifier>{D690A7A5-5BAE-3AA5-90DB-0BF229EDA3EE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\psp">
+      <UniqueIdentifier>{7299BFF5-81F6-38F1-97D4-43E831AF16C3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\software">
+      <UniqueIdentifier>{35097BDE-FBD7-3FA2-8CF0-9C50C16FEC39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\vitagxm">
+      <UniqueIdentifier>{ECE5EFA5-3627-327F-9A0E-3066C064B13D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\render\vulkan">
+      <UniqueIdentifier>{F356C2CE-5D56-32F8-A5FB-0B78528D1F94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\sensor">
+      <UniqueIdentifier>{111C8CFE-4AFF-350F-B50A-85F74AEE154A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\sensor\windows">
+      <UniqueIdentifier>{1B523670-E799-39DE-B785-149BF405D19E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\stdlib">
+      <UniqueIdentifier>{F520E45B-A7F7-34ED-9786-BFC9E1811BD0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\storage">
+      <UniqueIdentifier>{4E9126F1-D211-3504-ABDA-1103C7032584}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\storage\generic">
+      <UniqueIdentifier>{17DF58BF-6C91-3B3A-9258-52E2D3DF428C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\storage\steam">
+      <UniqueIdentifier>{0289C2D2-6E78-31D8-8D11-F1A9B1080CFC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\thread">
+      <UniqueIdentifier>{D643E358-B104-304B-962D-0F496130C25B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\thread\generic">
+      <UniqueIdentifier>{5A3EDA90-054C-3525-BCFE-97CCD45B2FA3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\thread\windows">
+      <UniqueIdentifier>{7C4671C5-109B-31C4-A86C-A4D336730D5F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\time">
+      <UniqueIdentifier>{EAE56D58-6E93-3BB3-80BD-938BBD3A73A2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\time\windows">
+      <UniqueIdentifier>{9E5D206D-9197-3E2D-9C99-F7EDF555A6B1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\timer">
+      <UniqueIdentifier>{B26FC93D-DD3C-3140-A4C9-A83D52E2C40E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\timer\windows">
+      <UniqueIdentifier>{561FD156-8B8B-35DB-B680-B2D5E49F7958}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\tray">
+      <UniqueIdentifier>{3D28E1EB-8C3A-32A0-A231-D34BC5260F96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\tray\windows">
+      <UniqueIdentifier>{C22573CC-256C-3C56-A8E2-E7598105745C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\video">
+      <UniqueIdentifier>{03B82ED6-25A1-3016-A26B-F72AECE04368}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\video\dummy">
+      <UniqueIdentifier>{E9E8D05E-99BD-392D-9D2C-C4B330F7CE95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\video\offscreen">
+      <UniqueIdentifier>{B6AAB7C9-B6DD-3AE3-B56C-1D9ECED21A48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\video\windows">
+      <UniqueIdentifier>{87FAA08C-A41C-3C19-8FA4-0CFC133FDCB8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\video\yuv2rgb">
+      <UniqueIdentifier>{24B695DF-0C1A-32FA-BD24-871CE1387B40}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

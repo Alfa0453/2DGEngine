@@ -1,0 +1,17 @@
+D:\C++_Projects\2DGEngine\Runtime\Main.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Main.obj
+D:\C++_Projects\2DGEngine\Runtime\Game\Components\PlayerControllerComponent.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\PlayerControllerComponent.obj
+D:\C++_Projects\2DGEngine\Runtime\Game\Components\LifetimeComponent.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\LifetimeComponent.obj
+D:\C++_Projects\2DGEngine\Engine\Core\Application.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Application.obj
+D:\C++_Projects\2DGEngine\Engine\Core\Window.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Window.obj
+D:\C++_Projects\2DGEngine\Engine\Core\EngineTime.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\EngineTime.obj
+D:\C++_Projects\2DGEngine\Engine\Graphics\Renderer2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Renderer2D.obj
+D:\C++_Projects\2DGEngine\Engine\Graphics\Texture2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Texture2D.obj
+D:\C++_Projects\2DGEngine\Engine\Graphics\Sprite.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Sprite.obj
+D:\C++_Projects\2DGEngine\Engine\Graphics\Camera2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Camera2D.obj
+D:\C++_Projects\2DGEngine\Engine\Input\Input.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Input.obj
+D:\C++_Projects\2DGEngine\Engine\Scene\Scene.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Scene.obj
+D:\C++_Projects\2DGEngine\Engine\Scene\Component.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Component.obj
+D:\C++_Projects\2DGEngine\Engine\Scene\Entity.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Entity.obj
+D:\C++_Projects\2DGEngine\Engine\Scene\EntityHandle.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\EntityHandle.obj
+D:\C++_Projects\2DGEngine\Engine\Scene\SpriteRendererComponent.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\SpriteRendererComponent.obj
+D:\C++_Projects\2DGEngine\Engine\Scene\TransformComponent.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\TransformComponent.obj
