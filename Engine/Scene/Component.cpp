@@ -7,9 +7,19 @@ namespace Engine
         return m_Owner;
     }
 
+    ComponentTypeID Component::GetTypeID() const
+    {
+        return m_TypeID;
+    }
+
     void Component::SetOwner(Entity* owner)
     {
         m_Owner = owner;
+    }
+
+    void Component::SetTypeID(ComponentTypeID typeID)
+    {
+        m_TypeID = typeID;
     }
 
     bool Component::HasStarted() const

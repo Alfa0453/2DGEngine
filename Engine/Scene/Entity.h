@@ -2,6 +2,7 @@
 
 #include "ComponentTypeID.h"
 #include "EntityID.h"
+#include "EntityHandle.h"
 #include "Component.h"
 #include "ComponentType.h"
 
@@ -16,16 +17,20 @@
 
 namespace Engine
 {
+    class Scene;
+
     class Entity
     {
     public:
-        Entity(EntityID id, EntityGeneration generation, const std::string& name);
+        Entity(Scene* scene, EntityID id, EntityGeneration generation, const std::string& name);
 
         ~Entity();
 
         EntityID GetID() const;
 
         EntityGeneration GetGeneration() const;
+
+        Scene* GetScene() const;
 
         void Start();
 
@@ -61,6 +66,26 @@ namespace Engine
 
         bool IsPendingDestroy() const;
 
+        bool ValidateComponentRegistry() const;
+
+        std::size_t GetRegisteredComponentTypeCount() const;
+
+        bool SetParent(Entity* parent);
+
+        void ClearParent();
+
+        EntityHandle GetParent() const;
+
+        bool HasParent() const;
+
+        const std::vector<EntityHandle>& GetChildren() const;
+
+        std::size_t GetChildCount() const;
+
+        bool IsChildOf(const Entity* entity) const;
+
+        bool IsDescendantOf(const Entity* entity) const;
+
         template<typename T, typename... Args>
         T* AddComponent(Args&&... args)
         {
@@ -71,6 +96,12 @@ namespace Engine
             T* componentPointer = component.get();
 
             componentPointer->SetOwner(this);
+
+            const ComponentTypeID typeID = GetComponentTypeID<T>();
+
+            componentPointer->SetTypeID(typeID);
+
+            RegisterComponent(typeID,  componentPointer);
 
             if (m_IsUpdating)
             {
@@ -148,22 +179,23 @@ namespace Engine
         {
             static_assert(std::is_base_of_v<Component, T>, "T must inherit from Component.");
 
-            for (const auto& component : m_Components)
+            const ComponentTypeID typeID = GetComponentTypeID<T>();
+
+            auto iterator = m_ComponentRegistry.find(typeID);
+
+            if (iterator == m_ComponentRegistry.end())
             {
-                if (component->IsPendingDestroy())
-                {
-                    continue;
-                }
-
-                T* result = dynamic_cast<T*>(component.get());
-
-                if (result)
-                {
-                    return result;
-                }
+                return nullptr;
             }
 
-            return nullptr;
+            Component* component = iterator->second;
+
+            if (!component || component->IsPendingDestroy())
+            {
+                return nullptr;
+            }
+
+            return static_cast<T*>(component);
         }
 
         template<typename T>
@@ -180,11 +212,26 @@ namespace Engine
                     continue;
                 }
 
-                T* casted = dynamic_cast<T*>(component.get());
+                T* typedComponent = dynamic_cast<T*>(component.get());
 
-                if (casted)
+                if (typedComponent)
                 {
-                    result.push_back(casted);
+                    result.push_back(typedComponent);
+                }
+            }
+
+            for (const auto& component : m_PendingComponents)
+            {
+                if (component->IsPendingDestroy())
+                {
+                    continue;
+                }
+
+                T* typedComponent = dynamic_cast<T*>(component.get());
+
+                if (typedComponent)
+                {
+                    result.push_back(typedComponent);
                 }
             }
 
@@ -207,12 +254,20 @@ namespace Engine
 
         void FlushPendingComponents();
 
+        void AddChildInternal(const EntityHandle& child);
+
+        void RemoveChildInternal(EntityID childID);
+
+        void DetachFromHierarchy();
+
     private:
         EntityID m_ID = InvalidEntityID;
 
         EntityGeneration m_Generation = InvalidEntityGeneration;
 
         std::string m_Name = "Entity";
+
+        Scene* m_Scene = nullptr;
 
         bool m_Active = true;
 
@@ -226,8 +281,12 @@ namespace Engine
 
         std::vector<std::unique_ptr<Component>> m_PendingComponents;
 
+        std::unordered_map<ComponentTypeID, Component*> m_ComponentRegistry;
+
         std::unordered_set<std::string> m_Tags;
 
-        std::unordered_map<ComponentTypeID, Component*> m_ComponentRegistry;
+        EntityHandle m_Parent;
+
+        std::vector<EntityHandle> m_Children;
     };
 }

@@ -22,7 +22,7 @@ namespace Engine
 
         const EntityGeneration generation = GetNextGeneration(id);
 
-        auto entity = std::make_unique<Entity>(id, generation, name);
+        auto entity = std::make_unique<Entity>(this, id, generation, name);
 
         Entity* entityPointer = entity.get();
 

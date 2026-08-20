@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ComponentTypeID.h"
+
 namespace Engine
 {
     class Entity;
@@ -25,6 +27,8 @@ namespace Engine
 
         Entity* GetOwner() const;
 
+        ComponentTypeID GetTypeID() const;
+
         bool HasStarted() const;
 
         void Destroy();
@@ -36,12 +40,16 @@ namespace Engine
 
         void SetOwner(Entity* owner);
 
+        void SetTypeID(ComponentTypeID typeID);
+
         void StartInternal();
 
         void DestroyInternal();
 
     private:
         Entity* m_Owner = nullptr;
+
+        ComponentTypeID m_TypeID = InvalidComponentTypeID;
 
         bool m_HasStarted = false;
 
