@@ -6,6 +6,7 @@
 #include "../Graphics/Renderer2D.h"
 #include "../Graphics/Texture2D.h"
 #include "../Graphics/Camera2D.h"
+#include "../Graphics/AnimationClip2D.h"
 #include "../Core/EngineTime.h"
 #include "../Input/Input.h"
 #include "../Scene/Entity.h"
@@ -45,13 +46,22 @@ namespace Engine
 
         Input m_Input;
 
-        Texture2D m_TestTexture;
-        Texture2D m_CoinTexture;
+        Texture2D m_PlayerIdleTexture;
+        Texture2D m_PlayerWalkTexture;
+        Texture2D m_PlayerRunTexture;
+        Texture2D m_PlayerAttackTexture;
+
+        AnimationClip2D m_PlayerIdleClip;
+        AnimationClip2D m_PlayerWalkClip;
+        AnimationClip2D m_PlayerRunClip;
+        AnimationClip2D m_PlayerAttackClip;
 
         Scene m_Scene;
 
         EntityID m_PlayerID = InvalidEntityID;
 
         EntityHandle m_PlayerHandle;
+
+        Entity* m_Player = nullptr;
     };
 }

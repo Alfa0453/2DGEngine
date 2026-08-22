@@ -7,6 +7,7 @@ namespace Engine
     class Input;
     class TransformComponent;
     class SpriteRendererComponent;
+    class AnimatorComponent;
 }
 
 class PlayerControllerComponent : public Engine::Component
@@ -36,6 +37,8 @@ private:
     Engine::TransformComponent* m_Transform = nullptr;
 
     Engine::SpriteRendererComponent* m_SpriteRenderer = nullptr;
+
+    Engine::AnimatorComponent* m_Animator = nullptr;
 
     float m_MovementSpeed = 250.0f;
 

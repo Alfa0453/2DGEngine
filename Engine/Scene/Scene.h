@@ -4,6 +4,9 @@
 #include "EntityHandle.h"
 #include "EntityID.h"
 
+#include "../Events/EventBus.h"
+#include "../Physics/PhysicsWorld2D.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -60,6 +63,16 @@ namespace Engine
 
         std::size_t GetRegisteredEntityCount() const;
 
+        std::vector<Entity*> GetRootEntities() const;
+
+        EventBus& GetEventBus();
+
+        const EventBus& GetEventBus() const;
+
+        PhysicsWorld2D& GetPhysicsWorld();
+
+        const PhysicsWorld2D& GetPhysicsWorld() const;
+
     private:
         EntityID GenerateEntityID();
 
@@ -80,6 +93,8 @@ namespace Engine
 
         bool m_IsUpdating = false;
 
+        EventBus m_EventBus;
+
         EntityID m_NextEntityID = 1;
 
         std::vector<std::unique_ptr<Entity>> m_Entities;
@@ -89,5 +104,7 @@ namespace Engine
         std::unordered_map<EntityID, Entity*> m_EntityRegistry;
 
         std::unordered_map<EntityID, EntityGeneration> m_EntityGenerations;
+
+        PhysicsWorld2D m_PhysicsWorld;
     };
 }

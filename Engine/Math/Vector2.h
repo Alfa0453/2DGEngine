@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <cstdlib>
 
 namespace Engine
 {
@@ -43,6 +44,15 @@ namespace Engine
             };
         }
 
+        Vector2 operator*(const Vector2& other) const
+        {
+            return 
+            {
+                X * other.X,
+                Y * other.Y
+            };
+        }
+
         Vector2 operator/(float scalar) const
         {
             return 
@@ -72,6 +82,14 @@ namespace Engine
         {
             X *= scalar;
             Y *= scalar;
+
+            return *this;
+        }
+
+        Vector2& operator*=(const Vector2& other)
+        {
+            X *= other.X;
+            Y *= other.Y;
 
             return *this;
         }
@@ -107,6 +125,51 @@ namespace Engine
             return 
                 a.X * b.X +
                 a.Y * b.Y;
+        }
+
+        static Vector2 Rotate(const Vector2& vector, float degrees)
+        {
+            const float radians = degrees * 3.14159265358979323846f / 180.0f;
+
+            const float cosine = std::cos(radians);
+
+            const float sine = std::sin(radians);
+
+            return 
+            {
+                vector.X * cosine - vector.Y * sine,
+                vector.X * sine + vector.Y * cosine
+            };
+        }
+
+        static Vector2 InverseRotate(const Vector2& vector, float degrees)
+        {
+            return Rotate(vector, -degrees);
+        }
+
+        static Vector2 SafeDivide(const Vector2& value, const Vector2& divisor, float epsilon = 0.000001f)
+        {
+            Vector2 result = value;
+
+            if (std::abs(divisor.X) > epsilon)
+            {
+                result.X /= divisor.X;
+            }
+            else 
+            {
+                result.X = 0.0f;
+            }
+
+            if (std::abs(divisor.Y) > epsilon)
+            {
+                result.Y /= divisor.Y;
+            }
+            else 
+            {
+                result.Y = 0.0f;
+            }
+
+            return result;
         }
     };
 }

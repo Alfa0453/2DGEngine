@@ -2,6 +2,8 @@
 
 #include "Texture2D.h"
 
+#include <cmath>
+
 namespace Engine
 {
     Sprite::Sprite(Texture2D* texture)
@@ -26,12 +28,17 @@ namespace Engine
 
     Vector2 Sprite::GetBaseSize() const
     {
-        if (!m_Texture)
+        if (m_HasSourceRect)
         {
-            return { 0.0f, 0.0f };
+            return m_SourceRect.Size;
         }
 
-        return m_Texture->GetSize();
+        if (m_Texture)
+        {
+            return m_Texture->GetSize();
+        }
+
+        return{ 0.0f, 0.0f };
     }
 
     Vector2 Sprite::GetRenderedSize() const
@@ -40,8 +47,30 @@ namespace Engine
 
         return 
         {
-            baseSize.X * Transform.Scale.X,
-            baseSize.Y * Transform.Scale.Y
+            baseSize.X * std::abs(Transform.Scale.X),
+            baseSize.Y * std::abs(Transform.Scale.Y)
         };
+    }
+
+    void Sprite::SetSourceRect(const Rect& source)
+    {
+        m_SourceRect = source;
+
+        m_HasSourceRect = true;
+    }
+
+    void Sprite::ClearSourceRect()
+    {
+        m_HasSourceRect = false;
+    }
+
+    bool Sprite::HasSourceRect() const
+    {
+        return m_HasSourceRect;
+    }
+
+    const Rect& Sprite::GetSourceRect() const
+    {
+        return m_SourceRect;
     }
 }

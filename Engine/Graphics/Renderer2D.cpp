@@ -51,6 +51,8 @@ namespace Engine
 
     void Renderer2D::BeginFrame(const Color& clearColor)
     {
+        ResetStats();
+
         if (!m_Renderer)
         {
             return;
@@ -121,27 +123,41 @@ namespace Engine
         DrawRect(rect.Position, rect.Size, color);
     }
 
-    void Renderer2D::DrawTexture(const Texture2D& texture, const Rect& destination)
+    void Renderer2D::DrawTexture(const Texture2D& texture, const Rect& source, const Rect& destination)
     {
-        if (!m_Renderer)
+        if (!m_Renderer || !texture.GetNativeTexture())
         {
             return;
         }
 
-        if (!texture.IsValid())
+        Vector2 screenPosition = destination.Position;
+
+        Vector2 screenSize = destination.Size;
+
+        if (m_Camera)
         {
-            return;
+            screenPosition = m_Camera->WorldToScreen(destination.Position);
+
+            screenSize *= m_Camera->GetZoom();
         }
+
+        SDL_FRect sourceRect
+        {
+            source.Position.X,
+            source.Position.Y,
+            source.Size.X,
+            source.Size.Y
+        };
 
         SDL_FRect destinationRect
         {
-            destination.Position.X,
-            destination.Position.Y,
-            destination.Size.X,
-            destination.Size.Y
+            screenPosition.X,
+            screenPosition.Y,
+            screenSize.X,
+            screenSize.Y
         };
 
-        if (!SDL_RenderTexture(m_Renderer, texture.GetNativeTexture(), nullptr, &destinationRect))
+        if (!SDL_RenderTexture(m_Renderer, texture.GetNativeTexture(), &sourceRect, &destinationRect))
         {
             std::cerr << "Failed to render texture: " << SDL_GetError() << '\n';
         }
@@ -161,34 +177,62 @@ namespace Engine
 
         Texture2D* texture = sprite.GetTexture();
 
-        if (!texture)
+        if (!texture || !texture->GetNativeTexture())
         {
             return;
         }
 
-        const Vector2 baseSize = sprite.GetBaseSize();
+        const Transform2D& transform = sprite.Transform;
 
-        const Vector2 renderedSize = sprite.GetRenderedSize();
+        Vector2 position = transform.Position;
 
-        Vector2 screenPosition = sprite.Transform.Position;
-
-        float zoom = 1.0f;
+        Vector2 size = sprite.GetRenderedSize();
 
         if (m_Camera)
         {
-            screenPosition = m_Camera->WorldToScreen(sprite.Transform.Position);
+            position = m_Camera->WorldToScreen(position);
 
-            zoom = m_Camera->GetZoom();
+            size *= m_Camera->GetZoom();
         }
 
         SDL_FRect destination
         {
-            screenPosition.X,
-            screenPosition.Y,
-
-            renderedSize.X * zoom,
-            renderedSize.Y * zoom
+            position.X,
+            position.Y,
+            size.X,
+            size.Y
         };
+
+        SDL_FRect sourceRect {};
+
+        const SDL_FRect* sourcePointer = nullptr;
+
+        if (sprite.HasSourceRect())
+        {
+            const Rect& source = sprite.GetSourceRect();
+
+            sourceRect =
+            {
+                source.Position.X,
+                source.Position.Y,
+                source.Size.X,
+                source.Size.Y
+            };
+
+            sourcePointer = &sourceRect;
+        }
+
+        SDL_FlipMode flip = SDL_FLIP_NONE;
+
+        if (sprite.FlipX)
+        {
+            flip = static_cast<SDL_FlipMode>(flip | SDL_FLIP_HORIZONTAL);
+        }
+
+        if (sprite.FlipY)
+        {
+            flip = static_cast<SDL_FlipMode>(flip | SDL_FLIP_VERTICAL);
+        }
 
         SDL_SetTextureColorMod(
             texture->GetNativeTexture(),
@@ -202,26 +246,14 @@ namespace Engine
             sprite.Tint.A
         );
 
-        SDL_FlipMode flipMode = SDL_FLIP_NONE;
-
-        if (sprite.FlipX)
-        {
-            flipMode = static_cast<SDL_FlipMode>(flipMode | SDL_FLIP_HORIZONTAL);
-        }
-
-        if (sprite.FlipY)
-        {
-            flipMode = static_cast<SDL_FlipMode>(flipMode | SDL_FLIP_VERTICAL);
-        }
-
         SDL_RenderTextureRotated(
             m_Renderer,
             texture->GetNativeTexture(),
-            nullptr,
+            sourcePointer,
             &destination,
-            static_cast<double>(sprite.Transform.Rotation),
+            transform.Rotation,
             nullptr,
-            flipMode
+            flip
         );
     }
 
@@ -238,5 +270,54 @@ namespace Engine
     SDL_Renderer* Renderer2D::GetNativeRenderer() const
     {
         return m_Renderer;
+    }
+
+    void Renderer2D::DrawRectOutline(const Rect& rect, const Color& color)
+    {
+        Vector2 position = rect.Position;
+
+        Vector2 size = rect.Size;
+
+        float zoom = 1.0f;
+
+        if (m_Camera)
+        {
+            position = m_Camera->WorldToScreen(position);
+
+            zoom = m_Camera->GetZoom();
+
+            size *= zoom;
+        }
+
+        SDL_SetRenderDrawColor(m_Renderer, color.R, color.G, color.B, color.A);
+
+        SDL_FRect destination{ position.X, position.Y, size.X, size.Y };
+
+        SDL_RenderRect(m_Renderer, &destination);
+    }
+
+    void Renderer2D::NotifySpriteSubmitted()
+    {
+        ++m_Stats.SubmittedSprites;
+    }
+
+    void Renderer2D::NotifySpriteRendered()
+    {
+        ++m_Stats.RenderedSprites;
+    }
+
+    void Renderer2D::NotifySpriteCulled()
+    {
+        ++m_Stats.CulledSprites;
+    }
+
+    void Renderer2D::ResetStats()
+    {
+        m_Stats = {};
+    }
+
+    const RenderStats& Renderer2D::GetStats() const
+    {
+        return m_Stats;
     }
 }

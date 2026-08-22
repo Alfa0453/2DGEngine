@@ -5,6 +5,7 @@
 #include "../../../Engine/Input/KeyCode.h"
 #include "../../../Engine/Scene/SpriteRendererComponent.h"
 #include "../../../Engine/Scene/TransformComponent.h"
+#include "../../../Engine/Scene/AnimatorComponent.h"
 #include "../../../Engine/Math/Vector2.h"
 
 PlayerControllerComponent::PlayerControllerComponent(Engine::Input* input)
@@ -30,15 +31,29 @@ void PlayerControllerComponent::Start()
     m_Transform = owner->GetComponent<Engine::TransformComponent>();
 
     m_SpriteRenderer = owner->GetComponent<Engine::SpriteRendererComponent>();
+
+    m_Animator = owner->GetComponent<Engine::AnimatorComponent>();
 }
 
 void PlayerControllerComponent::Update(float deltaTime)
 {
-    if (!m_Input || !m_Transform)
+    if (!m_Input || !m_Transform || !m_Animator)
     {
         return;
     }
 
+    // Attack
+
+    const bool attackPressed = m_Input->WasKeyPressed(Engine::KeyCode::Space);
+
+    const bool attackActive = m_Animator->GetCurrentStateName() == "Attack" && m_Animator->IsPlaying();
+
+    if (attackPressed)
+    {
+        m_Animator->SetTrigger("Attack");
+    }
+
+    // Movement input
     Engine::Vector2 movementDirection{0.0f, 0.0f};
 
     if (m_Input->IsKeyDown(Engine::KeyCode::W))
@@ -61,6 +76,65 @@ void PlayerControllerComponent::Update(float deltaTime)
         movementDirection.X += 1.0f;
     }
 
+    // movment state
+    const bool isMoving = movementDirection.X != 0.0f || movementDirection.Y != 0.0f;
+
+    const bool isRunning = isMoving && m_Input->IsKeyDown(Engine::KeyCode::LeftShift);
+
+    float currentSpeed = m_MovementSpeed;
+
+    if (isRunning)
+    {
+        currentSpeed *= m_SprintMultiplier;
+    }
+
+    m_Animator->SetFloat("Speed", isMoving ? currentSpeed : 0.0f);
+
+    m_Animator->SetBool("Running", isRunning);
+
+    if (movementDirection.LengthSqured() > 0.0f)
+    {
+        movementDirection = movementDirection.Normalized();
+    }
+
+    if (!attackActive && isMoving)
+    {
+        m_Transform->Translate(movementDirection * currentSpeed * deltaTime);
+    }
+
+    
+    /*
+    if (isMoving)
+    {
+        movementDirection = movementDirection.Normalized();
+
+        float speed = m_MovementSpeed;
+
+        if (isRunning)
+        {
+            speed *= m_SprintMultiplier;
+        }
+
+        m_Animator->SetFloat("Speed", isMoving ? speed : 0.0f);
+
+        m_Transform->Translate(movementDirection * speed * deltaTime);
+    }*/
+
+    // facing
+    if (m_SpriteRenderer)
+    {
+        if (movementDirection.X < 0.0f)
+        {
+            m_SpriteRenderer->SetFlipX(true);
+        }
+        else if (movementDirection.X > 0.0f)
+        {
+            m_SpriteRenderer->SetFlipX(false);
+        }
+    }
+
+
+    /*
     if (movementDirection.LengthSqured() > 0.0f)
     {
         movementDirection = movementDirection.Normalized();
@@ -73,7 +147,7 @@ void PlayerControllerComponent::Update(float deltaTime)
         currentSpeed *= m_SprintMultiplier;
     }
 
-    m_Transform->GetTransform().Position += movementDirection * currentSpeed * deltaTime;
+    m_Transform->Translate(movementDirection * currentSpeed * deltaTime);
 
     if (m_SpriteRenderer)
     {
@@ -85,7 +159,7 @@ void PlayerControllerComponent::Update(float deltaTime)
         {
             m_SpriteRenderer->SetFlipX(false);
         }
-    }
+    }*/
 }
 
 void PlayerControllerComponent::SetMovementSpeed(float speed)

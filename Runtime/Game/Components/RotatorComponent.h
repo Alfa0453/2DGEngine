@@ -32,7 +32,7 @@ public:
             return;
         }
 
-        transform->GetTransform().Rotation += 90.0f * deltaTime;
+        transform->RotateBy(90.0f * deltaTime);
     }
 
     void OnDestroy() override

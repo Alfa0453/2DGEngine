@@ -17,6 +17,12 @@
 
 namespace Engine
 {
+    enum class ReparentMode
+    {
+        KeepLocalTransform,
+        KeepWorldTransform
+    };
+
     class Scene;
 
     class Entity
@@ -70,9 +76,9 @@ namespace Engine
 
         std::size_t GetRegisteredComponentTypeCount() const;
 
-        bool SetParent(Entity* parent);
+        bool SetParent(Entity* parent, ReparentMode Mode = ReparentMode::KeepLocalTransform);
 
-        void ClearParent();
+        void ClearParent(ReparentMode mode = ReparentMode::KeepLocalTransform);
 
         EntityHandle GetParent() const;
 
@@ -85,6 +91,8 @@ namespace Engine
         bool IsChildOf(const Entity* entity) const;
 
         bool IsDescendantOf(const Entity* entity) const;
+
+        bool IsRoot() const;
 
         template<typename T, typename... Args>
         T* AddComponent(Args&&... args)

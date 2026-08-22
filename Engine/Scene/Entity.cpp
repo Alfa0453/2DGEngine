@@ -2,6 +2,7 @@
 #include "Component.h"
 #include "ComponentTypeID.h"
 #include "Scene.h"
+#include "TransformComponent.h"
 
 #include <cstddef>
 #include <memory>
@@ -494,7 +495,7 @@ namespace Engine
         return false;
     }
 
-    bool Entity::SetParent(Entity* parent)
+    bool Entity::SetParent(Entity* parent, ReparentMode mode)
     {
         if (parent == this)
         {
@@ -511,6 +512,18 @@ namespace Engine
             return false;
         }
 
+        TransformComponent* transform = GetComponent<TransformComponent>();
+
+        Transform2D oldWorldTransform;
+
+        const bool keepWorld = mode == ReparentMode::KeepWorldTransform && transform != nullptr;
+
+        if (keepWorld)
+        {
+            oldWorldTransform = transform->GetWorldTransform();
+        }
+
+        // Remove from previous parent
         if (m_Parent)
         {
             Entity* oldParent = m_Parent.Get();
@@ -523,21 +536,31 @@ namespace Engine
 
         m_Parent.Reset();
 
-        if (!parent)
+        // Add to new parent
+        if (parent)
         {
-            return true;
+            m_Parent = m_Scene->CreateHandle(parent);
+
+            parent->AddChildInternal(m_Scene->CreateHandle(this));
         }
 
-        m_Parent = m_Scene->CreateHandle(parent);
+        // Transform hierarchy changed
+        if (transform)
+        {
+            transform->MarkDirty();
 
-        parent->AddChildInternal(m_Scene->CreateHandle(this));
+            if (keepWorld)
+            {
+                transform->SetWorldTransform(oldWorldTransform);
+            }
+        }
 
         return true;
     }
 
-    void Entity::ClearParent()
+    void Entity::ClearParent(ReparentMode mode)
     {
-        SetParent(nullptr);
+        SetParent(nullptr, mode);
     }
 
     void Entity::DetachFromHierarchy()
@@ -561,9 +584,21 @@ namespace Engine
             if (child)
             {
                 child->m_Parent.Reset();
+
+                TransformComponent* childTransform = child->GetComponent<TransformComponent>();
+
+                if (childTransform)
+                {
+                    childTransform->MarkDirty();
+                }
             }
         }
 
         m_Children.clear();
+    }
+
+    bool Entity::IsRoot() const
+    {
+        return !HasParent();
     }
 }

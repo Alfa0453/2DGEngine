@@ -86,7 +86,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Events;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Engine\Physics;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <BufferSecurityCheck></BufferSecurityCheck>
@@ -111,10 +111,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Events;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Engine\Physics;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Events;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Engine\Physics;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -157,7 +157,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Events;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Engine\Physics;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <BufferSecurityCheck></BufferSecurityCheck>
@@ -183,10 +183,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Events;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Engine\Physics;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Events;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Engine\Physics;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -229,7 +229,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Events;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Engine\Physics;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <BufferSecurityCheck></BufferSecurityCheck>
@@ -255,10 +255,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Events;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Engine\Physics;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Events;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Engine\Physics;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -301,7 +301,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Events;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Engine\Physics;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <BufferSecurityCheck></BufferSecurityCheck>
@@ -326,10 +326,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Events;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Engine\Physics;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\C++_Projects\2DGEngine\Engine\Core;D:\C++_Projects\2DGEngine\Engine\Events;D:\C++_Projects\2DGEngine\Engine\Graphics;D:\C++_Projects\2DGEngine\Engine\Input;D:\C++_Projects\2DGEngine\Engine\Math;D:\C++_Projects\2DGEngine\Engine\Scene;D:\C++_Projects\2DGEngine\Engine\Physics;D:\C++_Projects\2DGEngine\Runtime\Game\Components;D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision;D:\C++_Projects\2DGEngine\ThirdParty\SDL\include;D:\C++_Projects\2DGEngine\ThirdParty\SDL_image\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -440,6 +440,20 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Core\Window.h" />
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Core\EngineTime.cpp" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Core\EngineTime.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Events\EventSubscription.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Events\EventBus.h" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Events\EventBus.cpp" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimationFrame2D.h" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimationClip2D.cpp" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimationClip2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\SpriteFrame2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimatorCondition2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimatorConditionMode.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimatorParameter2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimatorParameterType.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimatorState2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimatorTransition2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimationEvent2D.h" />
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Graphics\Renderer2D.cpp" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\Renderer2D.h" />
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Graphics\Texture2D.cpp" />
@@ -448,11 +462,17 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\Sprite.h" />
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Graphics\Camera2D.cpp" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\Camera2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\SortingLayer.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\SpriteRegion.h" />
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Input\Input.cpp" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Input\Input.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Math\Vector2.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Math\Rect.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Math\Color.h" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Math\Transform2D.cpp" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Math\Transform2D.h" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Math\Bounds2D.cpp" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Math\Bounds2D.h" />
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Scene\Scene.cpp" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Scene\Scene.h" />
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Scene\Component.cpp" />
@@ -465,6 +485,17 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Scene\SpriteRendererComponent.h" />
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Scene\TransformComponent.cpp" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Scene\TransformComponent.h" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Scene\AnimatorComponent.cpp" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Scene\AnimatorComponent.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CollisionLayer2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\Collider2D.h" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\Collider2D.cpp" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\BoxCollider2D.h" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\BoxCollider2D.cpp" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CollisionEvents2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\ColliderPair2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsWorld2D.h" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsWorld2D.cpp" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

@@ -1,18 +1,31 @@
 #include "Scene.h"
 
 #include "../Graphics/Renderer2D.h"
+#include "../Graphics/SortingLayer.h"
+#include "../Graphics/Camera2D.h"
 #include "Entity.h"
 #include "EntityID.h"
 #include "SpriteRendererComponent.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <memory>
+#include <vector>
 
+namespace
+{
+    struct RenderQueueEntry
+    {
+        Engine::SpriteRendererComponent* SpriteRenderer = nullptr;
+
+        Engine::EntityID Entity = Engine::InvalidEntityID;
+    };
+}
 
 namespace Engine
 {
     Scene::Scene(const std::string& name)
-        : m_Name(name)
+        : m_Name(name), m_PhysicsWorld(this)
     {
     }
 
@@ -239,28 +252,91 @@ namespace Engine
             }
         }
 
+        m_PhysicsWorld.Step(deltaTime);
+
         m_IsUpdating = false;
 
         FlushDestroyedEntities();
 
         FlushPendingEntities();
+
+        m_EventBus.Compact();
     }
 
     void Scene::Render(Renderer2D& renderer)
     {
+        std::vector<RenderQueueEntry> renderQueue;
+
+        renderQueue.reserve(m_Entities.size());
+
+        Camera2D* camera = renderer.GetCamera();
+
         for (const auto& entity : m_Entities)
         {
-            if (!entity->IsActive() || entity->IsPendingDestroy())
+            if (!entity || !entity->IsActive() || entity->IsPendingDestroy())
             {
                 continue;
             }
 
             SpriteRendererComponent* spriteRenderer = entity->GetComponent<SpriteRendererComponent>();
 
-            if (spriteRenderer)
+            if (!spriteRenderer)
             {
-                spriteRenderer->Render(renderer);
+                continue;
             }
+
+            renderer.NotifySpriteSubmitted();
+
+            if (camera)
+            {
+                const Bounds2D bounds = spriteRenderer->GetWorldBounds();
+
+                if (!camera->IsBoundsVisible(bounds))
+                {
+                    renderer.NotifySpriteCulled();
+
+                    continue;
+                }
+            }
+
+            renderQueue.push_back( {spriteRenderer, entity->GetID()} );
+        }
+
+        std::sort(renderQueue.begin(), renderQueue.end(),
+            [](const RenderQueueEntry& a, const RenderQueueEntry& b)
+            {
+                const auto aLayer = static_cast<std::int32_t>(a.SpriteRenderer->GetSortingLayer());
+
+                const auto bLayer = static_cast<std::int32_t>(b.SpriteRenderer->GetSortingLayer());
+
+                if (aLayer != bLayer)
+                {
+                    return aLayer < bLayer;
+                }
+
+                const std::int32_t aOrder = a.SpriteRenderer->GetOrderInLayer();
+
+                const std::int32_t bOrder = b.SpriteRenderer->GetOrderInLayer();
+
+                if (aOrder != bOrder)
+                {
+                    return aOrder < bOrder;
+                }
+
+                return a.Entity < b.Entity;
+            }
+        );
+
+        for (const RenderQueueEntry& entry : renderQueue)
+        {
+            if (!entry.SpriteRenderer)
+            {
+                continue;
+            }
+
+            entry.SpriteRenderer->Render(renderer);
+
+            renderer.NotifySpriteRendered();
         }
     }
 
@@ -417,5 +493,45 @@ namespace Engine
     std::size_t Scene::GetRegisteredEntityCount() const
     {
         return m_EntityRegistry.size();
+    }
+
+    std::vector<Entity*> Scene::GetRootEntities() const
+    {
+        std::vector<Entity*> result;
+
+        for (const auto& entity : m_Entities)
+        {
+            if (!entity || entity->IsPendingDestroy())
+            {
+                continue;
+            }
+
+            if (entity->IsRoot())
+            {
+                result.push_back(entity.get());
+            }
+        }
+
+        return result;
+    }
+
+    EventBus& Scene::GetEventBus()
+    {
+        return m_EventBus;
+    }
+
+    const EventBus& Scene::GetEventBus() const
+    {
+        return m_EventBus;
+    }
+
+    PhysicsWorld2D& Scene::GetPhysicsWorld()
+    {
+        return m_PhysicsWorld;
+    }
+
+    const PhysicsWorld2D& Scene::GetPhysicsWorld() const
+    {
+        return m_PhysicsWorld;
     }
 }

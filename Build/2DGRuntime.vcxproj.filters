@@ -19,6 +19,12 @@
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Core\EngineTime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Events\EventBus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimationClip2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Graphics\Renderer2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -32,6 +38,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Input\Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Math\Transform2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Math\Bounds2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Scene\Scene.cpp">
@@ -50,6 +62,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Scene\TransformComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Scene\AnimatorComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\Collider2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\BoxCollider2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsWorld2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -72,6 +96,42 @@
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Core\EngineTime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Events\EventSubscription.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Events\EventBus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimationFrame2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimationClip2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\SpriteFrame2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimatorCondition2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimatorConditionMode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimatorParameter2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimatorParameterType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimatorState2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimatorTransition2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\AnimationEvent2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\Renderer2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -84,6 +144,12 @@
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\Camera2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\SortingLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\SpriteRegion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Input\Input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -94,6 +160,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Math\Color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Math\Transform2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Math\Bounds2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Scene\Scene.h">
@@ -112,6 +184,27 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Scene\TransformComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Scene\AnimatorComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CollisionLayer2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\Collider2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\BoxCollider2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CollisionEvents2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\ColliderPair2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsWorld2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

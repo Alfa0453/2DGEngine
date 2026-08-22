@@ -26,6 +26,14 @@ namespace Engine
 
         Vector2 GetRenderedSize() const;
 
+        void SetSourceRect(const Rect& source);
+
+        void ClearSourceRect();
+
+        bool HasSourceRect() const;
+
+        const Rect& GetSourceRect() const;
+
     public:
         Transform2D Transform;
 
@@ -36,5 +44,9 @@ namespace Engine
 
     private:
         Texture2D* m_Texture = nullptr;
+
+        Rect m_SourceRect;
+
+        bool m_HasSourceRect = false;
     };
 }

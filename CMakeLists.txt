@@ -43,6 +43,22 @@ add_executable(2DGRuntime
     Engine/Core/EngineTime.cpp
     Engine/Core/EngineTime.h
 
+    Engine/Events/EventSubscription.h
+    Engine/Events/EventBus.h
+    Engine/Events/EventBus.cpp
+
+    Engine/Graphics/AnimationFrame2D.h
+    Engine/Graphics/AnimationClip2D.cpp
+    Engine/Graphics/AnimationClip2D.h
+    Engine/Graphics/SpriteFrame2D.h
+    Engine/Graphics/AnimatorCondition2D.h
+    Engine/Graphics/AnimatorConditionMode.h
+    Engine/Graphics/AnimatorParameter2D.h
+    Engine/Graphics/AnimatorParameterType.h
+    Engine/Graphics/AnimatorState2D.h
+    Engine/Graphics/AnimatorTransition2D.h
+    Engine/Graphics/AnimationEvent2D.h
+
     Engine/Graphics/Renderer2D.cpp
     Engine/Graphics/Renderer2D.h
 
@@ -55,12 +71,22 @@ add_executable(2DGRuntime
     Engine/Graphics/Camera2D.cpp
     Engine/Graphics/Camera2D.h
 
+    Engine/Graphics/SortingLayer.h
+    Engine/Graphics/SpriteFrame2D.h
+    Engine/Graphics/SpriteRegion.h
+
     Engine/Input/Input.cpp
     Engine/Input/Input.h
 
     Engine/Math/Vector2.h
     Engine/Math/Rect.h
     Engine/Math/Color.h
+
+    Engine/Math/Transform2D.cpp
+    Engine/Math/Transform2D.h
+
+    Engine/Math/Bounds2D.cpp
+    Engine/Math/Bounds2D.h
 
     Engine/Scene/Scene.cpp
     Engine/Scene/Scene.h
@@ -79,15 +105,30 @@ add_executable(2DGRuntime
 
     Engine/Scene/TransformComponent.cpp
     Engine/Scene/TransformComponent.h
+
+    Engine/Scene/AnimatorComponent.cpp
+    Engine/Scene/AnimatorComponent.h
+
+    Engine/Physics/CollisionLayer2D.h
+    Engine/Physics/Collider2D.h
+    Engine/Physics/Collider2D.cpp
+    Engine/Physics/BoxCollider2D.h
+    Engine/Physics/BoxCollider2D.cpp
+    Engine/Physics/CollisionEvents2D.h
+    Engine/Physics/ColliderPair2D.h
+    Engine/Physics/PhysicsWorld2D.h
+    Engine/Physics/PhysicsWorld2D.cpp
 )
 
 target_include_directories(2DGRuntime
     PRIVATE
     Engine/Core
+    Engine/Events
     Engine/Graphics
     Engine/Input
     Engine/Math
     Engine/Scene
+    Engine/Physics
 
     Runtime/Game/Components
 )

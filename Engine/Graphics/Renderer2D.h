@@ -7,11 +7,22 @@
 #include "../Graphics/Sprite.h"
 #include "../Graphics/Camera2D.h"
 
+#include <cstddef>
+
 struct SDL_Renderer;
 struct SDL_Window;
 
 namespace Engine 
 {
+    struct RenderStats
+    {
+        std::size_t SubmittedSprites = 0;
+
+        std::size_t RenderedSprites = 0;
+
+        std::size_t CulledSprites = 0;
+    };
+
     class Renderer2D
     {
     public:
@@ -31,19 +42,33 @@ namespace Engine
 
         void DrawRect(const Rect& rect, const Color& color);
 
-        void DrawTexture(const Texture2D& texture, const Rect& destination);
+        void DrawTexture(const Texture2D& texture, const Rect& source, const Rect& destination);
 
         void DrawSprite(const Sprite& sprite);
 
         void SetCamera(Camera2D* camera);
 
+        const RenderStats& GetStats() const;
+
+        void ResetStats();
+
+        void NotifySpriteSubmitted();
+
+        void NotifySpriteRendered();
+
+        void NotifySpriteCulled();
+
         Camera2D* GetCamera() const;
 
         SDL_Renderer* GetNativeRenderer() const;
+
+        void DrawRectOutline(const Rect& rect, const Color& color);
 
     private:
         SDL_Renderer* m_Renderer = nullptr;
 
         Camera2D* m_Camera = nullptr;
+
+        RenderStats m_Stats;
     };
 }

@@ -1,9 +1,13 @@
 #include "Application.h"
 #include "../../Runtime/Game/Components/PlayerControllerComponent.h"
+#include "../Scene/AnimatorComponent.h"
+#include "../Physics/BoxCollider2D.h"
+#include "../Math/Bounds2D.h"
 
 #include <iostream>
 #include <SDL3/SDL.h>
 #include <memory>
+#include <cstdint>
 
 namespace Engine
 {
@@ -41,51 +45,260 @@ namespace Engine
             return false;
         }
 
+        m_PlayerIdleTexture.Load(m_Renderer.GetNativeRenderer(), "Content/Sprites/Right - Idle.png");
+
+        m_PlayerWalkTexture.Load(m_Renderer.GetNativeRenderer(), "Content/Sprites/Right - Walking.png");
+
+        m_PlayerRunTexture.Load(m_Renderer.GetNativeRenderer(), "Content/Sprites/Right - Running.png");
+
+        m_PlayerAttackTexture.Load(m_Renderer.GetNativeRenderer(), "Content/Sprites/Right - Attacking.png");
+
+        const Vector2 frameSize{480.0f, 480.0f};
+
+        // Idle clips
+        m_PlayerIdleClip.SetName("Idle");
+
+        m_PlayerIdleClip.SetFramesPerSecond(12.0f);
+
+        m_PlayerIdleClip.SetLooping(true);
+
+        for (std::int32_t row = 0; row < 4; ++row)
+        {
+            for (std::int32_t column = 0; column < 4; ++column)
+            {
+                m_PlayerIdleClip.AddFrame(&m_PlayerIdleTexture, SpriteRegion::FromGrid(column, row, frameSize));
+            }
+        }
+
+        // Walk
+        m_PlayerWalkClip.SetName("Walk");
+
+        m_PlayerWalkClip.SetFramesPerSecond(16.0f);
+
+        m_PlayerWalkClip.SetLooping(true);
+
+        for (std::int32_t row = 0; row < 5; ++row)
+        {
+            for (std::int32_t column = 0; column < 4; ++column)
+            {
+                m_PlayerWalkClip.AddFrame(&m_PlayerWalkTexture, SpriteRegion::FromGrid(column, row, frameSize));
+            }
+        }
+
+        // Run clip
+        m_PlayerRunClip.SetName("Run");
+
+        m_PlayerRunClip.SetFramesPerSecond(24.0f);
+
+        m_PlayerRunClip.SetLooping(true);
+
+        for (std::int32_t row = 0; row < 3; ++row)
+        {
+            for (std::int32_t column = 0; column < 4; ++column)
+            {
+                m_PlayerRunClip.AddFrame(&m_PlayerRunTexture, SpriteRegion::FromGrid(column, row, frameSize));
+            }
+        }
+
+        // Attack clip
+        m_PlayerAttackClip.SetName("Attack");
+
+        m_PlayerAttackClip.SetFramesPerSecond(24.0f);
+
+        m_PlayerAttackClip.SetLooping(false);
+
+        for (std::int32_t row = 0; row < 2; ++row)
+        {
+            for (std::int32_t column = 0; column < 5; ++column)
+            {
+                m_PlayerAttackClip.AddFrame(&m_PlayerAttackTexture, SpriteRegion::FromGrid(column, row, frameSize));
+            }
+        }
+
         m_Renderer.SetCamera(&m_Camera);
 
         m_Camera.SetPosition( {0.0f, 0.0f} );
 
         m_Camera.SetZoom(1.0f);
 
-        if (!m_TestTexture.Load(m_Renderer.GetNativeRenderer(), "Content/Sprites/Player.png"))
-        {
-            m_Renderer.Shutdown();
-
-            m_Window.Shutdown();
-
-            return false;
-        }
-
-        if (!m_CoinTexture.Load(m_Renderer.GetNativeRenderer(), "Content/Sprites/Coin.png"))
-        {
-            m_Renderer.Shutdown();
-
-            m_Window.Shutdown();
-
-            return false;
-        }
-
         m_Scene.SetName("TestScene");
 
-        Entity* player = m_Scene.CreateEntity("Player");
+        m_Player = m_Scene.CreateEntity("Player");
 
-        const EntityID playerID = player->GetID();
+        m_PlayerID = m_Player->GetID();
 
-        Entity* found = m_Scene.FindEntityByID(playerID);
+        m_Player->AddTag("Player");
 
-        if (found)
-        {
-            std::cout << "Found: " << found->GetName() << '\n';
-        }
+        m_PlayerHandle = m_Scene.CreateHandle(m_Player);
 
-        Entity* enemy = m_Scene.CreateEntity("Enemy");
+        TransformComponent* playerTransform = m_Player->AddComponent<TransformComponent>();
 
-        const EntityID enemyID = enemy->GetID();
+        playerTransform->SetLocalPosition({400.0f, 300.0f});
 
-        enemy->Destroy();
+        playerTransform->SetLocalScale({1.0f, 1.0f});
 
-        Entity* result = m_Scene.FindEntityByID(enemyID);
+        SpriteRendererComponent* playerSpriteRenderer = m_Player->AddComponent<SpriteRendererComponent>(&m_PlayerIdleTexture);
 
+        playerSpriteRenderer->SetSortingLayer(SortingLayer::Characters);
+
+        playerSpriteRenderer->SetOrderInLayer(0);
+
+        BoxCollider2D* playerCollider = m_Player->AddComponent<BoxCollider2D>(Vector2{270.0f, 390.0f});
+
+        playerCollider->SetOffset({0.0f, 6.0f});
+
+        playerCollider->SetLayer(CollisionLayer2D::Player);
+
+        playerCollider->SetMask(CollisionLayer2D::World | CollisionLayer2D::Enemy | CollisionLayer2D::Pickup);
+
+        AnimatorComponent* playerAnimator = m_Player->AddComponent<AnimatorComponent>();
+
+        playerAnimator->AddState("Idle", &m_PlayerIdleClip);
+
+        playerAnimator->AddState("Walk", &m_PlayerWalkClip);
+
+        playerAnimator->AddState("Run", &m_PlayerRunClip);
+
+        playerAnimator->AddState("Attack", &m_PlayerAttackClip);
+
+        // Parameters
+        playerAnimator->AddFloatParameter("Speed", 0.0f);
+
+        playerAnimator->AddBoolParameter("Running", false);
+
+        playerAnimator->AddTriggerParameter("Attack");
+
+        // Transitions
+        AnimatorTransition2D idleToWalk;
+
+        idleToWalk.FromState = "Idle";
+
+        idleToWalk.ToState = "Walk";
+
+        idleToWalk.Priority = 10;
+
+        idleToWalk.Conditions.push_back(AnimatorCondition2D::FloatGreater("Speed", 0.01f));
+
+        playerAnimator->AddTransition(idleToWalk);
+
+        AnimatorTransition2D walkToIdle;
+
+        walkToIdle.FromState = "Walk";
+
+        walkToIdle.ToState = "Idle";
+
+        walkToIdle.Priority = 10;
+
+        walkToIdle.Conditions.push_back(AnimatorCondition2D::FloatLessOrEqual("Speed", 0.01f));
+
+        playerAnimator->AddTransition(walkToIdle);
+
+        AnimatorTransition2D walkToRun;
+
+        walkToRun.FromState = "Walk";
+
+        walkToRun.ToState = "Run";
+
+        walkToRun.Priority = 10;
+
+        walkToRun.Conditions.push_back(AnimatorCondition2D::Bool("Running", true));
+
+        playerAnimator->AddTransition(walkToRun);
+
+        AnimatorTransition2D runToWalk;
+
+        runToWalk.FromState = "Run";
+
+        runToWalk.ToState = "Walk";
+
+        runToWalk.Priority = 10;
+
+        runToWalk.Conditions.push_back(AnimatorCondition2D::Bool("Running", false));
+
+        runToWalk.Conditions.push_back(AnimatorCondition2D::FloatGreater("Speed", 0.01f));
+
+        playerAnimator->AddTransition(runToWalk);
+
+        AnimatorTransition2D runToIdle;
+
+        runToIdle.FromState = "Run";
+
+        runToIdle.ToState = "Idle";
+
+        runToIdle.Priority = 10;
+
+        runToIdle.Conditions.push_back(AnimatorCondition2D::FloatLessOrEqual("Speed", 0.01f));
+
+        playerAnimator->AddTransition(runToIdle);
+
+        AnimatorTransition2D anyToAttack;
+
+        anyToAttack.FromState = AnimatorAnyState;
+
+        anyToAttack.ToState = "Attack";
+
+        anyToAttack.Priority = 50;
+
+        anyToAttack.Conditions.push_back(AnimatorCondition2D::Trigger("Attack"));
+
+        playerAnimator->AddTransition(anyToAttack);
+
+        AnimatorTransition2D attackToRun;
+
+        attackToRun.FromState = "Attack";
+
+        attackToRun.ToState = "Run";
+
+        attackToRun.HasExitTime = true;
+
+        attackToRun.ExiTime = 0.90f;
+
+        attackToRun.Priority = 20;
+
+        attackToRun.Conditions.push_back(AnimatorCondition2D::Bool("Running", true));
+
+        attackToRun.Conditions.push_back(AnimatorCondition2D::FloatGreater("Speed", 0.01f));
+
+        playerAnimator->AddTransition(attackToRun);
+
+        AnimatorTransition2D attackToWalk;
+
+        attackToWalk.FromState = "Attack";
+
+        attackToWalk.ToState = "Walk";
+
+        attackToWalk.HasExitTime = true;
+
+        attackToWalk.ExiTime = 0.85f;
+
+        attackToWalk.Priority = 20;
+
+        attackToWalk.Conditions.push_back(AnimatorCondition2D::Bool("Running", false));
+
+        attackToWalk.Conditions.push_back(AnimatorCondition2D::FloatGreater("Speed", 0.01f));
+
+        playerAnimator->AddTransition(attackToWalk);
+
+        AnimatorTransition2D attackToIdle;
+
+        attackToIdle.FromState = "Attack";
+
+        attackToIdle.ToState = "Idle";
+
+        attackToIdle.HasExitTime = true;
+
+        attackToIdle.ExiTime = 0.80f;
+
+        attackToIdle.Priority = 20;
+
+        attackToIdle.Conditions.push_back(AnimatorCondition2D::FloatLessOrEqual("Speed", 0.01f));
+
+        playerAnimator->AddTransition(attackToIdle);
+
+        playerAnimator->Play("Idle");
+
+        PlayerControllerComponent* controller = m_Player->AddComponent<PlayerControllerComponent>(&m_Input, 200.0f);
+        
         m_Scene.Start();
 
         m_Time.Initialize();
@@ -120,6 +333,14 @@ namespace Engine
 
             m_Scene.Render(m_Renderer);
 
+            Bounds2D cameraBounds = m_Camera.GetWorldBounds();
+
+            cameraBounds.Expand(64.0f);
+
+            Rect cameraRect(cameraBounds.Min, cameraBounds.GetSize());
+
+            m_Renderer.DrawRectOutline(cameraRect, Color::Green());
+
             m_Renderer.EndFrame();
         }
     }
@@ -148,9 +369,11 @@ namespace Engine
 
         m_Scene.Clear();
 
-        m_TestTexture.Unload();
+        m_PlayerIdleTexture.Unload();
 
-        m_CoinTexture.Unload();
+        m_PlayerRunTexture.Unload();
+
+        m_PlayerAttackTexture.Unload();
 
         m_Renderer.Shutdown();
 

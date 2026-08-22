@@ -1,7 +1,13 @@
 #pragma once
 
-#include "../Math/Color.h"
 #include "Component.h"
+
+#include "../Math/Color.h"
+#include "../Math/Bounds2D.h"
+#include "../Graphics/SortingLayer.h"
+#include "../Graphics/SpriteFrame2D.h"
+
+#include <cstdint>
 
 namespace Engine
 {
@@ -33,13 +39,43 @@ namespace Engine
 
         void Render(Renderer2D& renderer) const;
 
+        Bounds2D GetWorldBounds() const;
+
+        void SetSortingLayer(SortingLayer layer);
+
+        SortingLayer GetSortingLayer() const;
+
+        void SetOrderInLayer(std::int32_t order);
+
+        std::int32_t GetOrderInLayer() const;
+
+        void SetSpriteRegion(const SpriteRegion& region);
+
+        void SetSpriteFrame(const SpriteFrame2D& frame);
+
+        void ClearSpriteRegion();
+
+        bool HasSpriteRegion() const;
+
+        const SpriteRegion& GetSpriteRegion() const;
+
+        Vector2 GetBaseSpriteSize() const;
+
     private:
         Texture2D* m_Texture = nullptr;
 
         Color m_Tint = Color::White();
 
+        SortingLayer m_SortingLayer = SortingLayer::Environment;
+
+        std::int32_t m_OrderInLayer = 0;
+
         bool m_FlipX = false;
 
         bool m_FlipY = false;
+
+        SpriteRegion m_SpriteRegion;
+
+        bool m_UseSpriteRegion = false;
     };
 }
