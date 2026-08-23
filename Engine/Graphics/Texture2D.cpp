@@ -95,4 +95,38 @@ namespace Engine
     {
         return m_Texture != nullptr;
     }
+
+    bool Texture2D::CreateFromRGBA(SDL_Renderer* renderer, int width, int height, const std::uint8_t* pixels)
+    {
+        if (!renderer || !pixels || width <= 0 || height <= 0)
+        {
+            return false;
+        }
+
+        Unload();
+
+        SDL_Surface* surface = SDL_CreateSurfaceFrom(width, height, SDL_PIXELFORMAT_RGBA32, const_cast<std::uint8_t*>(pixels), width * 4);
+
+        if (!surface)
+        {
+            return false;
+        }
+
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+        SDL_DestroySurface(surface);
+
+        if (!texture)
+        {
+            return false;
+        }
+
+        m_Texture = texture;
+
+        m_Width = width;
+
+        m_Height = height;
+
+        return true;
+    }
 }

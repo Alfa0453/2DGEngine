@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
 
 #include "../Math/Vector2.h"
 
@@ -28,6 +29,8 @@ namespace Engine
         Vector2 GetSize() const;
 
         bool IsValid() const;
+
+        bool CreateFromRGBA(SDL_Renderer* renderer, int width, int height, const std::uint8_t* pixels);
 
     private:
         SDL_Texture* m_Texture = nullptr;

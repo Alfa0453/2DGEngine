@@ -1,6 +1,9 @@
 #pragma once
 
 #include "ColliderPair2D.h"
+#include "../Math/Vector2.h"
+#include "../Scene/TransformComponent.h"
+#include "Rigidbody2D.h"
 
 #include <unordered_set>
 #include <vector>
@@ -18,6 +21,8 @@ namespace Engine
         
         explicit PhysicsWorld2D(Scene* scene = nullptr);
 
+        void Update(float deltaTime);
+
         void SetScene(Scene* scene);
 
         Scene* GetScene() const;
@@ -28,9 +33,23 @@ namespace Engine
 
         std::size_t GetCurrentOverlapCount() const;
 
+        void SetGravity(const Vector2& gravity);
+
+        const Vector2& GetGravity() const;
+
+        void IntegrateBodies(float deltaTime);
+
+        void IntegrateEntityRecursive(Entity* entity, float deltaTime);
+
+        void IntegrateDynamicBody(Rigidbody2D& body, TransformComponent& transform, float deltaTime);
+
+        void IntegrateKinematicBody(Rigidbody2D& body, TransformComponent& transform, float deltaTime);
+
     private:
 
         void CollectColliders();
+
+        void CollectCollidersRecursive(Entity* entity);
 
         bool ShouldTestPair(Collider2D* a, Collider2D* b) const;
 
@@ -51,6 +70,14 @@ namespace Engine
     private:
         
         Scene* m_Scene = nullptr;
+
+        Vector2 m_Gravity{0.0f, 980.0f};
+
+        float m_FixedDeltaTime = 1.0f / 60.0f;
+
+        float m_Accumulator = 0.0f;
+
+        std::size_t m_MaxSubSteps = 8;
 
         std::vector<Collider2D*> m_ActiveColliders;
 

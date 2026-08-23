@@ -464,6 +464,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\Camera2D.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\SortingLayer.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\SpriteRegion.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\PrimitiveShape2D.h" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Graphics\PrimitiveTextureFactory2D.cpp" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Graphics\PrimitiveTextureFactory2D.h" />
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Input\Input.cpp" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Input\Input.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Math\Vector2.h" />
@@ -487,15 +490,20 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Scene\TransformComponent.h" />
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Scene\AnimatorComponent.cpp" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Scene\AnimatorComponent.h" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Scene\Primitive2DFactory.cpp" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Scene\Primitive2DFactory.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CollisionLayer2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CollisionEvents2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\ColliderPair2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\BodyType2D.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\Collider2D.h" />
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\Collider2D.cpp" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\BoxCollider2D.h" />
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\BoxCollider2D.cpp" />
-    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CollisionEvents2D.h" />
-    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\ColliderPair2D.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsWorld2D.h" />
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsWorld2D.cpp" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\Rigidbody2D.cpp" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\Rigidbody2D.h" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

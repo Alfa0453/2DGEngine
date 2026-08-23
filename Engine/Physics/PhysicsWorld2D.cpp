@@ -23,6 +23,27 @@ namespace Engine
         return m_Scene;
     }
 
+    void PhysicsWorld2D::Update(float deltaTime)
+    {
+        m_Accumulator += deltaTime;
+
+        std::size_t subSteps = 0;
+
+        while (m_Accumulator >= m_FixedDeltaTime && subSteps < m_MaxSubSteps)
+        {
+            Step(m_FixedDeltaTime);
+
+            m_Accumulator -= m_FixedDeltaTime;
+
+            ++subSteps;
+        }
+
+        if (subSteps == m_MaxSubSteps)
+        {
+            m_Accumulator = 0.0f;
+        }
+    }
+
     void PhysicsWorld2D::Step(float deltaTime)
     {
         (void)deltaTime;
@@ -31,6 +52,12 @@ namespace Engine
         {
             return;
         }
+
+        // -------------------------------
+        // Move physics bodies
+        // -------------------------------
+
+        IntegrateBodies(deltaTime);
 
         // ---------------------------------
         // Collect current colliders
@@ -113,28 +140,68 @@ namespace Engine
             return;
         }
 
-        for (Entity* entity : m_Scene->GetRootEntities())
+        for (Entity* root : m_Scene->GetRootEntities())
         {
-            if (!entity)
-            {
-                continue;
-            }
+            CollectCollidersRecursive(root);
+        }
+    }
 
-            BoxCollider2D* box = entity->GetComponent<BoxCollider2D>();
+    void PhysicsWorld2D::CollectCollidersRecursive(Entity* entity)
+    {
+        if (!entity)
+        {
+            return;
+        }
 
-            if (!box || !box->IsEnabled())
-            {
-                continue;
-            }
+        BoxCollider2D* box = entity->GetComponent<BoxCollider2D>();
 
+        if (box && box->IsEnabled())
+        {
             const Vector2& size = box->GetSize();
 
-            if (size.X <= 0.0f || size.Y <= 0.0f)
+            if (size.X > 0.0f && size.Y > 0.0f)
             {
-                continue;
+                m_ActiveColliders.push_back(box);
             }
+        }
 
-            m_ActiveColliders.push_back(box);
+        for (const EntityHandle& childHandle : entity->GetChildren())
+        {
+            CollectCollidersRecursive(childHandle.Get());
+        }
+    }
+
+    void PhysicsWorld2D::IntegrateEntityRecursive(Entity* entity, float deltaTime)
+    {
+        if (!entity)
+        {
+            return;
+        }
+
+        Rigidbody2D* body = entity->GetComponent<Rigidbody2D>();
+
+        TransformComponent* transform = entity->GetComponent<TransformComponent>();
+
+        if (body && transform)
+        {
+            switch (body->GetBodyType())
+            {
+                case BodyType2D::Static:
+                    break;
+
+                case BodyType2D::Kinematic:
+                    IntegrateKinematicBody(*body, *transform, deltaTime);
+                    break;
+
+                case BodyType2D::Dynamic:
+                    IntegrateDynamicBody(*body, *transform, deltaTime);
+                    break;
+            }
+        }
+
+        for (const EntityHandle& childHandle : entity->GetChildren())
+        {
+            IntegrateEntityRecursive(childHandle.Get(), deltaTime);
         }
     }
 
@@ -323,5 +390,80 @@ namespace Engine
     std::size_t PhysicsWorld2D::GetCurrentOverlapCount() const
     {
         return m_CurrentOverlaps.size();
+    }
+
+    void PhysicsWorld2D::SetGravity(const Vector2& gravity)
+    {
+        m_Gravity = gravity;
+    }
+
+    const Vector2& PhysicsWorld2D::GetGravity() const
+    {
+        return m_Gravity;
+    }
+
+    void PhysicsWorld2D::IntegrateDynamicBody(Rigidbody2D& body, TransformComponent& transform, float deltaTime)
+    {
+        // -------------------------------
+        // Force acceleration
+        // -------------------------------
+
+        Vector2 acceleration = body.GetAccumulatedForce() * body.GetInverseMass();
+
+        // -------------------------------
+        // Gravity
+        // -------------------------------
+
+        acceleration += m_Gravity * body.GetGravityScale();
+
+        // -------------------------------
+        // Update velocity
+        // -------------------------------
+
+        Vector2 velocity = body.GetVelocity();
+
+        velocity += acceleration * deltaTime;
+
+        // -------------------------------
+        // Linear damping
+        // -------------------------------
+
+        const float dampingFactor = 1.0f / (1.0f + body.GetLinearDamping() * deltaTime);
+
+        velocity *= dampingFactor;
+
+        body.SetVelocity(velocity);
+
+        // -------------------------------
+        // Move entity
+        // -------------------------------
+
+        transform.Translate(velocity * deltaTime);
+
+        // -------------------------------
+        // Forces last one step
+        // -------------------------------
+
+        body.ClearForces();
+    }
+
+    void PhysicsWorld2D::IntegrateKinematicBody(Rigidbody2D& body, TransformComponent& transform, float deltaTime)
+    {
+        transform.Translate(body.GetVelocity() * deltaTime);
+
+        body.ClearForces();
+    }
+
+    void PhysicsWorld2D::IntegrateBodies(float deltaTime)
+    {
+        if (!m_Scene)
+        {
+            return;
+        }
+
+        for (Entity* root : m_Scene->GetRootEntities())
+        {
+            IntegrateEntityRecursive(root, deltaTime);
+        }
     }
 }

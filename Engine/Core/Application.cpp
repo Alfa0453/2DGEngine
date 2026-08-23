@@ -3,6 +3,8 @@
 #include "../Scene/AnimatorComponent.h"
 #include "../Physics/BoxCollider2D.h"
 #include "../Math/Bounds2D.h"
+#include "../Scene/Primitive2DFactory.h"
+#include "../Graphics/PrimitiveTextureFactory2D.h"
 
 #include <iostream>
 #include <SDL3/SDL.h>
@@ -37,6 +39,15 @@ namespace Engine
         }
 
         if (!m_Renderer.Initialize(m_Window.GetNativeWindow()))
+        {
+            m_Window.Shutdown();
+
+            SDL_Quit();
+
+            return false;
+        }
+
+        if (!PrimitiveTextureFactory2D::Initialize(m_Renderer.GetNativeRenderer()))
         {
             m_Window.Shutdown();
 
@@ -298,6 +309,14 @@ namespace Engine
         playerAnimator->Play("Idle");
 
         PlayerControllerComponent* controller = m_Player->AddComponent<PlayerControllerComponent>(&m_Input, 200.0f);
+
+        Entity* floor = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Rectangle, {400.0f, 500.0f}, {600.0f, 40.0});
+
+        auto* floorCollider = floor->AddComponent<BoxCollider2D>(Vector2{600.0f, 40.0f});
+
+        auto* floorBody = floor->AddComponent<Rigidbody2D>();
+
+        floorBody->SetBodyType(BodyType2D::Static);
         
         m_Scene.Start();
 

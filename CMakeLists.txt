@@ -75,6 +75,11 @@ add_executable(2DGRuntime
     Engine/Graphics/SpriteFrame2D.h
     Engine/Graphics/SpriteRegion.h
 
+    Engine/Graphics/PrimitiveShape2D.h
+
+    Engine/Graphics/PrimitiveTextureFactory2D.cpp
+    Engine/Graphics/PrimitiveTextureFactory2D.h
+
     Engine/Input/Input.cpp
     Engine/Input/Input.h
 
@@ -109,15 +114,25 @@ add_executable(2DGRuntime
     Engine/Scene/AnimatorComponent.cpp
     Engine/Scene/AnimatorComponent.h
 
+    Engine/Scene/Primitive2DFactory.cpp
+    Engine/Scene/Primitive2DFactory.h
+
     Engine/Physics/CollisionLayer2D.h
-    Engine/Physics/Collider2D.h
-    Engine/Physics/Collider2D.cpp
-    Engine/Physics/BoxCollider2D.h
-    Engine/Physics/BoxCollider2D.cpp
     Engine/Physics/CollisionEvents2D.h
     Engine/Physics/ColliderPair2D.h
+    Engine/Physics/BodyType2D.h
+
+    Engine/Physics/Collider2D.h
+    Engine/Physics/Collider2D.cpp
+
+    Engine/Physics/BoxCollider2D.h
+    Engine/Physics/BoxCollider2D.cpp
+
     Engine/Physics/PhysicsWorld2D.h
     Engine/Physics/PhysicsWorld2D.cpp
+
+    Engine/Physics/Rigidbody2D.cpp
+    Engine/Physics/Rigidbody2D.h
 )
 
 target_include_directories(2DGRuntime

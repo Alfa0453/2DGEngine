@@ -252,7 +252,7 @@ namespace Engine
             }
         }
 
-        m_PhysicsWorld.Step(deltaTime);
+        m_PhysicsWorld.Update(deltaTime);
 
         m_IsUpdating = false;
 

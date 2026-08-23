@@ -10,6 +10,7 @@ D:\C++_Projects\2DGEngine\Engine\Graphics\Renderer2D.cpp;D:\C++_Projects\2DGEngi
 D:\C++_Projects\2DGEngine\Engine\Graphics\Texture2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Texture2D.obj
 D:\C++_Projects\2DGEngine\Engine\Graphics\Sprite.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Sprite.obj
 D:\C++_Projects\2DGEngine\Engine\Graphics\Camera2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Camera2D.obj
+D:\C++_Projects\2DGEngine\Engine\Graphics\PrimitiveTextureFactory2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\PrimitiveTextureFactory2D.obj
 D:\C++_Projects\2DGEngine\Engine\Input\Input.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Input.obj
 D:\C++_Projects\2DGEngine\Engine\Math\Transform2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Transform2D.obj
 D:\C++_Projects\2DGEngine\Engine\Math\Bounds2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Bounds2D.obj
@@ -20,6 +21,8 @@ D:\C++_Projects\2DGEngine\Engine\Scene\EntityHandle.cpp;D:\C++_Projects\2DGEngin
 D:\C++_Projects\2DGEngine\Engine\Scene\SpriteRendererComponent.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\SpriteRendererComponent.obj
 D:\C++_Projects\2DGEngine\Engine\Scene\TransformComponent.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\TransformComponent.obj
 D:\C++_Projects\2DGEngine\Engine\Scene\AnimatorComponent.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\AnimatorComponent.obj
+D:\C++_Projects\2DGEngine\Engine\Scene\Primitive2DFactory.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Primitive2DFactory.obj
 D:\C++_Projects\2DGEngine\Engine\Physics\Collider2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Collider2D.obj
 D:\C++_Projects\2DGEngine\Engine\Physics\BoxCollider2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\BoxCollider2D.obj
 D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsWorld2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\PhysicsWorld2D.obj
+D:\C++_Projects\2DGEngine\Engine\Physics\Rigidbody2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Rigidbody2D.obj
