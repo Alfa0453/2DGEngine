@@ -38,4 +38,15 @@ namespace Engine
 
         bool WasTrigger = false;
     };
+
+    struct SweptTriggerEvent2D
+    {
+        EntityHandle A;
+        EntityHandle B;
+
+        Collider2D* ColliderA = nullptr;
+        Collider2D* ColliderB = nullptr;
+
+        float TimeOfImpact = 0.0f;
+    };
 }

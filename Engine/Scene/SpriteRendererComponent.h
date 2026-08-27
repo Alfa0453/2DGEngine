@@ -37,6 +37,14 @@ namespace Engine
 
         bool GetFlipY() const;
 
+        void SetSize(const Vector2& size);
+
+        const Vector2& GetSize() const;
+
+        void ClearSize();
+
+        bool HasCustomSize() const;
+
         void Render(Renderer2D& renderer) const;
 
         Bounds2D GetWorldBounds() const;
@@ -77,5 +85,9 @@ namespace Engine
         SpriteRegion m_SpriteRegion;
 
         bool m_UseSpriteRegion = false;
+
+        Vector2 m_Size{0.0f, 0.0f};
+
+        bool m_UseCustomSize = false;
     };
 }

@@ -1,11 +1,15 @@
 #pragma once
 
 #include "BodyType2D.h"
+#include "CollisionDetectionMode2D.h"
+
 #include "../Scene/Component.h"
 #include "../Math/Vector2.h"
 
 namespace Engine
 {
+    class PhysicsWorld2D;
+
     class Rigidbody2D : public Component
     {
     public:
@@ -50,9 +54,39 @@ namespace Engine
 
         bool IsDynamic() const;
 
+        bool IsSleeping() const;
+
+        bool CanSleep() const;
+
+        void SetAllowSleep(bool allowSleep);
+
+        void Sleep();
+
+        void Wake();
+
+        float GetSleepTimer() const;
+
+        void SetCollisionDetectionMode(CollisionDetectionMode2D mode);
+
+        CollisionDetectionMode2D GetCollisionDetectionMode() const;
+
+        void SetPreviousPosition(const Vector2& position);
+
+        const Vector2& GetPreviousPosition() const;
+
+    protected:
+
+        friend class PhysicsWorld2D;
+
     private:
         
         void RecalculateInverseMass();
+
+        void SetVelocityFromPhysics(const Vector2& velocity);
+
+        void AddSleepTime(float deltaTime);
+
+        void ResetSleepTimer();
 
     private:
 
@@ -69,5 +103,15 @@ namespace Engine
         float m_GravityScale = 1.0f;
 
         float m_LinearDamping = 0.0f;
+
+        bool m_AllowSleep = true;
+
+        bool m_IsSleeping = false;
+
+        float m_SleepTimer = 0.0f;
+
+        CollisionDetectionMode2D m_CollisionDetectionMode = CollisionDetectionMode2D::Discrete;
+
+        Vector2 m_PreviousPosition{0.0f, 0.0f};
     };
 }

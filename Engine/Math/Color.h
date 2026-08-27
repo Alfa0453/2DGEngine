@@ -42,6 +42,21 @@ namespace Engine
             return {0, 0, 255, 255};
         }
 
+        static Color Yellow()
+        {
+            return {255, 255, 0, 255};
+        }
+
+        static Color Cyan()
+        {
+            return {0, 255, 255, 255};
+        }
+
+        static Color Gray()
+        {
+            return {128, 128, 128, 255};
+        }
+
         static Color Transparent()
         {
             return {0, 0, 0, 0};

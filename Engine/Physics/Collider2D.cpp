@@ -44,7 +44,14 @@ namespace Engine
 
     void Collider2D::SetEnabled(bool enabled)
     {
+        if (m_IsEnabled == enabled)
+        {
+            return;
+        }
+
         m_IsEnabled = enabled;
+
+        MarkBoundsDirty();
     }
 
     bool Collider2D::IsEnabled() const
@@ -64,5 +71,37 @@ namespace Engine
         const bool otherWantsThis = (other.m_Mask & m_Layer) != 0;
 
         return thisWantsOther && otherWantsThis;
+    }
+
+    void Collider2D::SetPhysicsMaterial(const PhysicsMaterial2D& material)
+    {
+        m_PhysicsMaterial = material;
+
+        m_PhysicsMaterial.Clamp();
+    }
+
+    const PhysicsMaterial2D& Collider2D::GetPhysicsMaterial() const
+    {
+        return m_PhysicsMaterial;
+    }
+
+    PhysicsMaterial2D& Collider2D::GetPhysicsMaterial()
+    {
+        return m_PhysicsMaterial;
+    }
+
+    std::uint64_t Collider2D::GetBoundsRevision() const
+    {
+        return m_BoundsRevision;
+    }
+
+    void Collider2D::MarkBoundsDirty()
+    {
+        ++m_BoundsRevision;
+
+        if (m_BoundsRevision == 0)
+        {
+            m_BoundsRevision = 1;
+        }
     }
 }

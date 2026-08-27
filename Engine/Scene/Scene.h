@@ -20,7 +20,7 @@ namespace Engine
     class Scene
     {
     public:
-        Scene() = default;
+        Scene();
 
         explicit Scene(const std::string& name);
 

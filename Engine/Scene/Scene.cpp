@@ -24,6 +24,11 @@ namespace
 
 namespace Engine
 {
+    Scene::Scene()
+        : Scene("Scene")
+    {
+    }
+
     Scene::Scene(const std::string& name)
         : m_Name(name), m_PhysicsWorld(this)
     {

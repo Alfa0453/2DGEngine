@@ -8,6 +8,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <algorithm>
 
 namespace Engine
 {
@@ -82,6 +83,8 @@ namespace Engine
 
         sprite.Transform = transform->GetWorldTransform();
 
+        sprite.Size = GetBaseSpriteSize();
+
         sprite.Tint = m_Tint;
 
         sprite.FlipX = m_FlipX;
@@ -132,24 +135,30 @@ namespace Engine
             baseSize.Y * std::abs(world.Scale.Y)
         };
 
-        const Vector2 center = world.Position + renderedSize * 0.5f;
+        const Vector2 center = world.Position;
+
+        const Vector2 half = renderedSize * 0.5f;
 
         Vector2 corners[4]
         {
-            world.Position,
-
             {
-                world.Position.X + renderedSize.X,
-
-                world.Position.Y
+                center.X - half.X,
+                center.Y - half.Y
             },
 
-            world.Position + renderedSize,
+            {
+                center.X + half.X,
+                center.Y - half.Y
+            },
 
             {
-                world.Position.X,
+                center.X + half.X,
+                center.Y + half.Y
+            },
 
-                world.Position.Y + renderedSize.Y
+            {
+                center.X - half.X,
+                center.Y + half.Y
             }
         };
 
@@ -226,6 +235,11 @@ namespace Engine
 
     Vector2 SpriteRendererComponent::GetBaseSpriteSize() const
     {
+        if (m_UseCustomSize)
+        {
+            return m_Size;
+        }
+
         if (m_UseSpriteRegion)
         {
             return m_SpriteRegion.GetSize();
@@ -237,5 +251,29 @@ namespace Engine
         }
 
         return{ 0.0f, 0.0f };
+    }
+
+    void SpriteRendererComponent::SetSize(const Vector2& size)
+    {
+        m_Size.X = std::max(0.0f, size.X);
+
+        m_Size.Y = std::max(0.0f, size.Y);
+
+        m_UseCustomSize = true;
+    }
+
+    const Vector2& SpriteRendererComponent::GetSize() const
+    {
+        return m_Size;
+    }
+
+    void SpriteRendererComponent::ClearSize()
+    {
+        m_UseCustomSize = false;
+    }
+
+    bool SpriteRendererComponent::HasCustomSize() const
+    {
+        return m_UseCustomSize;
     }
 }

@@ -46,6 +46,8 @@ namespace Engine
 
         void DrawSprite(const Sprite& sprite);
 
+        void DrawLine(const Vector2& start, const Vector2& end, const Color& color);
+
         void SetCamera(Camera2D* camera);
 
         const RenderStats& GetStats() const;

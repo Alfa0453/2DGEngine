@@ -73,10 +73,16 @@
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Scene\Primitive2DFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsDebugRenderer2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\Collider2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\BoxCollider2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\CircleCollider2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsWorld2D.cpp">
@@ -219,16 +225,64 @@
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\BodyType2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\SpatialCell2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\SweptAABBHit2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CollisionDetectionMode2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsDebugRenderer2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsDebugStatus2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\SweepHit2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsQueryFilter2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsQueryContext2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\ShapeCastHit2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\OverlapHit2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\RaycastHit2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\OrientedBox2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\BroadPhaseProxy2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\Collider2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\BoxCollider2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CircleCollider2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsWorld2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\Rigidbody2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CollisionManifold2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsMaterial2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

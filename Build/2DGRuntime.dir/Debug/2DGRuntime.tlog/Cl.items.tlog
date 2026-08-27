@@ -22,7 +22,9 @@ D:\C++_Projects\2DGEngine\Engine\Scene\SpriteRendererComponent.cpp;D:\C++_Projec
 D:\C++_Projects\2DGEngine\Engine\Scene\TransformComponent.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\TransformComponent.obj
 D:\C++_Projects\2DGEngine\Engine\Scene\AnimatorComponent.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\AnimatorComponent.obj
 D:\C++_Projects\2DGEngine\Engine\Scene\Primitive2DFactory.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Primitive2DFactory.obj
+D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsDebugRenderer2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\PhysicsDebugRenderer2D.obj
 D:\C++_Projects\2DGEngine\Engine\Physics\Collider2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Collider2D.obj
 D:\C++_Projects\2DGEngine\Engine\Physics\BoxCollider2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\BoxCollider2D.obj
+D:\C++_Projects\2DGEngine\Engine\Physics\CircleCollider2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\CircleCollider2D.obj
 D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsWorld2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\PhysicsWorld2D.obj
 D:\C++_Projects\2DGEngine\Engine\Physics\Rigidbody2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Rigidbody2D.obj

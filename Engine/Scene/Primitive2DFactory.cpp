@@ -13,14 +13,10 @@ namespace Engine
 {
     Entity* Primitive2DFactory::Create(Scene &scene, PrimitiveShape2D shape, const Vector2 &position, const Vector2 &size)
     {
-        std::cout << "Primitive2DFactory: Creating primitive object...\n";
-
         Texture2D* texture = PrimitiveTextureFactory2D::GetTexture(shape);
 
         if (!texture)
         {
-            std::cout << "Primitive2DFactory: texture is null\n";
-
             return nullptr;
         }
 
@@ -28,8 +24,6 @@ namespace Engine
 
         if (!entity)
         {
-            std::cout << "Primitive2DFactory: entity is null\n";
-
             return nullptr;
         }
 
@@ -44,21 +38,11 @@ namespace Engine
 
         transform->SetLocalPosition(position);
 
+        transform->SetLocalScale({1.0f, 1.0f});
+
         sprite->SetTexture(texture);
 
-        const Vector2 textureSize{
-            static_cast<float>(texture->GetWidth()),
-            static_cast<float>(texture->GetHeight())
-        };
-
-        transform->SetLocalScale(
-            {
-                size.X / textureSize.X,
-                size.Y / textureSize.Y
-            }
-        );
-
-        std::cout << "Primitive Object created\n";
+        sprite->SetSize(size);
 
         return entity;
     }

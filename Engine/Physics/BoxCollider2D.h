@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Collider2D.h"
+#include "OrientedBox2D.h"
+
 #include "../Math/Vector2.h"
 
 namespace Engine
@@ -22,6 +24,12 @@ namespace Engine
         const Vector2& GetOffset() const;
 
         Bounds2D GetWorldBounds() const override;
+
+        OrientedBox2D GetWorldOrientedBox() const;
+
+        Vector2 GetWorldCenter() const;
+
+        Vector2 GetWorldHalfExtents() const;
 
     private:
 

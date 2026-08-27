@@ -2,9 +2,11 @@
 #include "../../Runtime/Game/Components/PlayerControllerComponent.h"
 #include "../Scene/AnimatorComponent.h"
 #include "../Physics/BoxCollider2D.h"
+#include "../Physics/CircleCollider2D.h"
 #include "../Math/Bounds2D.h"
 #include "../Scene/Primitive2DFactory.h"
 #include "../Graphics/PrimitiveTextureFactory2D.h"
+#include "../Physics/PhysicsMaterial2D.h"
 
 #include <iostream>
 #include <SDL3/SDL.h>
@@ -56,76 +58,6 @@ namespace Engine
             return false;
         }
 
-        m_PlayerIdleTexture.Load(m_Renderer.GetNativeRenderer(), "Content/Sprites/Right - Idle.png");
-
-        m_PlayerWalkTexture.Load(m_Renderer.GetNativeRenderer(), "Content/Sprites/Right - Walking.png");
-
-        m_PlayerRunTexture.Load(m_Renderer.GetNativeRenderer(), "Content/Sprites/Right - Running.png");
-
-        m_PlayerAttackTexture.Load(m_Renderer.GetNativeRenderer(), "Content/Sprites/Right - Attacking.png");
-
-        const Vector2 frameSize{480.0f, 480.0f};
-
-        // Idle clips
-        m_PlayerIdleClip.SetName("Idle");
-
-        m_PlayerIdleClip.SetFramesPerSecond(12.0f);
-
-        m_PlayerIdleClip.SetLooping(true);
-
-        for (std::int32_t row = 0; row < 4; ++row)
-        {
-            for (std::int32_t column = 0; column < 4; ++column)
-            {
-                m_PlayerIdleClip.AddFrame(&m_PlayerIdleTexture, SpriteRegion::FromGrid(column, row, frameSize));
-            }
-        }
-
-        // Walk
-        m_PlayerWalkClip.SetName("Walk");
-
-        m_PlayerWalkClip.SetFramesPerSecond(16.0f);
-
-        m_PlayerWalkClip.SetLooping(true);
-
-        for (std::int32_t row = 0; row < 5; ++row)
-        {
-            for (std::int32_t column = 0; column < 4; ++column)
-            {
-                m_PlayerWalkClip.AddFrame(&m_PlayerWalkTexture, SpriteRegion::FromGrid(column, row, frameSize));
-            }
-        }
-
-        // Run clip
-        m_PlayerRunClip.SetName("Run");
-
-        m_PlayerRunClip.SetFramesPerSecond(24.0f);
-
-        m_PlayerRunClip.SetLooping(true);
-
-        for (std::int32_t row = 0; row < 3; ++row)
-        {
-            for (std::int32_t column = 0; column < 4; ++column)
-            {
-                m_PlayerRunClip.AddFrame(&m_PlayerRunTexture, SpriteRegion::FromGrid(column, row, frameSize));
-            }
-        }
-
-        // Attack clip
-        m_PlayerAttackClip.SetName("Attack");
-
-        m_PlayerAttackClip.SetFramesPerSecond(24.0f);
-
-        m_PlayerAttackClip.SetLooping(false);
-
-        for (std::int32_t row = 0; row < 2; ++row)
-        {
-            for (std::int32_t column = 0; column < 5; ++column)
-            {
-                m_PlayerAttackClip.AddFrame(&m_PlayerAttackTexture, SpriteRegion::FromGrid(column, row, frameSize));
-            }
-        }
-
         m_Renderer.SetCamera(&m_Camera);
 
         m_Camera.SetPosition( {0.0f, 0.0f} );
@@ -134,189 +66,75 @@ namespace Engine
 
         m_Scene.SetName("TestScene");
 
-        m_Player = m_Scene.CreateEntity("Player");
+        // Stone material
+        PhysicsMaterial2D stone;
 
-        m_PlayerID = m_Player->GetID();
+        stone.Restitution = 0.0f;
 
-        m_Player->AddTag("Player");
+        stone.StaticFriction = 0.7f;
 
-        m_PlayerHandle = m_Scene.CreateHandle(m_Player);
+        stone.DynamicFriction = 0.5f;
 
-        TransformComponent* playerTransform = m_Player->AddComponent<TransformComponent>();
+        // Ice material
+        PhysicsMaterial2D ice;
 
-        playerTransform->SetLocalPosition({400.0f, 300.0f});
+        ice.Restitution = 0.0f;
 
-        playerTransform->SetLocalScale({1.0f, 1.0f});
+        ice.StaticFriction = 0.05f;
 
-        SpriteRendererComponent* playerSpriteRenderer = m_Player->AddComponent<SpriteRendererComponent>(&m_PlayerIdleTexture);
+        ice.DynamicFriction = 0.02f;
 
-        playerSpriteRenderer->SetSortingLayer(SortingLayer::Characters);
+        // Rubber
+        PhysicsMaterial2D rubber;
 
-        playerSpriteRenderer->SetOrderInLayer(0);
+        rubber.Restitution = 0.8f;
 
-        BoxCollider2D* playerCollider = m_Player->AddComponent<BoxCollider2D>(Vector2{270.0f, 390.0f});
+        rubber.StaticFriction = 0.9f;
 
-        playerCollider->SetOffset({0.0f, 6.0f});
+        rubber.DynamicFriction = 0.7f;
 
-        playerCollider->SetLayer(CollisionLayer2D::Player);
+        Entity* wall = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Rectangle, {800.0f, 300.0f}, {10.0f, 300.0f});
 
-        playerCollider->SetMask(CollisionLayer2D::World | CollisionLayer2D::Enemy | CollisionLayer2D::Pickup);
+        wall->AddComponent<BoxCollider2D>(Vector2{10.0f, 300.0f});
 
-        AnimatorComponent* playerAnimator = m_Player->AddComponent<AnimatorComponent>();
+        auto* wallBody = wall->AddComponent<Rigidbody2D>();
 
-        playerAnimator->AddState("Idle", &m_PlayerIdleClip);
+        wallBody->SetBodyType(BodyType2D::Static);
 
-        playerAnimator->AddState("Walk", &m_PlayerWalkClip);
+        Entity* wall2 = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Rectangle, {200.0f, 300.0f}, {10.0f, 300.0f});
 
-        playerAnimator->AddState("Run", &m_PlayerRunClip);
+        wall2->AddComponent<BoxCollider2D>(Vector2{10.0f, 300.0f});
 
-        playerAnimator->AddState("Attack", &m_PlayerAttackClip);
+        auto* wall2Body = wall2->AddComponent<Rigidbody2D>();
 
-        // Parameters
-        playerAnimator->AddFloatParameter("Speed", 0.0f);
+        wall2Body->SetBodyType(BodyType2D::Static);
 
-        playerAnimator->AddBoolParameter("Running", false);
 
-        playerAnimator->AddTriggerParameter("Attack");
+        Entity* projectile = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Circle, {400.0f, 300.0f}, {20.0f, 20.0f});
 
-        // Transitions
-        AnimatorTransition2D idleToWalk;
+        auto* projectileCollider = projectile->AddComponent<CircleCollider2D>(20.0f);
 
-        idleToWalk.FromState = "Idle";
+        projectileCollider->SetPhysicsMaterial(rubber);
 
-        idleToWalk.ToState = "Walk";
+        auto* body = projectile->AddComponent<Rigidbody2D>();
 
-        idleToWalk.Priority = 10;
+        body->SetBodyType(BodyType2D::Dynamic);
 
-        idleToWalk.Conditions.push_back(AnimatorCondition2D::FloatGreater("Speed", 0.01f));
+        body->SetGravityScale(0.0f);
 
-        playerAnimator->AddTransition(idleToWalk);
+        body->SetCollisionDetectionMode(CollisionDetectionMode2D::Continuous);
 
-        AnimatorTransition2D walkToIdle;
+        body->SetVelocity({2500.0f, 0.0f});
 
-        walkToIdle.FromState = "Walk";
+        m_PhysicsDebugRenderer.SetDrawColliders(true);
 
-        walkToIdle.ToState = "Idle";
+        m_PhysicsDebugRenderer.SetDrawAABBs(true);
 
-        walkToIdle.Priority = 10;
+        m_PhysicsDebugRenderer.SetDrawSpatialGrid(true);
 
-        walkToIdle.Conditions.push_back(AnimatorCondition2D::FloatLessOrEqual("Speed", 0.01f));
+        m_PhysicsDebugRenderer.SetDrawContacts(true);
 
-        playerAnimator->AddTransition(walkToIdle);
-
-        AnimatorTransition2D walkToRun;
-
-        walkToRun.FromState = "Walk";
-
-        walkToRun.ToState = "Run";
-
-        walkToRun.Priority = 10;
-
-        walkToRun.Conditions.push_back(AnimatorCondition2D::Bool("Running", true));
-
-        playerAnimator->AddTransition(walkToRun);
-
-        AnimatorTransition2D runToWalk;
-
-        runToWalk.FromState = "Run";
-
-        runToWalk.ToState = "Walk";
-
-        runToWalk.Priority = 10;
-
-        runToWalk.Conditions.push_back(AnimatorCondition2D::Bool("Running", false));
-
-        runToWalk.Conditions.push_back(AnimatorCondition2D::FloatGreater("Speed", 0.01f));
-
-        playerAnimator->AddTransition(runToWalk);
-
-        AnimatorTransition2D runToIdle;
-
-        runToIdle.FromState = "Run";
-
-        runToIdle.ToState = "Idle";
-
-        runToIdle.Priority = 10;
-
-        runToIdle.Conditions.push_back(AnimatorCondition2D::FloatLessOrEqual("Speed", 0.01f));
-
-        playerAnimator->AddTransition(runToIdle);
-
-        AnimatorTransition2D anyToAttack;
-
-        anyToAttack.FromState = AnimatorAnyState;
-
-        anyToAttack.ToState = "Attack";
-
-        anyToAttack.Priority = 50;
-
-        anyToAttack.Conditions.push_back(AnimatorCondition2D::Trigger("Attack"));
-
-        playerAnimator->AddTransition(anyToAttack);
-
-        AnimatorTransition2D attackToRun;
-
-        attackToRun.FromState = "Attack";
-
-        attackToRun.ToState = "Run";
-
-        attackToRun.HasExitTime = true;
-
-        attackToRun.ExiTime = 0.90f;
-
-        attackToRun.Priority = 20;
-
-        attackToRun.Conditions.push_back(AnimatorCondition2D::Bool("Running", true));
-
-        attackToRun.Conditions.push_back(AnimatorCondition2D::FloatGreater("Speed", 0.01f));
-
-        playerAnimator->AddTransition(attackToRun);
-
-        AnimatorTransition2D attackToWalk;
-
-        attackToWalk.FromState = "Attack";
-
-        attackToWalk.ToState = "Walk";
-
-        attackToWalk.HasExitTime = true;
-
-        attackToWalk.ExiTime = 0.85f;
-
-        attackToWalk.Priority = 20;
-
-        attackToWalk.Conditions.push_back(AnimatorCondition2D::Bool("Running", false));
-
-        attackToWalk.Conditions.push_back(AnimatorCondition2D::FloatGreater("Speed", 0.01f));
-
-        playerAnimator->AddTransition(attackToWalk);
-
-        AnimatorTransition2D attackToIdle;
-
-        attackToIdle.FromState = "Attack";
-
-        attackToIdle.ToState = "Idle";
-
-        attackToIdle.HasExitTime = true;
-
-        attackToIdle.ExiTime = 0.80f;
-
-        attackToIdle.Priority = 20;
-
-        attackToIdle.Conditions.push_back(AnimatorCondition2D::FloatLessOrEqual("Speed", 0.01f));
-
-        playerAnimator->AddTransition(attackToIdle);
-
-        playerAnimator->Play("Idle");
-
-        PlayerControllerComponent* controller = m_Player->AddComponent<PlayerControllerComponent>(&m_Input, 200.0f);
-
-        Entity* floor = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Rectangle, {400.0f, 500.0f}, {600.0f, 40.0});
-
-        auto* floorCollider = floor->AddComponent<BoxCollider2D>(Vector2{600.0f, 40.0f});
-
-        auto* floorBody = floor->AddComponent<Rigidbody2D>();
-
-        floorBody->SetBodyType(BodyType2D::Static);
+        m_PhysicsDebugRenderer.SetDrawSleepingState(true);
         
         m_Scene.Start();
 
@@ -352,9 +170,9 @@ namespace Engine
 
             m_Scene.Render(m_Renderer);
 
-            Bounds2D cameraBounds = m_Camera.GetWorldBounds();
+            m_PhysicsDebugRenderer.Draw(m_Scene, m_Renderer);
 
-            cameraBounds.Expand(64.0f);
+            Bounds2D cameraBounds = m_Camera.GetWorldBounds();
 
             Rect cameraRect(cameraBounds.Min, cameraBounds.GetSize());
 
@@ -387,6 +205,8 @@ namespace Engine
         m_IsRunning = false;
 
         m_Scene.Clear();
+
+        PrimitiveTextureFactory2D::Shutdown();
 
         m_PlayerIdleTexture.Unload();
 

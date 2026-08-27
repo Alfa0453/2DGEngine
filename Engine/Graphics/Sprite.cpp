@@ -28,6 +28,11 @@ namespace Engine
 
     Vector2 Sprite::GetBaseSize() const
     {
+        if (Size.X > 0.0f && Size.Y > 0.0f)
+        {
+            return Size;
+        }
+
         if (m_HasSourceRect)
         {
             return m_SourceRect.Size;

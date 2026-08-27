@@ -2,6 +2,7 @@
 
 #include "CollisionLayer2D.h"
 #include "../Scene/Component.h"
+#include "PhysicsMaterial2D.h"
 
 namespace Engine
 {
@@ -9,7 +10,8 @@ namespace Engine
 
     enum class ColliderShape2D
     {
-        Box
+        Box,
+        Circle
     };
 
     class Collider2D : public Component
@@ -42,6 +44,18 @@ namespace Engine
 
         virtual Bounds2D GetWorldBounds() const = 0;
 
+        void SetPhysicsMaterial(const PhysicsMaterial2D& material);
+
+        const PhysicsMaterial2D& GetPhysicsMaterial() const;
+
+        PhysicsMaterial2D& GetPhysicsMaterial();
+
+        std::uint64_t GetBoundsRevision() const;
+
+    protected:
+
+        void MarkBoundsDirty();
+
     private:
         
         ColliderShape2D m_Shape;
@@ -53,5 +67,9 @@ namespace Engine
         bool m_IsTrigger = false;
 
         bool m_IsEnabled = true;
+
+        PhysicsMaterial2D m_PhysicsMaterial;
+
+        std::uint64_t m_BoundsRevision = 1;
     };
 }

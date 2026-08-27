@@ -37,6 +37,8 @@ namespace Engine
     public:
         Transform2D Transform;
 
+        Vector2 Size{0.0f, 0.0f};
+
         Color Tint = Color::White();
 
         bool FlipX = false;

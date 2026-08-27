@@ -122,21 +122,47 @@ add_executable(2DGRuntime
     Engine/Physics/ColliderPair2D.h
     Engine/Physics/BodyType2D.h
 
+    Engine/Physics/SpatialCell2D.h
+    Engine/Physics/SweptAABBHit2D.h
+    Engine/Physics/CollisionDetectionMode2D.h
+
+    Engine/Physics/PhysicsDebugRenderer2D.cpp
+    Engine/Physics/PhysicsDebugRenderer2D.h
+    Engine/Physics/PhysicsDebugStatus2D.h
+
+    Engine/Physics/SweepHit2D.h
+    Engine/Physics/PhysicsQueryFilter2D.h
+    Engine/Physics/PhysicsQueryContext2D.h
+    
+    Engine/Physics/ShapeCastHit2D.h
+    Engine/Physics/OverlapHit2D.h
+    Engine/Physics/RaycastHit2D.h
+
+    Engine/Physics/OrientedBox2D.h
+    Engine/Physics/BroadPhaseProxy2D.h
+
     Engine/Physics/Collider2D.h
     Engine/Physics/Collider2D.cpp
 
     Engine/Physics/BoxCollider2D.h
     Engine/Physics/BoxCollider2D.cpp
 
+    Engine/Physics/CircleCollider2D.cpp
+    Engine/Physics/CircleCollider2D.h
+
     Engine/Physics/PhysicsWorld2D.h
     Engine/Physics/PhysicsWorld2D.cpp
 
     Engine/Physics/Rigidbody2D.cpp
     Engine/Physics/Rigidbody2D.h
+
+    Engine/Physics/CollisionManifold2D.h
+    Engine/Physics/PhysicsMaterial2D.h
 )
 
 target_include_directories(2DGRuntime
     PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
     Engine/Core
     Engine/Events
     Engine/Graphics

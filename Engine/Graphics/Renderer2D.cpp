@@ -188,6 +188,11 @@ namespace Engine
 
         Vector2 size = sprite.GetRenderedSize();
 
+        if (size.X <= 0.0f || size.Y <= 0.0f)
+        {
+            return;
+        }
+
         if (m_Camera)
         {
             position = m_Camera->WorldToScreen(position);
@@ -195,10 +200,17 @@ namespace Engine
             size *= m_Camera->GetZoom();
         }
 
+        const Vector2 topLeft
+        {
+            position.X - size.X * 0.5f,
+            position.Y - size.Y * 0.5f
+        };
+
+
         SDL_FRect destination
         {
-            position.X,
-            position.Y,
+            topLeft.X,
+            topLeft.Y,
             size.X,
             size.Y
         };
@@ -319,5 +331,40 @@ namespace Engine
     const RenderStats& Renderer2D::GetStats() const
     {
         return m_Stats;
+    }
+
+    void Renderer2D::DrawLine(const Vector2& start, const Vector2& end, const Color& color)
+    {
+        if (!m_Renderer)
+        {
+            return;
+        }
+
+        Vector2 screenStart = start;
+
+        Vector2 screenEnd = end;
+
+        if (m_Camera)
+        {
+            screenStart = m_Camera->WorldToScreen(start);
+
+            screenEnd = m_Camera->WorldToScreen(end);
+        }
+
+        SDL_SetRenderDrawColor(
+            m_Renderer,
+            color.R,
+            color.G,
+            color.B,
+            color.A
+        );
+
+        SDL_RenderLine(
+            m_Renderer,
+            screenStart.X,
+            screenStart.Y,
+            screenEnd.X,
+            screenEnd.Y
+        );
     }
 }

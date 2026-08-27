@@ -14,6 +14,8 @@
 #include "../Scene/SpriteRendererComponent.h"
 #include "../Scene/TransformComponent.h"
 #include "../Scene/Scene.h"
+#include "../Physics/PhysicsWorld2D.h"
+#include "../Physics/PhysicsDebugRenderer2D.h"
 
 namespace Engine
 {
@@ -63,5 +65,7 @@ namespace Engine
         EntityHandle m_PlayerHandle;
 
         Entity* m_Player = nullptr;
+
+        PhysicsDebugRenderer2D m_PhysicsDebugRenderer;
     };
 }
