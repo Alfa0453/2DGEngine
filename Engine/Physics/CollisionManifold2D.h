@@ -27,6 +27,12 @@ namespace Engine
             Vector2{0.0f, 0.0f}
         };
 
+        float AccumulatedNormalImpulses[MaxContacPoints]{0.0f, 0.0f};
+
+        float AccumulatedTangentImpulses[MaxContacPoints]{0.0f, 0.0f};
+
+        float RestitutionBiases[MaxContacPoints]{0.0f, 0.0f};
+
         std::size_t ContactCount = 0;
 
         bool IsTrigger = false;
@@ -41,6 +47,17 @@ namespace Engine
         void ClearContacts()
         {
             ContactCount = 0;
+
+            for (std::size_t i = 0; i < MaxContacPoints; ++i)
+            {
+                ContactPoints[i] = {0.0f, 0.0f};
+
+                AccumulatedNormalImpulses[i] = 0.0f;
+
+                AccumulatedTangentImpulses[i] = 0.0f;
+
+                RestitutionBiases[i] = 0.0f;
+            }
         }
 
         bool AddContactPoint(const Vector2& point)
@@ -51,6 +68,10 @@ namespace Engine
             }
 
             ContactPoints[ContactCount] = point;
+
+            AccumulatedNormalImpulses[ContactCount] = 0.0f;
+
+            AccumulatedTangentImpulses[ContactCount] = 0.0f;
 
             ++ContactCount;
 

@@ -120,6 +120,8 @@ add_executable(2DGRuntime
     Engine/Physics/CollisionLayer2D.h
     Engine/Physics/CollisionEvents2D.h
     Engine/Physics/ColliderPair2D.h
+    Engine/Physics/CachedContact2D.h
+    Engine/Physics/CachedContactPair2D.h
     Engine/Physics/BodyType2D.h
 
     Engine/Physics/SpatialCell2D.h

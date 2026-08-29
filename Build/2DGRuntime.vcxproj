@@ -495,6 +495,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CollisionLayer2D.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CollisionEvents2D.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\ColliderPair2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CachedContact2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CachedContactPair2D.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\BodyType2D.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\SpatialCell2D.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\SweptAABBHit2D.h" />

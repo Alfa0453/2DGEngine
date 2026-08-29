@@ -222,6 +222,12 @@
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\ColliderPair2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CachedContact2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CachedContactPair2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\BodyType2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>

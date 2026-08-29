@@ -1,6 +1,15 @@
 #include "Rigidbody2D.h"
 
+#include "BoxCollider2D.h"
+#include "CircleCollider2D.h"
+
+#include "../Scene/Entity.h"
+#include "../Scene/TransformComponent.h"
+#include "OrientedBox2D.h"
+
 #include <algorithm>
+#include <cstdlib>
+#include <cmath>
 
 namespace Engine
 {
@@ -199,6 +208,10 @@ namespace Engine
         m_Velocity = {0.0f, 0.0f};
 
         m_AccumulatedForce = {0.0f, 0.0f};
+
+        m_AngularVelocity = 0.0f;
+
+        m_AccumulatedTorque = 0.0f;
     }
 
     void Rigidbody2D::Wake()
@@ -246,5 +259,170 @@ namespace Engine
     const Vector2& Rigidbody2D::GetPreviousPosition() const
     {
         return m_PreviousPosition;
+    }
+
+    void Rigidbody2D::SetAngularVelocity(float angularVelocity)
+    {
+        if (!IsDynamic())
+        {
+            m_AngularVelocity = angularVelocity;
+
+            return;
+        }
+
+        if (angularVelocity == m_AngularVelocity)
+        {
+            return;
+        }
+
+        Wake();
+
+        m_AngularVelocity = angularVelocity;
+    }
+
+    float Rigidbody2D::GetAngularVelocity() const
+    {
+        return m_AngularVelocity;
+    }
+
+    void Rigidbody2D::AddAngularVelociy(float deltaAngularVelocity)
+    {
+        if (!IsDynamic())
+        {
+            return;
+        }
+
+        if (std::abs(deltaAngularVelocity) <= 0.000001f)
+        {
+            return;
+        }
+
+        Wake();
+
+        m_AngularVelocity += deltaAngularVelocity;
+    }
+
+    void Rigidbody2D::SetAngularDamping(float damping)
+    {
+        m_AngularDamping = std::max(0.0f, damping);
+    }
+
+    float Rigidbody2D::GetangularDamping() const
+    {
+        return m_AngularDamping;
+    }
+
+    void Rigidbody2D::AddTorque(float torque)
+    {
+        if (!IsDynamic())
+        {
+            return;
+        }
+
+        if (std::abs(torque) <= 0.000001f)
+        {
+            return;
+        }
+
+        Wake();
+
+        m_AccumulatedTorque += torque;
+    }
+
+    float Rigidbody2D::GetAccumulatedTorque() const
+    {
+        return m_AccumulatedTorque;
+    }
+
+    void Rigidbody2D::ClearTorque()
+    {
+        m_AccumulatedTorque = 0.0f;
+    }
+
+    void Rigidbody2D::SetAngularVelocityFromPhysics(float angularVelocity)
+    {
+        m_AngularVelocity = angularVelocity;
+    }
+
+    float Rigidbody2D::GetMomenOfInertia() const
+    {
+        const float mass = GetMass();
+
+        if (mass <= 0.0f)
+        {
+            return 0.0f;
+        }
+
+        Entity* owner = GetOwner();
+
+        if (!owner)
+        {
+            return 0.0f;
+        }
+
+        if (BoxCollider2D* box = owner->GetComponent<BoxCollider2D>())
+        {
+            const OrientedBox2D obb = box->GetWorldOrientedBox();
+
+            const float width = obb.HalfExtents.X * 2.0f;
+
+            const float height = obb.HalfExtents.Y * 2.0f;
+
+            float inertia = mass * (width * width + height * height) / 12.0f;
+
+            if (TransformComponent* transform = owner->GetComponent<TransformComponent>())
+            {
+                const Vector2 bodyCenter = transform->GetWorldTransform().Position;
+
+                const Vector2 offset = obb.Center - bodyCenter;
+
+                inertia += mass * offset.LengthSqured();
+            }
+
+            return inertia;
+        }
+
+        if (CircleCollider2D* circle = owner->GetComponent<CircleCollider2D>())
+        {
+            const float radius = circle->GetWorldRadius();
+
+            float inertia = 0.5f * mass * radius * radius;
+
+            if (TransformComponent* transform = owner->GetComponent<TransformComponent>())
+            {
+                const Vector2 bodyCenter = transform->GetWorldTransform().Position;
+
+                const Vector2 circleCenter = circle->GetWorldCenter();
+
+                const Vector2 offset = circleCenter - bodyCenter;
+
+                inertia += mass * offset.LengthSqured();
+            }
+
+            return inertia;
+        }
+
+        return 0.0f;
+    }
+
+    float Rigidbody2D::GetInverseInertia() const
+    {
+        // Static and kinematic bodies do not respond rotationalltt y to physical impulse.
+
+        if (!IsDynamic())
+        {
+            return 0.0f;
+        }
+
+        const float inertia = GetMomenOfInertia();
+
+        constexpr float epsilon = 0.000001f;
+
+        if (inertia <= epsilon)
+        {
+            return 0.0f;
+        }
+
+        return 1.0f / inertia;
     }
 }

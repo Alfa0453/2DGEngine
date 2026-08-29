@@ -93,39 +93,49 @@ namespace Engine
 
         rubber.DynamicFriction = 0.7f;
 
-        Entity* wall = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Rectangle, {800.0f, 300.0f}, {10.0f, 300.0f});
+        Entity* wall = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Rectangle, {640.0f, 600.0f}, {1000.0f, 50.0f});
 
-        wall->AddComponent<BoxCollider2D>(Vector2{10.0f, 300.0f});
+        wall->AddComponent<BoxCollider2D>(Vector2{1000.0f, 50.0f});
 
         auto* wallBody = wall->AddComponent<Rigidbody2D>();
 
         wallBody->SetBodyType(BodyType2D::Static);
 
-        Entity* wall2 = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Rectangle, {200.0f, 300.0f}, {10.0f, 300.0f});
+        Entity* box = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Square, {320.0f, 540.0f}, {100.0f, 100.0f});
 
-        wall2->AddComponent<BoxCollider2D>(Vector2{10.0f, 300.0f});
+        box->AddComponent<BoxCollider2D>(Vector2{100.0f, 100.0f});
 
-        auto* wall2Body = wall2->AddComponent<Rigidbody2D>();
+        auto* boxBody = box->AddComponent<Rigidbody2D>();
 
-        wall2Body->SetBodyType(BodyType2D::Static);
+        boxBody->SetBodyType(BodyType2D::Dynamic);
 
+        Entity* box2 = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Square, {500.0f, 540.0f}, {100.0f, 100.0f});
+        
+        box2->AddComponent<BoxCollider2D>(Vector2{100.0f, 100.0f});
 
-        Entity* projectile = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Circle, {400.0f, 300.0f}, {20.0f, 20.0f});
+        auto* box2Body = box2->AddComponent<Rigidbody2D>();
 
-        auto* projectileCollider = projectile->AddComponent<CircleCollider2D>(20.0f);
+        box2Body->SetBodyType(BodyType2D::Dynamic);
+        
+        //boxBody->SetVelocity({800.0f, 0.0f});
+        //boxBody->SetAngularVelocity(10.0f);
 
-        projectileCollider->SetPhysicsMaterial(rubber);
+        /*Entity* box2 = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Square, {500.0f, 540.0f}, {50.0f, 50.0f});
 
-        auto* body = projectile->AddComponent<Rigidbody2D>();
+        box2->AddComponent<BoxCollider2D>(Vector2{50.0f, 50.0f});
 
-        body->SetBodyType(BodyType2D::Dynamic);
+        auto* box2Body = box2->AddComponent<Rigidbody2D>();
 
-        body->SetGravityScale(0.0f);
+        box2Body->SetBodyType(BodyType2D::Dynamic);
 
-        body->SetCollisionDetectionMode(CollisionDetectionMode2D::Continuous);
+        Entity* circle = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Circle, {600.0f, 540.0f}, {80.0f, 80.0f});
 
-        body->SetVelocity({2500.0f, 0.0f});
+        circle->AddComponent<CircleCollider2D>(40.0f);
 
+        auto* circleBody = circle->AddComponent<Rigidbody2D>();
+
+        circleBody->SetBodyType(BodyType2D::Dynamic);*/
+        
         m_PhysicsDebugRenderer.SetDrawColliders(true);
 
         m_PhysicsDebugRenderer.SetDrawAABBs(true);

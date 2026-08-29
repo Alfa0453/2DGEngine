@@ -13,6 +13,8 @@
 #include "SweptAABBHit2D.h"
 #include "PhysicsQueryContext2D.h"
 #include "BroadPhaseProxy2D.h"
+#include "CachedContactPair2D.h"
+#include "PhysicsIsland2D.h"
 
 #include "../Math/Vector2.h"
 #include "../Math/Bounds2D.h"
@@ -106,6 +108,8 @@ namespace Engine
 
         bool BoxCast(const Bounds2D& startBounds, const Vector2& direction, float maxDistance, ShapeCastHit2D& outHit, PhysicsQueryContext2D& context, const PhysicsQueryFilter2D& filter = PhysicsQueryFilter2D{}) const;
 
+        std::size_t GetIslandCount() const;
+
     private:
 
         struct RayShapeHit2D
@@ -159,13 +163,13 @@ namespace Engine
 
         void ApplyPositionalCorrection(const CollisionManifold2D& manifold, Rigidbody2D* bodyA, Rigidbody2D* bodyB, TransformComponent& transformA, TransformComponent& transformB);
 
-        void ApplyVelocityResponse(const CollisionManifold2D& manifold, Rigidbody2D* bodyA, Rigidbody2D* bodyB);
+        void ApplyVelocityResponse(CollisionManifold2D& manifold, Rigidbody2D* bodyA, Rigidbody2D* bodyB);
     
         void SolveVelocityContacts();
 
         void SolvePositionContacts();
 
-        void SolveVelocityContact(const CollisionManifold2D& manifold);
+        void SolveVelocityContact(CollisionManifold2D& manifold);
 
         float CombineRestitution(const Collider2D& a, const Collider2D& b) const;
 
@@ -176,6 +180,14 @@ namespace Engine
         bool RefreshManifold(CollisionManifold2D& manifold) const;
 
         float GetSolverInverseMass(const Rigidbody2D* body) const;
+
+        float GetSolverInverseInertia(const Rigidbody2D* body) const;
+
+        float Cross2D(const Vector2& a, const Vector2& b) const;
+
+        Vector2 AngularCrossVector(float angularVelocity, const Vector2& vector) const;
+
+        Vector2 GetVelocityAtPoint(const Vector2& linearVelocity, float angularVelocity, const Vector2& leverArm) const;
 
         void WakeBodiesFromContacts();
 
@@ -257,6 +269,40 @@ namespace Engine
 
         void SynchronizeBroadPhaseForQueries() const;
 
+        void PrepareVelocityContacts();
+
+        void PrepareVelocityContact(CollisionManifold2D& manifold);
+
+        void WarmStartVelocityContacts();
+
+        void WarmStartVelocityContact(CollisionManifold2D& manifold);
+
+        void RestoreCachedContactImpulses();
+
+        void RestoreCachedContactImpulses(CollisionManifold2D& manifold);
+
+        void StoreContactCache();
+
+        void StoreContactCache(const CollisionManifold2D& manifold);
+
+        void RemoveStaleCachedContacts();
+
+        int FindClosestCachedContact(const CachedContactPair2D& cachedPair, const Vector2& point, bool used[2]) const;
+
+        void BuildIslands();
+
+        bool IsIslandDynamicBody(const Rigidbody2D* body) const;
+
+        void PrepareVelocityIsland(PhysicsIsland2D& island);
+
+        void WarmStartVelocityIsland(PhysicsIsland2D& island);
+
+        void SolveVelocityIsland(PhysicsIsland2D& island);
+
+        void SolvePositionIsland(PhysicsIsland2D& island);
+
+        Rigidbody2D* GetColliderBody(Collider2D* collider) const;
+
     private:
         
         Scene* m_Scene = nullptr;
@@ -285,6 +331,8 @@ namespace Engine
 
         float m_SleepLinearSpeedThreshold = 5.0f;
 
+        float m_SleepAngularSpeedThreshold = 0.0872665f;
+
         float m_TimeToSleep = 0.5f;
 
         mutable std::unordered_map<SpatialCell2D, SpatialBucket2D, SpatialCell2DHash> m_SpatialGrid;
@@ -302,5 +350,9 @@ namespace Engine
         float m_CCDSeparation = 0.001f;
 
         std::unordered_set<ColliderPair2D, ColliderPair2DHash> m_SweptTriggerPairsThisStep;
+
+        std::unordered_map<ColliderPair2D, CachedContactPair2D, ColliderPair2DHash> m_ContactCache;
+
+        std::vector<PhysicsIsland2D> m_Islands;
     };
 }

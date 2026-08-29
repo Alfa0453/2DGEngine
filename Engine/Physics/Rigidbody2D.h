@@ -74,6 +74,26 @@ namespace Engine
 
         const Vector2& GetPreviousPosition() const;
 
+        void SetAngularVelocity(float angularVelocity);
+
+        float GetAngularVelocity() const;
+
+        void AddAngularVelociy(float deltaAngularVelocity);
+
+        void SetAngularDamping(float damping);
+
+        float GetangularDamping() const;
+
+        void AddTorque(float torque);
+
+        float GetAccumulatedTorque() const;
+
+        void ClearTorque();
+
+        float GetMomenOfInertia() const;
+
+        float GetInverseInertia() const;
+
     protected:
 
         friend class PhysicsWorld2D;
@@ -83,6 +103,8 @@ namespace Engine
         void RecalculateInverseMass();
 
         void SetVelocityFromPhysics(const Vector2& velocity);
+
+        void SetAngularVelocityFromPhysics(float angularVelocity);
 
         void AddSleepTime(float deltaTime);
 
@@ -109,6 +131,12 @@ namespace Engine
         bool m_IsSleeping = false;
 
         float m_SleepTimer = 0.0f;
+
+        float m_AngularVelocity = 0.0f;
+
+        float m_AccumulatedTorque = 0.0f;
+
+        float m_AngularDamping = 0.0f;
 
         CollisionDetectionMode2D m_CollisionDetectionMode = CollisionDetectionMode2D::Discrete;
 

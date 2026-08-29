@@ -2,6 +2,7 @@
 
 #include "BoxCollider2D.h"
 #include "BroadPhaseProxy2D.h"
+#include "CachedContactPair2D.h"
 #include "CircleCollider2D.h"
 #include "Collider2D.h"
 #include "ColliderPair2D.h"
@@ -9,6 +10,7 @@
 #include "CollisionManifold2D.h"
 #include "OrientedBox2D.h"
 #include "OverlapHit2D.h"
+#include "PhysicsIsland2D.h"
 #include "PhysicsQueryContext2D.h"
 #include "PhysicsQueryFilter2D.h"
 #include "RaycastHit2D.h"
@@ -29,6 +31,7 @@
 #include <iostream>
 #include <limits>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace Engine
@@ -40,6 +43,19 @@ namespace Engine
 
     void PhysicsWorld2D::SetScene(Scene* scene)
     {
+        if (m_Scene == scene)
+        {
+            return;
+        }
+
+        m_ContactCache.clear();
+
+        m_CurrentContacts.clear();
+
+        m_CurrentOverlaps.clear();
+
+        m_PreviousOverlaps.clear();
+
         m_Scene = scene;
     }
 
@@ -122,14 +138,46 @@ namespace Engine
 
         ProcessCandidatePairs();
 
+        // Restore previous-step impulses
+        RestoreCachedContactImpulses();
+
         // Wake sleeping bodies
         WakeBodiesFromContacts();
 
-        // Solve velocity constraints.
-        SolveVelocityContacts();
+        // Prepare solver constants / restitution.
+        PrepareVelocityContacts();
 
-        // Solve penetration constraints.
-        SolvePositionContacts();
+        // Apply previously accumulated impulses.
+        WarmStartVelocityContacts();
+
+        // Build connected Dynamic groups.
+        BuildIslands();
+
+        std::cout << "Physics island: " << m_Islands.size() << '\n';
+
+        for (std::size_t i = 0; i < m_Islands.size(); ++i)
+        {
+            std::cout << "Island " << i << ": Bodies=" << m_Islands[i].Bodies.size() << " Contacts=" << m_Islands[i].ContactIndices.size() << '\n';
+        }
+
+        // Velocity solver by island.
+        for (PhysicsIsland2D& island : m_Islands)
+        {
+            PrepareVelocityIsland(island);
+
+            WarmStartVelocityIsland(island);
+
+            SolveVelocityIsland(island);
+        }
+
+        // Save solved velocity impulses
+        StoreContactCache();
+
+        // Position solver by island.
+        for (PhysicsIsland2D& island : m_Islands)
+        {
+            SolvePositionIsland(island);
+        }
 
         // Sleep evaluation
         UpdateSleepStates(deltaTime);
@@ -139,6 +187,9 @@ namespace Engine
 
         // Store overlap state
         m_PreviousOverlaps = m_CurrentOverlaps;
+
+        // Remove cache entries for pairs that no longer exists.
+        RemoveStaleCachedContacts();
     }
 
     void PhysicsWorld2D::CollectColliders()
@@ -658,6 +709,8 @@ namespace Engine
         float maxB = 0.0f;
 
         ProjectOrientedBox(a, axis, minA, maxA);
+
+        ProjectOrientedBox(b, axis, minB, maxB);
 
         outOverlap = std::min(maxA, maxB) - std::max(minA, minB);
 
@@ -1207,23 +1260,79 @@ namespace Engine
         body.SetVelocityFromPhysics(velocity);
 
         // -------------------------------
-        // Move entity
+        // LINEAR MOVEMENT
         // -------------------------------
 
         transform.Translate(velocity * deltaTime);
 
+
         // -------------------------------
-        // Forces last one step
+        // ANGULAR ACCELERATION
         // -------------------------------
 
+        const float angularAcceleration = body.GetAccumulatedTorque() * body.GetInverseInertia();
+
+        // -------------------------------
+        // ANGULAR VELOCITY
+
+        // radians / second
+        // -------------------------------
+
+        float angularVelocity = body.GetAngularVelocity();
+
+        angularVelocity += angularAcceleration * deltaTime;
+
+        // -------------------------------
+        // ANGULAR DAMPING
+        // -------------------------------
+
+        const float angularDampingFacter = 1.0f / (1.0f + body.GetangularDamping() * deltaTime);
+
+        angularVelocity *= angularDampingFacter;
+
+        body.SetAngularVelocityFromPhysics(angularVelocity);
+
+
+        // -------------------------------
+        // ROTATION INTEGRATION
+        // -------------------------------
+
+        constexpr float radiansToDegrees = 57.29577951308232f;
+
+        const float rotationDeltaDegrees = angularVelocity * deltaTime * radiansToDegrees;
+
+        transform.RotateBy(rotationDeltaDegrees);
+
+        // --------------------------------
+        // ACCUMULATORS LAST ONE FIXED STEP
+        // --------------------------------
+
         body.ClearForces();
+
+        body.ClearTorque();
     }
 
     void PhysicsWorld2D::IntegrateKinematicBody(Rigidbody2D& body, TransformComponent& transform, float deltaTime)
     {
+        // --------------------------------
+        // LINEAR KINEMATIC MOTION
+        // --------------------------------
+
         transform.Translate(body.GetVelocity() * deltaTime);
 
+        // --------------------------------
+        // ANGULAR KINEMATIC MOTION
+        // --------------------------------
+
+        constexpr float radiansToDegrees = 57.29577951308232f;
+
+        transform.RotateBy(body.GetAngularVelocity() * deltaTime * radiansToDegrees);
+
+        // Kinematic bodies do not react to orce/torque.
+
         body.ClearForces();
+
+        body.ClearTorque();
     }
 
     void PhysicsWorld2D::IntegrateBodies(float deltaTime)
@@ -1271,192 +1380,296 @@ namespace Engine
         }
     }
 
-    void PhysicsWorld2D::ApplyVelocityResponse(const CollisionManifold2D& manifold, Rigidbody2D* bodyA, Rigidbody2D* bodyB)
+    void PhysicsWorld2D::ApplyVelocityResponse(CollisionManifold2D& manifold, Rigidbody2D* bodyA, Rigidbody2D* bodyB)
     {
         // =========================================================
-        // GET SOLVER INVERSE MASSES
+        // SOLVER MASS / INERTIA
         // =========================================================
 
         const float inverseMassA = GetSolverInverseMass(bodyA);
 
         const float inverseMassB = GetSolverInverseMass(bodyB);
 
-        const float totalInverseMass = inverseMassA + inverseMassB;
+        const float inverseInertiaA = GetSolverInverseInertia(bodyA);
 
-        // If neither body can move, there is nothing to solve.
-        if (totalInverseMass <= 0.0f)
+        const float inverseInertiaB = GetSolverInverseInertia(bodyB);
+
+        if (inverseMassA + inverseMassB + inverseInertiaA + inverseInertiaB <= 0.0f)
         {
             return;
         }
 
         // =========================================================
-        // GET CURRENT VELOCITIES
+        // OWNERS / TRANSFORMS
+        // =========================================================
+
+        Entity* entityA = manifold.A ? manifold.A->GetOwner() : nullptr;
+
+        Entity* entityB = manifold.B ? manifold.B->GetOwner() : nullptr;
+
+        if (!entityA || !entityB)
+        {
+            return;
+        }
+
+        TransformComponent* transformA = entityA->GetComponent<TransformComponent>();
+
+        TransformComponent* transformB = entityB->GetComponent<TransformComponent>();
+
+        if (!transformA || !transformB)
+        {
+            return;
+        }
+
+        // =========================================================
+        // CENTER OF MASS
+        // =========================================================
+
+        const Vector2 centerA = transformA->GetWorldTransform().Position;
+
+        const Vector2 centerB = transformB->GetWorldTransform().Position;
+
+        // =========================================================
+        // LOCAL SOLVER VELOCITIES
         // =========================================================
 
         Vector2 velocityA = bodyA ? bodyA->GetVelocity() : Vector2{0.0f, 0.0f};
 
         Vector2 velocityB = bodyB ? bodyB->GetVelocity() : Vector2{0.0f, 0.0f};
 
-        // =========================================================
-        // CALCULATE RELATIVE VELOCITY
-        // =========================================================
+        float angularVelocityA = bodyA ? bodyA->GetAngularVelocity() : 0.0f;
 
-        Vector2 relativeVelocity = velocityB - velocityA;
+        float angularVelocityB = bodyB ? bodyB->GetAngularVelocity() : 0.0f;
 
         // =========================================================
-        // FIND VELOCITY ALONG COLLISION NORMAL
+        // RESTITUTION
         // =========================================================
 
-        const float velocityAlongNormal = Vector2::Dot(relativeVelocity, manifold.Normal);
+        const float staticFriction = CombineStaticFriction(*manifold.A, *manifold.B);
 
-        // =========================================================
-        // DON'T SOLVE IF OBJECTS ARE ALREADY SEPARATING
-        // =========================================================
+        const float dynamicFriction = CombineDynamicFriction(*manifold.A, *manifold.B);
 
-        if (velocityAlongNormal > 0.0f)
+        constexpr float epsilon = 0.000001f;
+
+        if (manifold.ContactCount > CollisionManifold2D::MaxContacPoints)
         {
+            std::cerr << "ERROR: Invalid manifold ContactCount: " << manifold.ContactCount << '\n';
+
             return;
         }
 
         // =========================================================
-        // COMBINE RESTITUTION
+        // SOLVE CONTACTS SEQUENTIALLY
         // =========================================================
 
-        float restitution = CombineRestitution(*manifold.A, *manifold.B);
-
-        // =========================================================
-        // REMOVE BOUNCE AT VERY LOW IMPACT SPEEDS
-        // =========================================================
-
-        constexpr float restitutionVelocityThreshold = 20.0f;
-
-        if (std::abs(velocityAlongNormal) < restitutionVelocityThreshold)
+        for (std::size_t contactIndex = 0; contactIndex < manifold.ContactCount; ++contactIndex)
         {
-            restitution = 0.0f;
-        }
+            const Vector2 contactPoint = manifold.ContactPoints[contactIndex];
 
-        // =========================================================
-        // CALCULATE NORMAL IMPULSE MAGNITUDE
-        // =========================================================
+            const Vector2 rA = contactPoint - centerA;
 
-        const float normalImpulseMagnitude = -(1.0f + restitution) * velocityAlongNormal / totalInverseMass;
-
-        // =========================================================
-        // CREATE NORMAL IMPULSE VECTOR
-        // =========================================================
-
-        const Vector2 normalImpulse = manifold.Normal * normalImpulseMagnitude;
-
-        // =========================================================
-        // APPLY NORMAL IMPULSE TO LOCAL VELOCITIES
-        // =========================================================
-
-        if (bodyA && inverseMassA > 0.0f)
-        {
-            velocityA -= normalImpulse * inverseMassA;
-        }
-
-        if (bodyB && inverseMassB > 0.0f)
-        {
-            velocityB += normalImpulse * inverseMassB;
-        }
-
-        // =========================================================
-        // RECALCULATE RELATIVE VELOCITY
-        // =========================================================
-
-        // The normal impulse just changed velocityA and velocityB.
-        // Friction must use these new velocities.
-
-        relativeVelocity = velocityB - velocityA;
-
-        // =========================================================
-        // CALCULATE THE TANGENT
-        // =========================================================
-
-        // Remove the part of relative velocity that lies along the collision normal.
-        // What remains is movement ACROSS the surface.
-
-        Vector2 tangent = relativeVelocity - manifold.Normal * Vector2::Dot(relativeVelocity, manifold.Normal);
-
-        // =========================================================
-        // CHECK WHETHER A USEFUL TANGENT EXISTS
-        // =========================================================
-
-        const float tangentLengthSquared = tangent.LengthSqured();
-
-        if (tangentLengthSquared > 0.000001f)
-        {
-            // =====================================================
-            // NORMALIZE THE TANGENT
-            // =====================================================
-
-            tangent *= 1.0f / std::sqrt(tangentLengthSquared);
+            const Vector2 rB = contactPoint - centerB;
 
             // =====================================================
-            // CALCULATE REQUIRED TANGENTIAL IMPULSE
+            // VELOCITY AT CONTACT BEFORE NORMAL SOLVE
             // =====================================================
 
-            const float tangentImpulseMagnitude = -Vector2::Dot(relativeVelocity, tangent) / totalInverseMass;
+            Vector2 contactVelocityA = GetVelocityAtPoint(velocityA, angularVelocityA, rA);
 
-            // =====================================================
-            // COMBINE STATIC FRICTION
-            // =====================================================
+            Vector2 contactVelocityB = GetVelocityAtPoint(velocityB, angularVelocityB, rB);
 
-            const float staticFriction = CombineStaticFriction(*manifold.A, *manifold.B);
+            Vector2 relativeVelocity = contactVelocityB - contactVelocityA;
 
-            // =====================================================
-            // COMBINE DYNAMIC FRICTION
-            // =====================================================
+            const float velocityAlongNormal = Vector2::Dot(relativeVelocity, manifold.Normal);
 
-            const float dynamicFrictin = CombineDynamicFriction(*manifold.A, *manifold.B);
+            const float raCrossNormal = Cross2D(rA, manifold.Normal);
 
-            Vector2 frictionImpulse;
+            const float rbCrossNormal = Cross2D(rB, manifold.Normal);
 
-            // STATIC FRICTION
+            const float normalDenominator = 
+                inverseMassA + inverseMassB + raCrossNormal * raCrossNormal *
+                inverseInertiaA + rbCrossNormal * rbCrossNormal *inverseInertiaB;
 
-            // can static friction completely stop the sliding?
+            
+                
 
-            if (std::abs(tangentImpulseMagnitude) <= normalImpulseMagnitude * staticFriction)
+            if (normalDenominator > epsilon)
             {
-                frictionImpulse = tangent * tangentImpulseMagnitude;
+                const float restitutionBias = manifold.RestitutionBiases[contactIndex];
+                
+                float deltaNormalImpulse = -(velocityAlongNormal - restitutionBias) / normalDenominator;
+
+                const float oldNormalImpulse = manifold.AccumulatedNormalImpulses[contactIndex];
+
+                const float newNormalImpulse = std::max(oldNormalImpulse + deltaNormalImpulse, 0.0f);
+
+                deltaNormalImpulse = newNormalImpulse - oldNormalImpulse;
+
+                manifold.AccumulatedNormalImpulses[contactIndex] = newNormalImpulse;
+
+                const Vector2 normalImpulse = manifold.Normal * deltaNormalImpulse;
+
+                // =============================================
+                // BODY A
+                // =============================================
+
+                if (bodyA && inverseMassA > 0.0f)
+                {
+                    velocityA -= normalImpulse * inverseMassA;
+                }
+
+                if (bodyA && inverseInertiaA > 0.0f)
+                {
+                    angularVelocityA -= Cross2D(rA, normalImpulse) * inverseInertiaA;
+                }
+
+                // =============================================
+                // BODY B
+                // =============================================
+
+                if (bodyB && inverseMassB > 0.0f)
+                {
+                    velocityB += normalImpulse * inverseMassB;
+                }
+
+                if (bodyB && inverseInertiaB > 0.0f)
+                {
+                    angularVelocityB += Cross2D(rB, normalImpulse) * inverseInertiaB;
+                }
+                
             }
 
-            // DYNAMIC FRICTION
+            // =====================================================
+            // RECOMPUTE CONTACT VELOCITY AFTER NORMAL IMPULSE
+            //
+            // The normal impulse changed both linear and angular
+            // velocity. Friction must use the updated state.
+            // =====================================================
 
-            // Static friction wasn't strong enough, so the surfaces are sliding.
+            contactVelocityA = GetVelocityAtPoint(velocityA, angularVelocityA, rA);
+
+            contactVelocityB = GetVelocityAtPoint(velocityB, angularVelocityB, rB);
+
+            relativeVelocity = contactVelocityB - contactVelocityA;
+
+            // =====================================================
+            // TANGENT
+            // =====================================================
+
+            const Vector2 tangent
+            {
+                -manifold.Normal.Y,
+                manifold.Normal.X
+            };
+
+            const float velocityAlongTangent = Vector2::Dot(relativeVelocity, tangent);
+
+            // =====================================================
+            // TANGENTIAL EFFECTIVE MASS
+            // =====================================================
+
+            const float raCrossTangent = Cross2D(rA, tangent);
+
+            const float rbCrossTangent = Cross2D(rB, tangent);
+
+            const float tangentDenominator =
+                inverseMassA + inverseMassB + raCrossTangent * raCrossTangent *
+                inverseInertiaA + rbCrossTangent * rbCrossTangent *inverseInertiaB;
+
+            if (tangentDenominator <= epsilon)
+            {
+                continue;
+            }
+
+            // =====================================================
+            // FRICTION IMPULSE CHANGE
+            // =====================================================
+
+            float deltaTangentImpulse = -velocityAlongTangent / tangentDenominator;
+
+            const float oldTangentImpulse = manifold.AccumulatedTangentImpulses[contactIndex];
+
+            const float candidateTangentImpulse = oldTangentImpulse + deltaTangentImpulse;
+
+            const float accumulatedNormalImpulse = manifold.AccumulatedNormalImpulses[contactIndex];
+
+            const float staticLimit = staticFriction * accumulatedNormalImpulse;
+
+            float newTangentImpulse = 0.0f;
+
+            // -----------------------------------------------------
+            // STATIC FRICTION
+            //
+            // Can friction completely cancel tangential motion?
+            // -----------------------------------------------------
+
+            if (std::abs(candidateTangentImpulse) <= staticLimit)
+            {
+                newTangentImpulse = candidateTangentImpulse;
+            }
+
+            // -----------------------------------------------------
+            // DYNAMIC FRICTION
+            // -----------------------------------------------------
 
             else {
-                const float frictionMagnitude = normalImpulseMagnitude * dynamicFrictin;
+                const float dynamicLimit = accumulatedNormalImpulse * dynamicFriction;
 
-                const float fricionDirection = tangentImpulseMagnitude < 0.0f ? -1.0f : 1.0f;
-
-                frictionImpulse = tangent * frictionMagnitude * fricionDirection;
+                newTangentImpulse = std::clamp(candidateTangentImpulse, -dynamicLimit, dynamicLimit);
             }
 
-            // APPLY FRICTION IMPULSE TO A
+            deltaTangentImpulse = newTangentImpulse - oldTangentImpulse;
+
+            manifold.AccumulatedTangentImpulses[contactIndex] = newTangentImpulse;
+            
+            const Vector2 frictionImpulse  = tangent * deltaTangentImpulse;
+
+            // =====================================================
+            // APPLY FRICTION TO BODY A
+            // =====================================================
 
             if (bodyA && inverseMassA > 0.0f)
             {
                 velocityA -= frictionImpulse * inverseMassA;
             }
 
+            if (bodyA && inverseInertiaA > 0.0f)
+            {
+                angularVelocityA -= Cross2D(rA, frictionImpulse) * inverseInertiaA;
+            }
+
+            // =====================================================
+            // APPLY FRICTION TO BODY B
+            // =====================================================
+
             if (bodyB && inverseMassB > 0.0f)
             {
                 velocityB += frictionImpulse * inverseMassB;
             }
+
+            if (bodyB && inverseInertiaB > 0.0f)
+            {
+                angularVelocityB += Cross2D(rB, frictionImpulse) * inverseInertiaB;
+            }
         }
 
-        // WRITE FINAL VELOCITIES BACK TO THE RIGIDBODIES
+        
+        // =========================================================
+        // COMMIT ONCE
+        // =========================================================
 
         if (bodyA)
         {
             bodyA->SetVelocityFromPhysics(velocityA);
+
+            bodyA->SetAngularVelocityFromPhysics(angularVelocityA);
         }
 
         if (bodyB)
         {
             bodyB->SetVelocityFromPhysics(velocityB);
+
+            bodyB->SetAngularVelocityFromPhysics(angularVelocityB);
         }
     }
 
@@ -1510,7 +1723,7 @@ namespace Engine
         return m_PositionIterations;
     }
 
-    void PhysicsWorld2D::SolveVelocityContact(const CollisionManifold2D& manifold)
+    void PhysicsWorld2D::SolveVelocityContact(CollisionManifold2D& manifold)
     {
         if (!manifold.IsValid() || manifold.IsTrigger)
         {
@@ -1534,7 +1747,11 @@ namespace Engine
 
         const float inverseMassB = GetSolverInverseMass(bodyB);
 
-        if (inverseMassA + inverseMassB <= 0.0f)
+        const float inverseInertiaA = GetSolverInverseInertia(bodyA);
+
+        const float inverseInertiaB = GetSolverInverseInertia(bodyB);
+
+        if (inverseMassA + inverseMassB + inverseInertiaA + inverseInertiaB <= 0.0f)
         {
             return;
         }
@@ -1546,7 +1763,7 @@ namespace Engine
     {
         for (std::size_t iteration = 0; iteration < m_VelocityIterations; ++iteration)
         {
-            for (const CollisionManifold2D& manifold : m_CurrentContacts)
+            for (CollisionManifold2D& manifold : m_CurrentContacts)
             {
                 SolveVelocityContact(manifold);
             }
@@ -1652,6 +1869,41 @@ namespace Engine
         return body->GetInverseMass();
     }
 
+    float PhysicsWorld2D::GetSolverInverseInertia(const Rigidbody2D* body) const
+    {
+        if (!body)
+        {
+            return 0.0f;
+        }
+
+        if (!body->IsDynamic() || body->IsSleeping())
+        {
+            return 0.0f;
+        }
+
+        return body->GetInverseInertia();
+    }
+
+    float PhysicsWorld2D::Cross2D(const Vector2& a, const Vector2& b) const
+    {
+        return a.X * b.Y - a.Y * b.X;
+    }
+
+    Vector2 PhysicsWorld2D::AngularCrossVector(float angularVelocity, const Vector2& vector) const
+    {
+        return 
+            {
+                -angularVelocity * vector.Y,
+
+                angularVelocity * vector.X
+            };
+    }
+
+    Vector2 PhysicsWorld2D::GetVelocityAtPoint(const Vector2& linearVelocity, float angularVelocity, const Vector2& leverArm) const
+    {
+        return linearVelocity + AngularCrossVector(angularVelocity, leverArm);
+    }
+
     void PhysicsWorld2D::WakeBodiesFromContacts()
     {
         const float wakeSpeedSquared = m_CollisionWakeSpeed * m_CollisionWakeSpeed;
@@ -1676,13 +1928,61 @@ namespace Engine
 
             Rigidbody2D* bodyB = entityB->GetComponent<Rigidbody2D>();
 
+            TransformComponent* transformA = entityA->GetComponent<TransformComponent>();
+
+            TransformComponent* transfromB = entityB->GetComponent<TransformComponent>();
+
+            if (!transformA || !transfromB)
+            {
+                continue;
+            }
+
+            const Vector2 centerA = transformA->GetWorldTransform().Position;
+
+            const Vector2 centerB = transfromB->GetWorldTransform().Position;
+
             const Vector2 velocityA = bodyA ? bodyA->GetVelocity() : Vector2{0.0f, 0.0f};
 
             const Vector2 velocityB = bodyB ? bodyB->GetVelocity() : Vector2{0.0f, 0.0f};
 
-            const Vector2 relativeVelocity = velocityB - velocityA;
+            const float angularVelocityA = bodyA ? bodyA->GetAngularVelocity() : 0.0f;
 
-            if (relativeVelocity.LengthSqured() < wakeSpeedSquared)
+            const float angularVelocityB = bodyB ? bodyB->GetAngularVelocity() : 0.0f;
+
+            bool shouldWake = false;
+
+            if (manifold.ContactCount > 0)
+            {
+                for (std::size_t i = 0; i < manifold.ContactCount; ++i)
+                {
+                    const Vector2 point = manifold.ContactPoints[i];
+
+                    const Vector2 rA = point - centerA;
+
+                    const Vector2 rB = point - centerB;
+
+                    const Vector2 contactVelocityA = GetVelocityAtPoint(velocityA, angularVelocityA, rA);
+
+                    const Vector2 contactVelocityB = GetVelocityAtPoint(velocityB, angularVelocityB, rB);
+
+                    const Vector2 relativeVelocity = contactVelocityB - contactVelocityA;
+
+                    if (relativeVelocity.LengthSqured() >= wakeSpeedSquared)
+                    {
+                        shouldWake = true;
+
+                        break;
+                    }
+                }
+            }
+            else 
+            {
+                const Vector2 relativeVelocity = velocityB - velocityA;
+
+                shouldWake = relativeVelocity.LengthSqured() >= wakeSpeedSquared;
+            }
+
+            if (!shouldWake)
             {
                 continue;
             }
@@ -1723,9 +2023,13 @@ namespace Engine
 
         if (body && body->CanSleep() && !body->IsSleeping())
         {
-            const float thresholdSquared = m_SleepLinearSpeedThreshold * m_SleepLinearSpeedThreshold;
+            const float LinearThresholdSquared = m_SleepLinearSpeedThreshold * m_SleepLinearSpeedThreshold;
 
-            if (body->GetVelocity().LengthSqured() <= thresholdSquared)
+            const bool linearMotionIsSmall = body->GetVelocity().LengthSqured() <= LinearThresholdSquared;
+
+            const bool angularMotionIsSmall = std::abs(body->GetAngularVelocity()) <= m_SleepAngularSpeedThreshold;
+
+            if (linearMotionIsSmall && angularMotionIsSmall)
             {
                 body->AddSleepTime(deltaTime);
 
@@ -2331,6 +2635,8 @@ namespace Engine
 
                 manifold.AddContactPoint(contactPoint);
             }
+
+            PrepareVelocityContact(manifold);
 
             // Existing material solver.
 
@@ -4180,5 +4486,618 @@ namespace Engine
 
             UpdateBroadPhaseProxy(proxy);
         }
+    }
+
+    void PhysicsWorld2D::PrepareVelocityContacts()
+    {
+        for (CollisionManifold2D& maniflod : m_CurrentContacts)
+        {
+            PrepareVelocityContact(maniflod);
+        }
+    }
+
+    void PhysicsWorld2D::PrepareVelocityContact(CollisionManifold2D& manifold)
+    {
+        if (!manifold.IsValid() || manifold.IsTrigger)
+        {
+            return;
+        }
+
+        Entity* entityA = manifold.A->GetOwner();
+
+        Entity* entityB = manifold.B->GetOwner();
+
+        if (!entityA || !entityB)
+        {
+            return;
+        }
+
+        TransformComponent* transformA = entityA->GetComponent<TransformComponent>();
+
+        TransformComponent* transformB = entityB->GetComponent<TransformComponent>();
+
+        if (!transformA || !transformB)
+        {
+            return;
+        }
+
+        Rigidbody2D* bodyA = entityA->GetComponent<Rigidbody2D>();
+
+        Rigidbody2D* bodyB = entityB->GetComponent<Rigidbody2D>();
+
+        const Vector2 centerA = transformA->GetWorldTransform().Position;
+
+        const Vector2 centerB = transformB->GetWorldTransform().Position;
+
+        const Vector2 velocityA = bodyA ? bodyA->GetVelocity() : Vector2{0.0f, 0.0f};
+
+        const Vector2 velocityB = bodyB ? bodyB->GetVelocity() : Vector2{0.0f, 0.0f};
+
+        const float angularVelocityA = bodyA ? bodyA->GetAngularVelocity() : 0.0f;
+
+        const float angularVelocityB = bodyB ? bodyB->GetAngularVelocity() : 0.0f;
+
+        const float restitution = CombineRestitution(*manifold.A, *manifold.B);
+
+        constexpr float restitutionVelocityThreshold = 20.0f;
+
+        for (std::size_t i = 0; i <manifold.ContactCount; ++i)
+        {
+            const Vector2 contactPoint = manifold.ContactPoints[i];
+
+            const Vector2 rA = contactPoint - centerA;
+
+            const Vector2 rB = contactPoint - centerB;
+
+            const Vector2 contactVelocityA = GetVelocityAtPoint(velocityA, angularVelocityA, rA);
+
+            const Vector2 contactVelocityB = GetVelocityAtPoint(velocityB, angularVelocityB, rB);
+
+            const Vector2 relativeVelocity = contactVelocityB - contactVelocityA;
+
+            const float velocityAlongNormal = Vector2::Dot(relativeVelocity, manifold.Normal);
+
+            manifold.RestitutionBiases[i] = 0.0f;
+
+            if (velocityAlongNormal < -restitutionVelocityThreshold)
+            {
+                manifold.RestitutionBiases[i] = -restitution * velocityAlongNormal;
+            }
+        }
+    }
+
+    void PhysicsWorld2D::WarmStartVelocityContacts()
+    {
+        for (CollisionManifold2D& manifold : m_CurrentContacts)
+        {
+            WarmStartVelocityContact(manifold);
+        }
+    }
+
+    void PhysicsWorld2D::WarmStartVelocityContact(CollisionManifold2D& manifold)
+    {
+        if (!manifold.IsValid() || manifold.IsTrigger)
+        {
+            return;
+        }
+
+        Entity* entityA = manifold.A->GetOwner();
+
+        Entity* entityB = manifold.B->GetOwner();
+
+        if (!entityA || !entityB)
+        {
+            return;
+        }
+
+        TransformComponent* transformA = entityA->GetComponent<TransformComponent>();
+
+        TransformComponent* transformB = entityB->GetComponent<TransformComponent>();
+
+        if (!transformA || !transformB)
+        {
+            return;
+        }
+
+        Rigidbody2D* bodyA = entityA->GetComponent<Rigidbody2D>();
+
+        Rigidbody2D* bodyB = entityB->GetComponent<Rigidbody2D>();
+
+        const float inverseMassA = GetSolverInverseMass(bodyA);
+
+        const float inverseMassB = GetSolverInverseMass(bodyB);
+
+        const float inverseInertiaA = GetSolverInverseInertia(bodyA);
+
+        const float inverseInertiaB = GetSolverInverseInertia(bodyB);
+
+        const Vector2 centerA = transformA->GetWorldTransform().Position;
+
+        const Vector2 centerB = transformB->GetWorldTransform().Position;
+
+        Vector2 velocityA = bodyA ? bodyA->GetVelocity() : Vector2{0.0f, 0.0f};
+
+        Vector2 velocityB = bodyB ? bodyB->GetVelocity() : Vector2{0.0f, 0.0f};
+
+        float angularVelocityA = bodyA ? bodyA->GetAngularVelocity() : 0.0f;
+        
+        float angularVelocityB = bodyB ? bodyB->GetAngularVelocity() : 0.0f;
+
+        for (std::size_t i = 0; i < manifold.ContactCount; ++i)
+        {
+            const Vector2 Point = manifold.ContactPoints[i];
+
+            const Vector2 rA = Point - centerA;
+
+            const Vector2 rB = Point - centerB;
+
+            // Tangent perpendicular to the normal.
+            const Vector2 tangent
+            {
+                -manifold.Normal.Y,
+                manifold.Normal.X
+            };
+
+            const Vector2 impulse = manifold.Normal * manifold.AccumulatedNormalImpulses[i] + tangent * manifold.AccumulatedTangentImpulses[i];
+
+            if (bodyA && inverseMassA > 0.0f)
+            {
+                velocityA -= impulse * inverseMassA;
+            }
+
+            if (bodyA && inverseInertiaA > 0.0f)
+            {
+                angularVelocityA -= Cross2D(rA, impulse) * inverseInertiaA;
+            }
+
+            if (bodyB && inverseMassB > 0.0f)
+            {
+                velocityB += impulse * inverseMassB;
+            }
+
+            if (bodyB && inverseInertiaB > 0.0f)
+            {
+                angularVelocityB += Cross2D(rB, impulse) * inverseInertiaB;
+            }
+        }
+
+        if (bodyA)
+        {
+            bodyA->SetVelocityFromPhysics(velocityA);
+
+            bodyA->SetAngularVelocityFromPhysics(angularVelocityA);
+        }
+
+        if (bodyB)
+        {
+            bodyB->SetVelocityFromPhysics(velocityB);
+
+            bodyB->SetAngularVelocityFromPhysics(angularVelocityB);
+        }
+    }
+
+    void PhysicsWorld2D::RestoreCachedContactImpulses()
+    {
+        for (CollisionManifold2D& manifold : m_CurrentContacts)
+        {
+            RestoreCachedContactImpulses(manifold);
+        }
+    }
+
+    void PhysicsWorld2D::RestoreCachedContactImpulses(CollisionManifold2D& manifold)
+    {
+        if (!manifold.IsValid() || manifold.IsTrigger)
+        {
+            return;
+        }
+        
+        const ColliderPair2D pair = ColliderPair2D::Make(manifold.A, manifold.B);
+
+        const auto cachedIt = m_ContactCache.find(pair);
+
+        if (cachedIt == m_ContactCache.end())
+        {
+            return;
+        }
+
+        const CachedContactPair2D& cachedPair = cachedIt->second;
+
+        bool used[2]{false, false};
+
+        for (std::size_t contactIndex = 0; contactIndex < manifold.ContactCount; ++contactIndex)
+        {
+            const int cachedIndex = FindClosestCachedContact(cachedPair, manifold.ContactPoints[contactIndex], used);
+
+            if (cachedIndex < 0)
+            {
+                continue;
+            }
+
+            const std::size_t index = static_cast<std::size_t>(cachedIndex);
+
+            used[index] = true;
+
+            manifold.AccumulatedNormalImpulses[contactIndex] = cachedPair.Contacts[index].NormalImpulse;
+
+            manifold.AccumulatedTangentImpulses[contactIndex] = cachedPair.Contacts[index].TangentImpulse;
+        }
+    }
+
+    int PhysicsWorld2D::FindClosestCachedContact(const CachedContactPair2D& cachedPair, const Vector2& point, bool used[2]) const
+    {
+        constexpr float matchDistance = 5.0f;
+
+        const float matchDistanceSquared = matchDistance * matchDistance;
+
+        int bestIndex = -1;
+
+        float bestDistanceSquared = matchDistanceSquared;
+
+        for (std::size_t i = 0; i < cachedPair.ContactCount; ++i)
+        {
+            if (used[i])
+            {
+                continue;
+            }
+
+            const Vector2 delta = cachedPair.Contacts[i].Point - point;
+
+            const float distanceSquared = delta.LengthSqured();
+
+            if (distanceSquared <= bestDistanceSquared)
+            {
+                bestDistanceSquared = distanceSquared;
+
+                bestIndex = static_cast<int>(i);
+            }
+        }
+
+        return bestIndex;
+    }
+
+    void PhysicsWorld2D::StoreContactCache()
+    {
+        for (const CollisionManifold2D& manifold : m_CurrentContacts)
+        {
+            StoreContactCache(manifold);
+        }
+    }
+
+    void PhysicsWorld2D::StoreContactCache(const CollisionManifold2D& manifold)
+    {
+        if (!manifold.IsValid() || manifold.IsTrigger)
+        {
+            return;
+        }
+
+        const ColliderPair2D pair = ColliderPair2D::Make(manifold.A, manifold.B);
+
+        CachedContactPair2D& cachedPair = m_ContactCache[pair];
+
+        cachedPair.ContactCount = std::min(manifold.ContactCount, CachedContactPair2D::MaxContacts);
+
+        for (std::size_t i = 0; i < cachedPair.ContactCount; ++i)
+        {
+            cachedPair.Contacts[i].Point = manifold.ContactPoints[i];
+
+            cachedPair.Contacts[i].NormalImpulse = manifold.AccumulatedNormalImpulses[i];
+
+            cachedPair.Contacts[i].TangentImpulse = manifold.AccumulatedTangentImpulses[i];
+        }
+    }
+
+    void PhysicsWorld2D::RemoveStaleCachedContacts()
+    {
+        for (auto it = m_ContactCache.begin(); it != m_ContactCache.end();)
+        {
+            if (m_CurrentOverlaps.find(it->first) == m_CurrentOverlaps.end())
+            {
+                it = m_ContactCache.erase(it);
+            }
+            else 
+            {
+                ++it;
+            }
+        }
+    }
+
+    void PhysicsWorld2D::BuildIslands()
+    {
+        m_Islands.clear();
+
+        std::unordered_map<Rigidbody2D*, std::vector<std::size_t>> bodyContacts;
+
+        // Keep first-seen order rather than iteration the unordered_map directly.
+        std::vector<Rigidbody2D*> bodyOrder;
+
+        std::unordered_set<Rigidbody2D*> discoveredBodies;
+
+        for (std::size_t contactIndex = 0; contactIndex < m_CurrentContacts.size(); ++contactIndex)
+        {
+            CollisionManifold2D& manifold = m_CurrentContacts[contactIndex];
+
+            if (!manifold.IsValid() || manifold.IsTrigger)
+            {
+                continue;
+            }
+
+            Rigidbody2D* bodyA = GetColliderBody(manifold.A);
+
+            Rigidbody2D* bodyB = GetColliderBody(manifold.B);
+
+            const float dynamicA = IsIslandDynamicBody(bodyA);
+
+            const float dynamicB = IsIslandDynamicBody(bodyB);
+
+            // No awake Dynamic body participates.
+            if (!dynamicA && !dynamicB)
+            {
+                continue;
+            }
+
+            if (dynamicA)
+            {
+                bodyContacts[bodyA].push_back(contactIndex);
+
+                if (discoveredBodies.insert(bodyA).second)
+                {
+                    bodyOrder.push_back(bodyA);
+                }
+            }
+
+            if (dynamicB)
+            {
+                bodyContacts[bodyB].push_back(contactIndex);
+
+                if (discoveredBodies.insert(bodyB).second)
+                {
+                    bodyOrder.push_back(bodyB);
+                }
+            }
+        }
+
+        std::unordered_set<Rigidbody2D*> visitedBodies;
+
+        for (Rigidbody2D* rootBody : bodyOrder)
+        {
+            if (!rootBody || visitedBodies.find(rootBody) != visitedBodies.end())
+            {
+                continue;
+            }
+
+            PhysicsIsland2D island;
+
+            std::vector<Rigidbody2D*> stack;
+
+            std::unordered_set<std::size_t> islandContacts;
+
+            stack.push_back(rootBody);
+
+            visitedBodies.insert(rootBody);
+
+            // =====================================================
+            // DEPTH-FIRST SEARCH
+            // =====================================================
+
+            while (!stack.empty())
+            {
+                Rigidbody2D* body = stack.back();
+
+                stack.pop_back();
+
+                if (!body)
+                {
+                    continue;
+                }
+
+                island.Bodies.push_back(body);
+
+                const auto adjacencyIt = bodyContacts.find(body);
+
+                if (adjacencyIt == bodyContacts.end())
+                {
+                    continue;
+                }
+
+                for (const std::size_t contactIndex : adjacencyIt->second)
+                {
+                    if (contactIndex >= m_CurrentContacts.size())
+                    {
+                        continue;
+                    }
+
+                    // Add each manifold only once to this island.
+                    if (islandContacts.insert(contactIndex).second)
+                    {
+                        island.ContactIndices.push_back(contactIndex);
+                    }
+
+                    CollisionManifold2D& manifold = m_CurrentContacts[contactIndex];
+
+                    Rigidbody2D* bodyA = GetColliderBody(manifold.A);
+
+                    Rigidbody2D* bodyB = GetColliderBody(manifold.B);
+
+                    Rigidbody2D* otherBody = nullptr;
+
+                    if (body == bodyA)
+                    {
+                        otherBody =bodyB;
+                    }
+                    else if (body == bodyB)
+                    {
+                        otherBody = bodyA;
+                    }
+
+                    // =============================================
+                    // ONLY AWAKE DYNAMIC BODIES PROPAGATE
+                    // THE GRAPH.
+                    // =============================================
+
+                    if (!IsIslandDynamicBody(otherBody))
+                    {
+                        continue;
+                    }
+
+                    if (visitedBodies.insert(otherBody).second)
+                    {
+                        stack.push_back(otherBody);
+                    }
+                }
+            }
+
+            if (!island.Empty())
+            {
+                m_Islands.push_back(std::move(island));
+            }
+        }
+    }
+
+    void PhysicsWorld2D::PrepareVelocityIsland(PhysicsIsland2D& island)
+    {
+        for (const std::size_t contactIndex : island.ContactIndices)
+        {
+            if (contactIndex >= m_CurrentContacts.size())
+            {
+                continue;
+            }
+
+            PrepareVelocityContact(m_CurrentContacts[contactIndex]);
+        }
+    }
+
+    bool PhysicsWorld2D::IsIslandDynamicBody(const Rigidbody2D* body) const
+    {
+        if (!body)
+        {
+            return false;
+        }
+
+        return body->IsDynamic() && !body->IsSleeping();
+    }
+
+    void PhysicsWorld2D::WarmStartVelocityIsland(PhysicsIsland2D& island)
+    {
+        for (const std::size_t contactIndex : island.ContactIndices)
+        {
+            if (contactIndex >= m_CurrentContacts.size())
+            {
+                continue;
+            }
+
+            WarmStartVelocityContact(m_CurrentContacts[contactIndex]);
+        }
+    }
+
+    void PhysicsWorld2D::SolveVelocityIsland(PhysicsIsland2D& island)
+    {
+        for (std::size_t iteration = 0; iteration < m_VelocityIterations; ++iteration)
+        {
+            for (const std::size_t contactIndex : island.ContactIndices)
+            {
+
+                if (contactIndex >= m_CurrentContacts.size())
+                {
+                    continue;
+                }
+
+                SolveVelocityContact(m_CurrentContacts[contactIndex]);
+            }
+        }
+    }
+
+    void PhysicsWorld2D::SolvePositionIsland(PhysicsIsland2D& island)
+    {
+        for (std::size_t iteration = 0; iteration < m_PositionIterations; ++iteration)
+        {
+            bool correctedAny = false;
+
+            for (const std::size_t contactIndex : island.ContactIndices)
+            {
+                if (contactIndex >= m_CurrentContacts.size())
+                {
+                    continue;
+                }
+
+                CollisionManifold2D& manifold = m_CurrentContacts[contactIndex];
+
+                if (manifold.IsTrigger)
+                {
+                    continue;
+                }
+
+                if (!RefreshManifold(manifold))
+                {
+                    continue;
+                }
+
+                if (manifold.Penetration <= 0.0f)
+                {
+                    continue;
+                }
+
+                Entity* entityA = manifold.A->GetOwner();
+
+                Entity* entityB = manifold.B->GetOwner();
+
+                if (!entityA || !entityB)
+                {
+                    continue;
+                }
+
+                TransformComponent* transformA = entityA->GetComponent<TransformComponent>();
+
+                TransformComponent* transformB = entityB->GetComponent<TransformComponent>();
+
+                if (!transformA || !transformB)
+                {
+                    continue;
+                }
+
+                Rigidbody2D* bodyA = entityA->GetComponent<Rigidbody2D>();
+
+                Rigidbody2D* bodyB = entityB->GetComponent<Rigidbody2D>();
+
+                const float inverseMassA = GetSolverInverseMass(bodyA);
+
+                const float inverseMassB = GetSolverInverseMass(bodyB);
+
+                if (inverseMassA + inverseMassB <= 0.0f)
+                {
+                    continue;
+                }
+
+                ApplyPositionalCorrection(manifold, bodyA, bodyB, *transformA, *transformB);
+
+                correctedAny = true;
+            }
+
+            if (!correctedAny)
+            {
+                break;
+            }
+        }
+    }
+
+    Rigidbody2D* PhysicsWorld2D::GetColliderBody(Collider2D* collider) const
+    {
+        if (!collider)
+        {
+            return nullptr;
+        }
+
+        Entity* owner = collider->GetOwner();
+
+        if (!owner)
+        {
+            return nullptr;
+        }
+
+        return owner->GetComponent<Rigidbody2D>();
+    }
+
+    std::size_t PhysicsWorld2D::GetIslandCount() const
+    {
+        return m_Islands.size();
     }
 }
