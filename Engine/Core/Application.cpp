@@ -93,48 +93,52 @@ namespace Engine
 
         rubber.DynamicFriction = 0.7f;
 
-        Entity* wall = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Rectangle, {640.0f, 600.0f}, {1000.0f, 50.0f});
+        Entity* ground = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Rectangle, {640.0f, 710.0f}, {1100.0f, 50.0f});
 
-        wall->AddComponent<BoxCollider2D>(Vector2{1000.0f, 50.0f});
+        ground->AddComponent<BoxCollider2D>(Vector2{1000.0f, 50.0f});
 
-        auto* wallBody = wall->AddComponent<Rigidbody2D>();
+        auto* groundBody = ground->AddComponent<Rigidbody2D>();
 
-        wallBody->SetBodyType(BodyType2D::Static);
+        groundBody->SetBodyType(BodyType2D::Static);
 
-        Entity* box = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Square, {320.0f, 540.0f}, {100.0f, 100.0f});
+        Entity* wallL = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Rectangle, {100.0f, 600.0f}, {500.0f, 50.0f});
 
-        box->AddComponent<BoxCollider2D>(Vector2{100.0f, 100.0f});
+        auto* wallLTransform = wallL->GetComponent<TransformComponent>();
 
-        auto* boxBody = box->AddComponent<Rigidbody2D>();
+        wallLTransform->SetWorldRotation(90.0f);
 
-        boxBody->SetBodyType(BodyType2D::Dynamic);
+        wallL->AddComponent<BoxCollider2D>(Vector2{500.0f, 50.0f});
 
-        Entity* box2 = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Square, {500.0f, 540.0f}, {100.0f, 100.0f});
-        
-        box2->AddComponent<BoxCollider2D>(Vector2{100.0f, 100.0f});
+        auto* wallLBody = wallL->AddComponent<Rigidbody2D>();
 
-        auto* box2Body = box2->AddComponent<Rigidbody2D>();
+        wallLBody->SetBodyType(BodyType2D::Static);
 
-        box2Body->SetBodyType(BodyType2D::Dynamic);
-        
-        //boxBody->SetVelocity({800.0f, 0.0f});
-        //boxBody->SetAngularVelocity(10.0f);
+        Entity* boxA = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Square, {650.0f, 100.0f}, {80.0f, 80.0f});
 
-        /*Entity* box2 = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Square, {500.0f, 540.0f}, {50.0f, 50.0f});
+        boxA->AddComponent<BoxCollider2D>(Vector2{80.0f, 80.0f});
 
-        box2->AddComponent<BoxCollider2D>(Vector2{50.0f, 50.0f});
+        Rigidbody2D* bodyA = boxA->AddComponent<Rigidbody2D>();
 
-        auto* box2Body = box2->AddComponent<Rigidbody2D>();
+        bodyA->SetBodyType(BodyType2D::Static);
 
-        box2Body->SetBodyType(BodyType2D::Dynamic);
+        Entity* boxB = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Square, {650.0f, 150.0f}, {80.0f, 80.0f});
 
-        Entity* circle = Primitive2DFactory::Create(m_Scene, PrimitiveShape2D::Circle, {600.0f, 540.0f}, {80.0f, 80.0f});
+        boxB->AddComponent<BoxCollider2D>(Vector2{80.0f, 80.0f});
 
-        circle->AddComponent<CircleCollider2D>(40.0f);
+        Rigidbody2D* bodyB = boxB->AddComponent<Rigidbody2D>();
 
-        auto* circleBody = circle->AddComponent<Rigidbody2D>();
+        bodyB->SetBodyType(BodyType2D::Dynamic);
 
-        circleBody->SetBodyType(BodyType2D::Dynamic);*/
+        // Distance joint test.
+
+        //m_TestDistanceJoint = std::make_unique<DistanceJoint2D>(bodyA, bodyB, Vector2{0.0f, 0.0f}, Vector2{0.0f, 0.0f}, 250.0f);
+
+        //m_Scene.GetPhysicsWorld().AddJoint(m_TestDistanceJoint.get());
+
+        m_TestRevoluteJoint = std::make_unique<RevoluteJoint2D>(bodyA, bodyB, Vector2{0.0f, 0.0f}, Vector2{0.0f, -100.0f});
+
+        m_Scene.GetPhysicsWorld().AddJoint(m_TestRevoluteJoint.get());
+
         
         m_PhysicsDebugRenderer.SetDrawColliders(true);
 
@@ -210,6 +214,20 @@ namespace Engine
         if (!m_IsRunning && !m_Window.GetNativeWindow() && !m_Renderer.GetNativeRenderer())
         {
             return;
+        }
+
+        if (m_TestDistanceJoint)
+        {
+            m_Scene.GetPhysicsWorld().RemoveJoint(m_TestDistanceJoint.get());
+
+            m_TestDistanceJoint.reset();
+        }
+
+        if (m_TestRevoluteJoint)
+        {
+            m_Scene.GetPhysicsWorld().RemoveJoint(m_TestRevoluteJoint.get());
+
+            m_TestRevoluteJoint.reset();
         }
 
         m_IsRunning = false;

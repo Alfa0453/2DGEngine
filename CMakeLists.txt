@@ -160,6 +160,17 @@ add_executable(2DGRuntime
 
     Engine/Physics/CollisionManifold2D.h
     Engine/Physics/PhysicsMaterial2D.h
+
+    Engine/Physics/Joint2D.h
+
+    Engine/Physics/DistanceJoint2D.cpp
+    Engine/Physics/DistanceJoint2D.h
+
+    Engine/Physics/RevoluteJoint2D.cpp
+    Engine/Physics/RevoluteJoint2D.h
+
+    Engine/Physics/PrismaticJoint2D.cpp
+    Engine/Physics/PrismaticJoint2D.h
 )
 
 target_include_directories(2DGRuntime

@@ -28,3 +28,6 @@ D:\C++_Projects\2DGEngine\Engine\Physics\BoxCollider2D.cpp;D:\C++_Projects\2DGEn
 D:\C++_Projects\2DGEngine\Engine\Physics\CircleCollider2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\CircleCollider2D.obj
 D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsWorld2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\PhysicsWorld2D.obj
 D:\C++_Projects\2DGEngine\Engine\Physics\Rigidbody2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\Rigidbody2D.obj
+D:\C++_Projects\2DGEngine\Engine\Physics\DistanceJoint2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\DistanceJoint2D.obj
+D:\C++_Projects\2DGEngine\Engine\Physics\RevoluteJoint2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\RevoluteJoint2D.obj
+D:\C++_Projects\2DGEngine\Engine\Physics\PrismaticJoint2D.cpp;D:\C++_Projects\2DGEngine\Build\2DGRuntime.dir\Debug\PrismaticJoint2D.obj

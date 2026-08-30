@@ -8,6 +8,7 @@
 #include "ColliderPair2D.h"
 #include "CollisionEvents2D.h"
 #include "CollisionManifold2D.h"
+#include "Joint2D.h"
 #include "OrientedBox2D.h"
 #include "OverlapHit2D.h"
 #include "PhysicsIsland2D.h"
@@ -55,6 +56,10 @@ namespace Engine
         m_CurrentOverlaps.clear();
 
         m_PreviousOverlaps.clear();
+
+        m_Islands.clear();
+
+        m_Joints.clear();
 
         m_Scene = scene;
     }
@@ -144,28 +149,22 @@ namespace Engine
         // Wake sleeping bodies
         WakeBodiesFromContacts();
 
-        // Prepare solver constants / restitution.
-        PrepareVelocityContacts();
-
-        // Apply previously accumulated impulses.
-        WarmStartVelocityContacts();
-
         // Build connected Dynamic groups.
         BuildIslands();
 
-        std::cout << "Physics island: " << m_Islands.size() << '\n';
-
-        for (std::size_t i = 0; i < m_Islands.size(); ++i)
-        {
-            std::cout << "Island " << i << ": Bodies=" << m_Islands[i].Bodies.size() << " Contacts=" << m_Islands[i].ContactIndices.size() << '\n';
-        }
+        // Wake entire connected islands when one member is active.
+        PropergeteIslandWakeStates();
 
         // Velocity solver by island.
         for (PhysicsIsland2D& island : m_Islands)
         {
             PrepareVelocityIsland(island);
 
+            PrepareJoints(island, deltaTime);
+
             WarmStartVelocityIsland(island);
+
+            WarmStartJoints(island);
 
             SolveVelocityIsland(island);
         }
@@ -180,7 +179,7 @@ namespace Engine
         }
 
         // Sleep evaluation
-        UpdateSleepStates(deltaTime);
+        UpdateIslandSleepStates(deltaTime);
 
         // Collision events
         PublishPairEvents();
@@ -2894,7 +2893,7 @@ namespace Engine
         // Right face.
         if (motion.X < 0.0f)
         {
-            const float targetX = boxBounds.Max.X - radius;
+            const float targetX = boxBounds.Max.X + radius;
 
             const float time = (targetX - startCenter.X) / motion.X;
 
@@ -2930,7 +2929,7 @@ namespace Engine
         // Bottom face.
         if (motion.Y < 0.0f)
         {
-            const float targetY = boxBounds.Max.Y - radius;
+            const float targetY = boxBounds.Max.Y + radius;
 
             const float time = (targetY - startCenter.Y) / motion.Y;
 
@@ -4807,10 +4806,53 @@ namespace Engine
 
         std::unordered_map<Rigidbody2D*, std::vector<std::size_t>> bodyContacts;
 
+        std::unordered_map<Rigidbody2D*, std::vector<Joint2D*>> bodyJoints;
+
         // Keep first-seen order rather than iteration the unordered_map directly.
         std::vector<Rigidbody2D*> bodyOrder;
 
         std::unordered_set<Rigidbody2D*> discoveredBodies;
+
+        for (Joint2D* joint : m_Joints)
+        {
+            if (!joint || !joint->IsEnabled())
+            {
+                continue;
+            }
+
+            Rigidbody2D* bodyA = joint->GetBodyA();
+
+            Rigidbody2D* bodyB = joint->GetBodyB();
+
+            const bool dynamicA = IsIslandDynamicBody(bodyA);
+
+            const bool dynamicB = IsIslandDynamicBody(bodyB);
+
+            if (!dynamicA && !dynamicB)
+            {
+                continue;
+            }
+
+            if (dynamicA)
+            {
+                bodyJoints[bodyA].push_back(joint);
+
+                if (discoveredBodies.insert(bodyA).second)
+                {
+                    bodyOrder.push_back(bodyA);
+                }
+            }
+
+            if (dynamicB)
+            {
+                bodyJoints[bodyB].push_back(joint);
+
+                if (discoveredBodies.insert(bodyB).second)
+                {
+                    bodyOrder.push_back(bodyB);
+                }
+            }
+        }
 
         for (std::size_t contactIndex = 0; contactIndex < m_CurrentContacts.size(); ++contactIndex)
         {
@@ -4825,9 +4867,9 @@ namespace Engine
 
             Rigidbody2D* bodyB = GetColliderBody(manifold.B);
 
-            const float dynamicA = IsIslandDynamicBody(bodyA);
+            const bool dynamicA = IsIslandDynamicBody(bodyA);
 
-            const float dynamicB = IsIslandDynamicBody(bodyB);
+            const bool dynamicB = IsIslandDynamicBody(bodyB);
 
             // No awake Dynamic body participates.
             if (!dynamicA && !dynamicB)
@@ -4871,6 +4913,8 @@ namespace Engine
 
             std::unordered_set<std::size_t> islandContacts;
 
+            std::unordered_set<Joint2D*> islandJoints;
+
             stack.push_back(rootBody);
 
             visitedBodies.insert(rootBody);
@@ -4894,54 +4938,95 @@ namespace Engine
 
                 const auto adjacencyIt = bodyContacts.find(body);
 
-                if (adjacencyIt == bodyContacts.end())
+                if (adjacencyIt != bodyContacts.end())
                 {
-                    continue;
+                    for (const std::size_t contactIndex : adjacencyIt->second)
+                    {
+                        if (contactIndex >= m_CurrentContacts.size())
+                        {
+                            continue;
+                        }
+
+                        // Add each manifold only once to this island.
+                        if (islandContacts.insert(contactIndex).second)
+                        {
+                            island.ContactIndices.push_back(contactIndex);
+                        }
+
+                        CollisionManifold2D& manifold = m_CurrentContacts[contactIndex];
+
+                        Rigidbody2D* bodyA = GetColliderBody(manifold.A);
+
+                        Rigidbody2D* bodyB = GetColliderBody(manifold.B);
+
+                        Rigidbody2D* otherBody = nullptr;
+
+                        if (body == bodyA)
+                        {
+                            otherBody =bodyB;
+                        }
+                        else if (body == bodyB)
+                        {
+                            otherBody = bodyA;
+                        }
+
+                        // =============================================
+                        // ONLY AWAKE DYNAMIC BODIES PROPAGATE
+                        // THE GRAPH.
+                        // =============================================
+
+                        if (!IsIslandDynamicBody(otherBody))
+                        {
+                            continue;
+                        }
+
+                        if (visitedBodies.insert(otherBody).second)
+                        {
+                            stack.push_back(otherBody);
+                        }
+                    }
                 }
+                
+                const auto jointAdjancencyIt = bodyJoints.find(body);
 
-                for (const std::size_t contactIndex : adjacencyIt->second)
+                if (jointAdjancencyIt != bodyJoints.end())
                 {
-                    if (contactIndex >= m_CurrentContacts.size())
+                    for (Joint2D* joint : jointAdjancencyIt->second)
                     {
-                        continue;
-                    }
+                        if (!joint || !joint->IsEnabled())
+                        {
+                            continue;
+                        }
 
-                    // Add each manifold only once to this island.
-                    if (islandContacts.insert(contactIndex).second)
-                    {
-                        island.ContactIndices.push_back(contactIndex);
-                    }
+                        if (islandJoints.insert(joint).second)
+                        {
+                            island.Joints.push_back(joint);
+                        }
 
-                    CollisionManifold2D& manifold = m_CurrentContacts[contactIndex];
+                        Rigidbody2D* bodyA = joint->GetBodyA();
 
-                    Rigidbody2D* bodyA = GetColliderBody(manifold.A);
+                        Rigidbody2D* bodyB = joint->GetBodyB();
 
-                    Rigidbody2D* bodyB = GetColliderBody(manifold.B);
+                        Rigidbody2D* otherBody = nullptr;
 
-                    Rigidbody2D* otherBody = nullptr;
+                        if (body == bodyA)
+                        {
+                            otherBody = bodyB;
+                        }
+                        else if (body == bodyB)
+                        {
+                            otherBody = bodyA;
+                        }
 
-                    if (body == bodyA)
-                    {
-                        otherBody =bodyB;
-                    }
-                    else if (body == bodyB)
-                    {
-                        otherBody = bodyA;
-                    }
+                        if (!IsIslandDynamicBody(otherBody))
+                        {
+                            continue;
+                        }
 
-                    // =============================================
-                    // ONLY AWAKE DYNAMIC BODIES PROPAGATE
-                    // THE GRAPH.
-                    // =============================================
-
-                    if (!IsIslandDynamicBody(otherBody))
-                    {
-                        continue;
-                    }
-
-                    if (visitedBodies.insert(otherBody).second)
-                    {
-                        stack.push_back(otherBody);
+                        if (visitedBodies.insert(otherBody).second)
+                        {
+                            stack.push_back(otherBody);
+                        }
                     }
                 }
             }
@@ -4968,12 +5053,7 @@ namespace Engine
 
     bool PhysicsWorld2D::IsIslandDynamicBody(const Rigidbody2D* body) const
     {
-        if (!body)
-        {
-            return false;
-        }
-
-        return body->IsDynamic() && !body->IsSleeping();
+        return body && body->IsDynamic();
     }
 
     void PhysicsWorld2D::WarmStartVelocityIsland(PhysicsIsland2D& island)
@@ -4993,6 +5073,8 @@ namespace Engine
     {
         for (std::size_t iteration = 0; iteration < m_VelocityIterations; ++iteration)
         {
+            // CONTACT CONSTRAINTS
+
             for (const std::size_t contactIndex : island.ContactIndices)
             {
 
@@ -5002,6 +5084,18 @@ namespace Engine
                 }
 
                 SolveVelocityContact(m_CurrentContacts[contactIndex]);
+            }
+
+            // JOINT CONSTRAINTS
+            
+            for (Joint2D* joint : island.Joints)
+            {
+                if (!joint || !joint->IsEnabled())
+                {
+                    continue;
+                }
+
+                joint->SolveVelocity(*this);
             }
         }
     }
@@ -5072,6 +5166,19 @@ namespace Engine
                 correctedAny = true;
             }
 
+            for (Joint2D* joint : island.Joints)
+            {
+                if (!joint || !joint->IsEnabled())
+                {
+                    continue;
+                }
+
+                if (joint->SolvePosition(*this))
+                {
+                    correctedAny = true;
+                }
+            }
+
             if (!correctedAny)
             {
                 break;
@@ -5099,5 +5206,371 @@ namespace Engine
     std::size_t PhysicsWorld2D::GetIslandCount() const
     {
         return m_Islands.size();
+    }
+
+
+    void PhysicsWorld2D::UpdateIslandSleepStates(float deltaTime)
+    {
+        std::unordered_set<Rigidbody2D*> islandBodies;
+
+        // Island bodies
+        for (PhysicsIsland2D& island : m_Islands)
+        {
+            for (Rigidbody2D* body : island.Bodies)
+            {
+                if (body)
+                {
+                    islandBodies.insert(body);
+                }
+            }
+
+            UpdateIslandSleepState(island, deltaTime);
+        }
+
+        // Isolated dynamic bodies
+        if (!m_Scene)
+        {
+            return;
+        }
+
+        for (Entity* root : m_Scene->GetRootEntities())
+        {
+            UpdateIsolatedBodySleepRecursive(root, deltaTime, islandBodies);
+        }
+    }
+
+
+    void PhysicsWorld2D::UpdateIslandSleepState(PhysicsIsland2D& island, float deltaTime)
+    {
+        if (island.Bodies.empty())
+        {
+            return;
+        }
+
+        bool allBodiesCanSleep = true;
+
+        bool allBodiesAreQuite = true;
+
+        // Determine whether the island is eligible.
+        for (Rigidbody2D* body : island.Bodies)
+        {
+            if (!body)
+            {
+                continue;
+            }
+
+            if (!body->IsDynamic())
+            {
+                continue;
+            }
+
+            if (!body->CanSleep())
+            {
+                allBodiesCanSleep = false;
+
+                break;
+            }
+
+            if (!IsBodyQuietForSleep(*body))
+            {
+                allBodiesAreQuite = false;
+            }
+        }
+
+        // A body that cannot sleep keeps the whole island awake.
+        if (!allBodiesCanSleep)
+        {
+            WakeIsland(island);
+
+            return;
+        }
+
+        // Any meaningful motion keeps the whole island awake.
+        if (!allBodiesAreQuite)
+        {
+            WakeIsland(island);
+
+            return;
+        }
+
+        // Entire island is quiet.
+        // Advance all body timers together.
+        bool allTimersReady = true;
+
+        for (Rigidbody2D* body : island.Bodies)
+        {
+            if (!body || !body->IsDynamic())
+            {
+                continue;
+            }
+
+            body->AddSleepTime(deltaTime);
+
+            if (body->GetSleepTimer() < m_TimeToSleep)
+            {
+                allTimersReady = false;
+            }
+        }
+
+        // Sleep as one group.
+        if (allTimersReady)
+        {
+            SleepIsland(island);
+        }
+    }
+
+
+    void PhysicsWorld2D::WakeIsland(PhysicsIsland2D& island)
+    {
+        for (Rigidbody2D* body : island.Bodies)
+        {
+            if (!body)
+            {
+                continue;
+            }
+
+            if (!body->IsDynamic())
+            {
+                continue;
+            }
+
+            if (body->IsSleeping())
+            {
+                body->Wake();
+            }
+            else 
+            {
+                body->ResetSleepTimer();
+            }
+        }
+    }
+
+
+    void PhysicsWorld2D::SleepIsland(PhysicsIsland2D& island)
+    {
+        for (Rigidbody2D* body : island.Bodies)
+        {
+            if (!body)
+            {
+                continue;
+            }
+
+            if (!body->IsDynamic())
+            {
+                continue;
+            }
+
+            if (!body->CanSleep())
+            {
+                continue;
+            }
+
+            body->Sleep();
+        }
+    }
+
+
+    bool PhysicsWorld2D::IsBodyQuietForSleep(const Rigidbody2D& body) const
+    {
+        const float linearThresholdSquared = m_SleepLinearSpeedThreshold * m_SleepLinearSpeedThreshold;
+
+        const bool linearMotionIsSmall = body.GetVelocity().LengthSqured() <= linearThresholdSquared;
+
+        const bool angularMotionIsSmall = std::abs(body.GetAngularVelocity()) <= m_SleepAngularSpeedThreshold;
+
+        return linearMotionIsSmall && angularMotionIsSmall;
+    }
+
+
+    void PhysicsWorld2D::UpdateIsolatedBodySleepRecursive(Entity* entity, float deltaTime, const std::unordered_set<Rigidbody2D*>& islandBodies)
+    {
+        if (!entity)
+        {
+            return;
+        }
+
+        Rigidbody2D* body = entity->GetComponent<Rigidbody2D>();
+
+        if (body && body->IsDynamic() && body->CanSleep() && !body->IsSleeping())
+        {
+            const bool belongsToIsland = islandBodies.find(body) != islandBodies.end();
+
+            if (!belongsToIsland)
+            {
+                if (IsBodyQuietForSleep(*body))
+                {
+                    body->AddSleepTime(deltaTime);
+
+                    if (body->GetSleepTimer() >= m_TimeToSleep)
+                    {
+                        body->Sleep();
+                    }
+                }
+                else 
+                {
+                    body->ResetSleepTimer();
+                }
+            }
+        }
+
+        for (const EntityHandle& childHandle : entity->GetChildren())
+        {
+            UpdateIsolatedBodySleepRecursive(childHandle.Get(), deltaTime, islandBodies);
+        }
+    }
+
+    
+    bool PhysicsWorld2D::IslandNeedsWake(const PhysicsIsland2D& island) const
+    {
+        for (Rigidbody2D* body : island.Bodies)
+        {
+            if (!body)
+            {
+                continue;
+            }
+
+            if (!body->IsDynamic())
+            {
+                continue;
+            }
+
+            if (!body->IsSleeping())
+            {
+                if (!IsBodyQuietForSleep(*body))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+    void PhysicsWorld2D::PropergeteIslandWakeStates()
+    {
+        for (PhysicsIsland2D& island : m_Islands)
+        {
+            if (!IslandNeedsWake(island))
+            {
+                continue;
+            }
+
+            WakeIsland(island);
+        }
+    }
+
+
+    void PhysicsWorld2D::AddJoint(Joint2D* joint)
+    {
+        if (!joint)
+        {
+            return;
+        }
+
+        const auto it = std::find(m_Joints.begin(), m_Joints.end(), joint);
+
+        if (it != m_Joints.end())
+        {
+            return;
+        }
+
+        m_Joints.push_back(joint);
+
+        Rigidbody2D* bodyA = joint->GetBodyA();
+
+        Rigidbody2D* bodyB = joint->GetBodyB();
+
+        if (bodyA)
+        {
+            bodyA->Wake();
+        }
+
+        if (bodyB)
+        {
+            bodyB->Wake();
+        }
+    }
+
+    void PhysicsWorld2D::RemoveJoint(Joint2D* joint)
+    {
+        if (!joint)
+        {
+            return;
+        }
+
+        auto it = std::remove(m_Joints.begin(), m_Joints.end(), joint);
+
+        if (it == m_Joints.end())
+        {
+            return;
+        }
+
+        Rigidbody2D* bodyA = joint->GetBodyA();
+
+        Rigidbody2D* bodyB = joint->GetBodyB();
+
+        m_Joints.erase(it, m_Joints.end());
+
+        if (bodyA)
+        {
+            bodyA->Wake();
+        }
+
+        if (bodyB)
+        {
+            bodyB->Wake();
+        }
+    }
+
+    const std::vector<Joint2D*>& PhysicsWorld2D::GetJoints() const
+    {
+        return m_Joints;
+    }
+
+    void PhysicsWorld2D::PrepareJoints(PhysicsIsland2D& island, float deltaTime)
+    {
+        for (Joint2D* joint : island.Joints)
+        {
+            if (!joint || !joint->IsEnabled())
+            {
+                continue;
+            }
+
+            joint->Prepare(*this, deltaTime);
+        }
+    }
+
+    void PhysicsWorld2D::WarmStartJoints(PhysicsIsland2D& island)
+    {
+        for (Joint2D* joint : island.Joints)
+        {
+            if (!joint || !joint->IsEnabled())
+            {
+                continue;
+            }
+
+            joint->WarmStart(*this);
+        }
+    }
+
+    float PhysicsWorld2D::GetConstraintInverseMass(const Rigidbody2D* body) const
+    {
+        return GetSolverInverseMass(body);
+    }
+
+    float PhysicsWorld2D::GetConstraintInverseInertia(const Rigidbody2D* body) const
+    {
+        return GetSolverInverseInertia(body);
+    }
+
+    float PhysicsWorld2D::Cross(const Vector2& a, const Vector2& b) const
+    {
+        return Cross2D(a, b);
+    }
+
+    Vector2 PhysicsWorld2D::GetConstraintPointVelocity(const Vector2& linearVelocity, float angularVelocity, const Vector2& leverArm) const
+    {
+        return GetVelocityAtPoint(linearVelocity, angularVelocity, leverArm);
     }
 }

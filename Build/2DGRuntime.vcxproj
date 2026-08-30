@@ -524,6 +524,13 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\Rigidbody2D.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\CollisionManifold2D.h" />
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\PhysicsMaterial2D.h" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\Joint2D.h" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\DistanceJoint2D.cpp" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\DistanceJoint2D.h" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\RevoluteJoint2D.cpp" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\RevoluteJoint2D.h" />
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Physics\PrismaticJoint2D.cpp" />
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Physics\PrismaticJoint2D.h" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

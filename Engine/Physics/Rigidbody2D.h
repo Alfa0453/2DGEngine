@@ -94,6 +94,10 @@ namespace Engine
 
         float GetInverseInertia() const;
 
+        void SetVelocityFromPhysics(const Vector2& velocity);
+
+        void SetAngularVelocityFromPhysics(float angularVelocity);
+
     protected:
 
         friend class PhysicsWorld2D;
@@ -101,10 +105,6 @@ namespace Engine
     private:
         
         void RecalculateInverseMass();
-
-        void SetVelocityFromPhysics(const Vector2& velocity);
-
-        void SetAngularVelocityFromPhysics(float angularVelocity);
 
         void AddSleepTime(float deltaTime);
 

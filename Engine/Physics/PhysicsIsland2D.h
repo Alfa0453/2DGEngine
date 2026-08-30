@@ -6,6 +6,7 @@
 namespace Engine
 {
     class Rigidbody2D;
+    class Joint2D;
 
     struct PhysicsIsland2D
     {
@@ -13,16 +14,20 @@ namespace Engine
 
         std::vector<std::size_t> ContactIndices;
 
+        std::vector<Joint2D*> Joints;
+
         void Clear()
         {
             Bodies.clear();
 
             ContactIndices.clear();
+
+            Joints.clear();
         }
 
         bool Empty() const
         {
-            return Bodies.empty() && ContactIndices.empty();
+            return Bodies.empty() && ContactIndices.empty() && Joints.empty();
         }
     };
 }

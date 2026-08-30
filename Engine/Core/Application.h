@@ -16,6 +16,8 @@
 #include "../Scene/Scene.h"
 #include "../Physics/PhysicsWorld2D.h"
 #include "../Physics/PhysicsDebugRenderer2D.h"
+#include "../Physics/DistanceJoint2D.h"
+#include "../Physics/RevoluteJoint2D.h"
 
 namespace Engine
 {
@@ -67,5 +69,9 @@ namespace Engine
         Entity* m_Player = nullptr;
 
         PhysicsDebugRenderer2D m_PhysicsDebugRenderer;
+
+        std::unique_ptr<DistanceJoint2D> m_TestDistanceJoint;
+
+        std::unique_ptr<RevoluteJoint2D> m_TestRevoluteJoint;
     };
 }

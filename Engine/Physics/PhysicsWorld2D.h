@@ -15,6 +15,7 @@
 #include "BroadPhaseProxy2D.h"
 #include "CachedContactPair2D.h"
 #include "PhysicsIsland2D.h"
+#include "Joint2D.h"
 
 #include "../Math/Vector2.h"
 #include "../Math/Bounds2D.h"
@@ -110,6 +111,20 @@ namespace Engine
 
         std::size_t GetIslandCount() const;
 
+        void AddJoint(Joint2D* joint);
+
+        void RemoveJoint(Joint2D* joint);
+
+        const std::vector<Joint2D*>& GetJoints() const;
+
+        float GetConstraintInverseMass(const Rigidbody2D* body) const;
+
+        float GetConstraintInverseInertia(const Rigidbody2D* body) const;
+
+        float Cross(const Vector2& a, const Vector2& b) const;
+
+        Vector2 GetConstraintPointVelocity(const Vector2& linearVelocity, float angularVelocity, const Vector2& leverArm) const;
+
     private:
 
         struct RayShapeHit2D
@@ -191,6 +206,8 @@ namespace Engine
 
         void WakeBodiesFromContacts();
 
+        // Legacy pre-island sleep path.
+        // No longer called by PhysicsWorld2D::Step().
         void UpdateSleepStates(float deltaTime);
 
         void UpdateEntitySleepRecursive(Entity* entity, float deltaTime);
@@ -303,6 +320,28 @@ namespace Engine
 
         Rigidbody2D* GetColliderBody(Collider2D* collider) const;
 
+        void UpdateIslandSleepStates(float deltaTime);
+
+        void UpdateIslandSleepState(PhysicsIsland2D& island, float deltaTime);
+
+        void WakeIsland(PhysicsIsland2D& island);
+
+        void SleepIsland(PhysicsIsland2D& island);
+
+        bool IsBodyQuietForSleep(const Rigidbody2D& body) const;
+
+        void UpdateIsolatedBodySleepRecursive(Entity* entity, float deltaTime, const std::unordered_set<Rigidbody2D*>& islandBodies);
+
+        bool IslandNeedsWake(const PhysicsIsland2D& island) const;
+
+        void PropergeteIslandWakeStates();
+
+        void PrepareJoints(PhysicsIsland2D& island, float deltaTime);
+
+        void WarmStartJoints(PhysicsIsland2D& island);
+
+        void SolveJointVelocities(PhysicsIsland2D& island);
+
     private:
         
         Scene* m_Scene = nullptr;
@@ -354,5 +393,7 @@ namespace Engine
         std::unordered_map<ColliderPair2D, CachedContactPair2D, ColliderPair2DHash> m_ContactCache;
 
         std::vector<PhysicsIsland2D> m_Islands;
+
+        std::vector<Joint2D*> m_Joints;
     };
 }
