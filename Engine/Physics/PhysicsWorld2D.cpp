@@ -3,6 +3,7 @@
 #include "BoxCollider2D.h"
 #include "BroadPhaseProxy2D.h"
 #include "CachedContactPair2D.h"
+#include "CapsuleCollider2D.h"
 #include "CircleCollider2D.h"
 #include "Collider2D.h"
 #include "ColliderPair2D.h"
@@ -11,9 +12,13 @@
 #include "Joint2D.h"
 #include "OrientedBox2D.h"
 #include "OverlapHit2D.h"
+#include "PhysicsDebugDrawSettings2D.h"
+#include "PhysicsGeometry2D.h"
 #include "PhysicsIsland2D.h"
 #include "PhysicsQueryContext2D.h"
 #include "PhysicsQueryFilter2D.h"
+#include "PhysicsStats2D.h"
+#include "PolygonCollider2D.h"
 #include "RaycastHit2D.h"
 #include "Rigidbody2D.h"
 #include "ShapeCastHit2D.h"
@@ -21,6 +26,7 @@
 #include "CollisionDetectionMode2D.h"
 #include "SweepHit2D.h"
 #include "SweptAABBHit2D.h"
+#include "PhysicsGeometry2D.h"
 
 #include "../Scene/Scene.h"
 #include "../Scene/Entity.h"
@@ -33,6 +39,7 @@
 #include <limits>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace Engine
@@ -61,6 +68,24 @@ namespace Engine
 
         m_Joints.clear();
 
+        m_ActiveColliders.clear();
+
+        m_SpatialGrid.clear();
+
+        m_BroadPhaseProxies.clear();
+
+        m_CandidatePairs.clear();
+
+        m_SweptTriggerPairsThisStep.clear();
+
+        m_CCDResolvePairsThisStep.clear();
+
+        m_CCDDebugRecords.clear();
+
+        m_Stats = PhysicsStats2D{};
+
+        m_Accumulator = 0.0f;
+
         m_Scene = scene;
     }
 
@@ -75,16 +100,18 @@ namespace Engine
 
         std::size_t subSteps = 0;
 
-        while (m_Accumulator >= m_FixedDeltaTime && subSteps < m_MaxSubSteps)
+        while (m_Accumulator >= m_Settings.FixedDeltaTime && subSteps < m_Settings.MaxSubSteps)
         {
-            Step(m_FixedDeltaTime);
+            Step(m_Settings.FixedDeltaTime);
 
-            m_Accumulator -= m_FixedDeltaTime;
+            m_Accumulator -= m_Settings.FixedDeltaTime;
 
             ++subSteps;
         }
 
-        if (subSteps == m_MaxSubSteps)
+        m_Stats.SubStepsThisUpdate = subSteps;
+
+        if (subSteps == m_Settings.MaxSubSteps)
         {
             m_Accumulator = 0.0f;
         }
@@ -98,6 +125,10 @@ namespace Engine
         {
             return;
         }
+
+        m_CCDDebugRecords.clear();
+
+        ResetStepStats(deltaTime);
 
         // =====================================
         // 1. Tentative integration
@@ -113,9 +144,15 @@ namespace Engine
 
         BuildSpatialGrid();
 
+        m_Stats.SpatialCells = m_SpatialGrid.size();
+
+        m_Stats.BroadPhaseProxies = m_BroadPhaseProxies.size();
+
         // =====================================
         // 3. CCD
         // =====================================
+
+        m_CCDResolvePairsThisStep.clear();
 
         m_SweptTriggerPairsThisStep.clear();
 
@@ -130,7 +167,9 @@ namespace Engine
 
         BuildSpatialGrid();
 
-        GenerateCondidatePairs();
+        GenerateCandidatePairs();
+
+        m_Stats.CandidatePairs = m_CandidatePairs.size();
 
         // =====================================
         // 5. Regular discrete contacts
@@ -153,7 +192,7 @@ namespace Engine
         BuildIslands();
 
         // Wake entire connected islands when one member is active.
-        PropergeteIslandWakeStates();
+        PropagateIslandWakeStates();
 
         // Velocity solver by island.
         for (PhysicsIsland2D& island : m_Islands)
@@ -181,6 +220,8 @@ namespace Engine
         // Sleep evaluation
         UpdateIslandSleepStates(deltaTime);
 
+        CountBodiesForStats();
+
         // Collision events
         PublishPairEvents();
 
@@ -189,6 +230,8 @@ namespace Engine
 
         // Remove cache entries for pairs that no longer exists.
         RemoveStaleCachedContacts();
+
+        FinalizeStepStats();
     }
 
     void PhysicsWorld2D::CollectColliders()
@@ -231,9 +274,87 @@ namespace Engine
             }
         }
 
+        if (auto* capsule = entity->GetComponent<CapsuleCollider2D>())
+        {
+            if (capsule->IsEnabled() && capsule->GetRadius() > 0.0f)
+            {
+                m_ActiveColliders.push_back(capsule);
+            }
+        }
+
+        if (auto* polygon = entity->GetComponent<PolygonCollider2D>())
+        {
+            if (polygon->IsEnabled() && polygon->IsValidPolygon())
+            {
+                m_ActiveColliders.push_back(polygon);
+            }
+        }
+
         for (const EntityHandle& childHandle : entity->GetChildren())
         {
             CollectCollidersRecursive(childHandle.Get());
+        }
+    }
+
+    void PhysicsWorld2D::CollectMovingCCDCandidates(Collider2D* movingCollider, const Bounds2D& movingSweptBounds, std::vector<Collider2D*>& inOutCandidates) const
+    {
+        std::unordered_set<Collider2D*> unique;
+
+        for (Collider2D* existing : inOutCandidates)
+        {
+            if (existing)
+            {
+                unique.insert(existing);
+            }
+        }
+
+        for (Collider2D* candidate : m_ActiveColliders)
+        {
+            if (!candidate || candidate == movingCollider)
+            {
+                continue;
+            }
+
+            Entity* owner = candidate->GetOwner();
+
+            if (!owner)
+            {
+                continue;
+            }
+
+            Rigidbody2D* body = owner->GetComponent<Rigidbody2D>();
+
+            TransformComponent* transform = owner->GetComponent<TransformComponent>();
+
+            // Collider-only and Static targets are already efficiently handled by the spatial query.
+            //
+            // This fallback exists specifically for moving targets.
+
+            if (!body || !transform || body->IsStatic())
+            {
+                continue;
+            }
+
+            const Vector2 bodyMotion = GetBodyStepMotion(body, transform);
+
+            if (bodyMotion.LengthSquared() <= 0.000001f)
+            {
+                continue;
+            }
+
+            const Bounds2D startBounds = ReconstructStartBounds(*candidate, *body, *transform);
+
+            const Bounds2D sweptBounds = BuildSweptBounds(startBounds, bodyMotion);
+
+            if (!AABBsOverlap(movingSweptBounds, sweptBounds))
+            {
+                continue;
+            }
+
+            if (unique.insert(candidate).second)
+            {
+                inOutCandidates.push_back(candidate);
+            }
         }
     }
 
@@ -404,9 +525,9 @@ namespace Engine
 
         if (manifold.ContactCount == 0)
         {
-            const Vector2 pointA = GetOBBSurpportPoint(boxA, manifold.Normal);
+            const Vector2 pointA = GetOBBSupportPoint(boxA, manifold.Normal);
 
-            const Vector2 pointB = GetOBBSurpportPoint(boxB, manifold.Normal * -1.0f);
+            const Vector2 pointB = GetOBBSupportPoint(boxB, manifold.Normal * -1.0f);
 
             manifold.AddContactPoint((pointA + pointB) * 0.5f);
         }
@@ -426,7 +547,7 @@ namespace Engine
 
         const Vector2 delta = centerB - centerA;
 
-        const float distanceSquared = delta.LengthSqured();
+        const float distanceSquared = delta.LengthSquared();
 
         const float combinedRadius = radiusA + radiusB;
 
@@ -442,6 +563,8 @@ namespace Engine
         manifold.B = &b;
 
         manifold.IsTrigger = a.IsTrigger() || b.IsTrigger();
+
+        manifold.ClearContacts();
 
         constexpr float epsilon = 0.000001f;
 
@@ -480,7 +603,7 @@ namespace Engine
         return true;
     }
 
-    bool PhysicsWorld2D::BoxVsCircle(BoxCollider2D& box, CircleCollider2D& circle, CollisionManifold2D& maniflod) const
+    bool PhysicsWorld2D::BoxVsCircle(BoxCollider2D& box, CircleCollider2D& circle, CollisionManifold2D& manifold) const
     {
         // =========================================================
         // TRUE ROTATED BOX GEOMETRY
@@ -514,7 +637,7 @@ namespace Engine
         // Circle center relative to the closest Box point.
         const Vector2 localDelta = localCircleCenter - localClosestPoint;
 
-        const float distanceSquared = localDelta.LengthSqured();
+        const float distanceSquared = localDelta.LengthSquared();
 
         const float radiusSquared = radius * radius;
 
@@ -531,13 +654,13 @@ namespace Engine
         // INITIALIZE MANIFOLD
         // =========================================================
 
-        maniflod.A = &box;
+        manifold.A = &box;
 
-        maniflod.B = &circle;
+        manifold.B = &circle;
 
-        maniflod.IsTrigger = box.IsTrigger() || circle.IsTrigger();
+        manifold.IsTrigger = box.IsTrigger() || circle.IsTrigger();
 
-        maniflod.ClearContacts();
+        manifold.ClearContacts();
 
         constexpr float epsilon = 0.000001f;
 
@@ -560,11 +683,11 @@ namespace Engine
             // Convert normal back to world space.
             // -----------------------------------------------------
 
-            maniflod.Normal = OBBLocalDirectionToWorld(orientedBox, localNormal);
+            manifold.Normal = OBBLocalDirectionToWorld(orientedBox, localNormal);
 
-            maniflod.Penetration = radius - distance;
+            manifold.Penetration = radius - distance;
 
-            if (maniflod.Penetration <= 0.0f)
+            if (manifold.Penetration <= 0.0f)
             {
                 return false;
             }
@@ -573,7 +696,7 @@ namespace Engine
             // Convert closest point back to world space.
             // -----------------------------------------------------
 
-            maniflod.AddContactPoint(OBBLocalPointToWorld(orientedBox, localClosestPoint));
+            manifold.AddContactPoint(OBBLocalPointToWorld(orientedBox, localClosestPoint));
 
             return true;
         }
@@ -656,16 +779,16 @@ namespace Engine
         // LOCAL NORMAL -> WORLD NORMAL
         // =========================================================
 
-        maniflod.Normal = OBBLocalDirectionToWorld(orientedBox, localNormal);
+        manifold.Normal = OBBLocalDirectionToWorld(orientedBox, localNormal);
 
 
         // =========================================================
         // PENETRATION
         // =========================================================
 
-        maniflod.Penetration = radius + nearest;
+        manifold.Penetration = radius + nearest;
 
-        if (maniflod.Penetration <= 0.0f)
+        if (manifold.Penetration <= 0.0f)
         {
             return false;
         }
@@ -675,8 +798,704 @@ namespace Engine
         // LOCAL CONTACT -> WORLD CONTACT
         // =========================================================
 
-        maniflod.AddContactPoint(OBBLocalPointToWorld(orientedBox, localContact));
+        manifold.AddContactPoint(OBBLocalPointToWorld(orientedBox, localContact));
 
+
+        return true;
+    }
+
+
+    bool PhysicsWorld2D::CapsuleVsCircle(CapsuleCollider2D& capsuleCollider, CircleCollider2D& circle, CollisionManifold2D& manifold) const
+    {
+        const Capsule2D capsule = capsuleCollider.GetWorldCapsule();
+
+        const Vector2 circleCenter = circle.GetWorldCenter();
+
+        const float circleRadius = circle.GetWorldRadius();
+
+        const Vector2 closestPoint = PhysicsGeometry2D::ClosestPointOnSegment(circleCenter, capsule.PointA, capsule.PointB);
+
+        const Vector2 delta = circleCenter - closestPoint;
+
+        const float distanceSquared = delta.LengthSquared();
+
+        const float combinedRadius = capsule.Radius + circleRadius;
+
+        const float combinedRadiusSquared = combinedRadius * combinedRadius;
+
+        if (distanceSquared >= combinedRadiusSquared)
+        {
+            return false;
+        }
+
+        manifold.A = &capsuleCollider;
+
+        manifold.B = &circle;
+
+        manifold.IsTrigger = capsuleCollider.IsTrigger() || circle.IsTrigger();
+
+        manifold.ClearContacts();
+
+        constexpr float epsilon = 0.000001f;
+
+        if (distanceSquared > epsilon)
+        {
+            const float distance = std::sqrt(distanceSquared);
+
+            manifold.Normal = delta * (1.0f / distance);
+
+            manifold.Penetration = combinedRadius - distance;
+
+            const Vector2 pointOnCapsule = closestPoint + manifold.Normal * capsule.Radius;
+
+            const Vector2 pointOnCircle = circleCenter - manifold.Normal * circleRadius;
+
+            manifold.AddContactPoint((pointOnCapsule + pointOnCircle) * 0.5f);
+
+            return true;
+        }
+
+        // Circle center lies directly on the capsule center segment.
+
+        Vector2 segment = capsule.PointB - capsule.PointA;
+
+        const float segmentLengthSquared = segment.LengthSquared();
+
+        if (segmentLengthSquared > epsilon)
+        {
+            segment *= 1.0f / std::sqrt(segmentLengthSquared);
+
+            manifold.Normal = {-segment.Y, segment.X};
+        }
+        else 
+        {
+            manifold.Normal = {1.0f, 0.0f};
+        }
+
+        manifold.Penetration = combinedRadius;
+
+        manifold.AddContactPoint(closestPoint + manifold.Normal * capsule.Radius);
+
+        return true;
+    }
+
+
+    bool PhysicsWorld2D::CapsuleVsCapsule(CapsuleCollider2D& a, CapsuleCollider2D& b, CollisionManifold2D& manifold) const
+    {
+        const Capsule2D capsuleA = a.GetWorldCapsule();
+
+        const Capsule2D capsuleB = b.GetWorldCapsule();
+
+        const ClosestSegmentPoints2D closest = ClosestPointsBetweenSegments(capsuleA.PointA, capsuleA.PointB, capsuleB.PointA, capsuleB.PointB);
+
+        const Vector2 delta = closest.PointB - closest.PointA;
+
+        const float distanceSquared = delta.LengthSquared();
+
+        const float combinedRadius = capsuleA.Radius + capsuleB.Radius;
+
+        if (distanceSquared >= combinedRadius * combinedRadius)
+        {
+            return false;
+        }
+
+        manifold.A = &a;
+
+        manifold.B = &b;
+
+        manifold.IsTrigger = a.IsTrigger() || b.IsTrigger();
+
+        manifold.ClearContacts();
+
+        constexpr float epsilon = 0.000001f;
+
+        if (distanceSquared > epsilon)
+        {
+            const float distance = std::sqrt(distanceSquared);
+
+            manifold.Normal = delta * (1.0f / distance);
+
+            manifold.Penetration = combinedRadius - distance;
+
+            const Vector2 pointOnA = closest.PointA + manifold.Normal * capsuleA.Radius;
+
+            const Vector2 pointOnB = closest.PointB - manifold.Normal * capsuleB.Radius;
+
+            manifold.AddContactPoint((pointOnA + pointOnB) * 0.5f);
+
+            return true;
+        }
+
+        // DEGENERATE CASE
+
+        const Vector2 centerA = (capsuleA.PointA + capsuleA.PointB) * 0.5f;
+
+        const Vector2 centerB = (capsuleB.PointA + capsuleB.PointB) * 0.5f;
+
+        Vector2 centerDelta = centerB - centerA;
+
+        const float centerDistanceSquared = centerDelta.LengthSquared();
+
+        if (centerDistanceSquared > epsilon)
+        {
+            manifold.Normal = centerDelta * (1.0f / std::sqrt(centerDistanceSquared));
+        }
+        else 
+        {
+            Vector2 segemntA = capsuleA.PointB - capsuleA.PointA;
+
+            const float segmentLengthSquared = segemntA.LengthSquared();
+
+            if (segmentLengthSquared > epsilon)
+            {
+                segemntA *= 1.0f / std::sqrt(segmentLengthSquared);
+
+                manifold.Normal = {-segemntA.Y, segemntA.X};
+            }
+            else 
+            {
+                manifold.Normal = {1.0f, 0.0f};
+            }
+        }
+
+        manifold.Penetration = combinedRadius;
+
+        manifold.AddContactPoint((closest.PointA + closest.PointB) * 0.5f);
+
+        return true;
+    }
+
+
+    bool PhysicsWorld2D::CapsuleVsBox(CapsuleCollider2D& capsuleCollider, BoxCollider2D& boxCollider, CollisionManifold2D& manifold) const
+    {
+        // A box is a convex polygon; reuse the capsule-vs-polygon core.
+
+        const Capsule2D capsule = capsuleCollider.GetWorldCapsule();
+
+        const Polygon2D polygon = OrientedBoxToPolygon(boxCollider.GetWorldOrientedBox());
+
+        if (!BuildCapsulePolygonManifold(capsule, polygon, manifold))
+        {
+            return false;
+        }
+
+        // Normal points from A (capsule) toward B (box).
+
+        manifold.A = &capsuleCollider;
+
+        manifold.B = &boxCollider;
+
+        manifold.IsTrigger = capsuleCollider.IsTrigger() || boxCollider.IsTrigger();
+
+        return true;
+    }
+
+
+    bool PhysicsWorld2D::CapsuleVsPolygon(CapsuleCollider2D& capsuleCollider, PolygonCollider2D& polygonCollider, CollisionManifold2D& manifold) const
+    {
+        const Capsule2D capsule = capsuleCollider.GetWorldCapsule();
+
+        const Polygon2D polygon = polygonCollider.GetWorldPolygon();
+
+        if (!BuildCapsulePolygonManifold(capsule, polygon, manifold))
+        {
+            return false;
+        }
+
+        // Normal points from A (capsule) toward B (polygon).
+
+        manifold.A = &capsuleCollider;
+
+        manifold.B = &polygonCollider;
+
+        manifold.IsTrigger = capsuleCollider.IsTrigger() || polygonCollider.IsTrigger();
+
+        return true;
+    }
+
+
+    bool PhysicsWorld2D::BuildCapsulePolygonManifold(const Capsule2D& capsule, const Polygon2D& polygon, CollisionManifold2D& manifold) const
+    {
+        if (polygon.Vertices.size() < 3 || polygon.Normals.size() != polygon.Vertices.size())
+        {
+            return false;
+        }
+
+        const Vector2 pointA = capsule.PointA;
+
+        const Vector2 pointB = capsule.PointB;
+
+        const float radius = capsule.Radius;
+
+        constexpr float epsilon = 0.000001f;
+
+        // =====================================================
+        // SEPARATING-AXIS TEST
+        //
+        // A capsule is a segment inflated by a radius. Along any axis its
+        // projection is the projection of its core segment widened by the
+        // radius on both ends. The candidate axes for a segment-vs-convex
+        // test are: the polygon face normals, the capsule's own side normal
+        // (perpendicular to its core), and, for each polygon vertex, the axis
+        // toward the closest point of the core segment (this captures the
+        // rounded caps hitting a corner).
+        // =====================================================
+
+        float minimumOverlap = std::numeric_limits<float>::max();
+
+        Vector2 minimumAxis{0.0f, 0.0f};
+
+        bool found = false;
+
+        const auto testAxis = [&](Vector2 axis) -> bool
+        {
+            const float axisLengthSquared = axis.LengthSquared();
+
+            if (axisLengthSquared <= epsilon)
+            {
+                // Degenerate axis carries no separation information.
+
+                return true;
+            }
+
+            axis *= 1.0f / std::sqrt(axisLengthSquared);
+
+            float minPolygon = 0.0f;
+
+            float maxPolygon = 0.0f;
+
+            ProjectPolygon(polygon, axis, minPolygon, maxPolygon);
+
+            const float d0 = Vector2::Dot(pointA, axis);
+
+            const float d1 = Vector2::Dot(pointB, axis);
+
+            const float minCapsule = std::min(d0, d1) - radius;
+
+            const float maxCapsule = std::max(d0, d1) + radius;
+
+            const float overlap = std::min(maxPolygon, maxCapsule) - std::max(minPolygon, minCapsule);
+
+            if (overlap <= 0.0f)
+            {
+                // A separating axis exists: the shapes do not intersect.
+
+                return false;
+            }
+
+            if (overlap < minimumOverlap)
+            {
+                minimumOverlap = overlap;
+
+                minimumAxis = axis;
+
+                found = true;
+            }
+
+            return true;
+        };
+
+        // Polygon face normals.
+
+        for (const Vector2& normal : polygon.Normals)
+        {
+            if (!testAxis(normal))
+            {
+                return false;
+            }
+        }
+
+        // Capsule side normal (perpendicular to the core segment).
+
+        Vector2 segment = pointB - pointA;
+
+        const float segmentLengthSquared = segment.LengthSquared();
+
+        if (segmentLengthSquared > epsilon)
+        {
+            const Vector2 segmentDirection = segment * (1.0f / std::sqrt(segmentLengthSquared));
+
+            if (!testAxis(Vector2{-segmentDirection.Y, segmentDirection.X}))
+            {
+                return false;
+            }
+        }
+
+        // Rounded cap versus polygon vertex axes.
+
+        for (const Vector2& vertex : polygon.Vertices)
+        {
+            const Vector2 closest = PhysicsGeometry2D::ClosestPointOnSegment(vertex, pointA, pointB);
+
+            if (!testAxis(vertex - closest))
+            {
+                return false;
+            }
+        }
+
+        if (!found)
+        {
+            return false;
+        }
+
+        // =====================================================
+        // NORMAL ORIENTATION (A = capsule -> B = polygon)
+        // =====================================================
+
+        const Vector2 capsuleCenter = (pointA + pointB) * 0.5f;
+
+        const Vector2 polygonCenter = GetPolygonCenter(polygon);
+
+        if (Vector2::Dot(polygonCenter - capsuleCenter, minimumAxis) < 0.0f)
+        {
+            minimumAxis *= -1.0f;
+        }
+
+        manifold.Normal = minimumAxis;
+
+        manifold.Penetration = minimumOverlap;
+
+        manifold.ClearContacts();
+
+        // =====================================================
+        // CONTACT GENERATION
+        //
+        // Pick the polygon face most opposed to the contact normal (the face
+        // the capsule presses on). If the capsule core is nearly parallel to
+        // that face, clip the core to the face span to produce a stable two
+        // point manifold (the resting case). Otherwise fall back to a single
+        // contact at the capsule's deepest surface point.
+        // =====================================================
+
+        const std::size_t vertexCount = polygon.Vertices.size();
+
+        std::size_t referenceIndex = 0;
+
+        float bestAlignment = -std::numeric_limits<float>::max();
+
+        for (std::size_t i = 0; i < polygon.Normals.size(); ++i)
+        {
+            const float alignment = Vector2::Dot(polygon.Normals[i], manifold.Normal * -1.0f);
+
+            if (alignment > bestAlignment)
+            {
+                bestAlignment = alignment;
+
+                referenceIndex = i;
+            }
+        }
+
+        const Vector2 faceStart = polygon.Vertices[referenceIndex];
+
+        const Vector2 faceEnd = polygon.Vertices[(referenceIndex + 1) % vertexCount];
+
+        Vector2 faceTangent = faceEnd - faceStart;
+
+        const float faceTangentLengthSquared = faceTangent.LengthSquared();
+
+        bool generatedTwoPoints = false;
+
+        if (faceTangentLengthSquared > epsilon)
+        {
+            faceTangent *= 1.0f / std::sqrt(faceTangentLengthSquared);
+
+            const Vector2 core = pointB - pointA;
+
+            const float coreLength = core.Length();
+
+            // Parallel when the core has almost no component along the normal.
+
+            const bool nearlyParallel =
+                coreLength > epsilon &&
+                (std::abs(Vector2::Dot(core, manifold.Normal)) / coreLength) < 0.05f;
+
+            if (nearlyParallel)
+            {
+                const float faceLow = Vector2::Dot(faceStart, faceTangent);
+
+                const float faceHigh = Vector2::Dot(faceEnd, faceTangent);
+
+                const float projectionA = Vector2::Dot(pointA, faceTangent);
+
+                const float projectionB = Vector2::Dot(pointB, faceTangent);
+
+                if (std::abs(projectionB - projectionA) > epsilon)
+                {
+                    const float parameterAtLow = (faceLow - projectionA) / (projectionB - projectionA);
+
+                    const float parameterAtHigh = (faceHigh - projectionA) / (projectionB - projectionA);
+
+                    const float clipLow = std::clamp(std::min(parameterAtLow, parameterAtHigh), 0.0f, 1.0f);
+
+                    const float clipHigh = std::clamp(std::max(parameterAtLow, parameterAtHigh), 0.0f, 1.0f);
+
+                    if (clipHigh - clipLow > epsilon)
+                    {
+                        const Vector2 coreLowPoint = pointA + (pointB - pointA) * clipLow;
+
+                        const Vector2 coreHighPoint = pointA + (pointB - pointA) * clipHigh;
+
+                        // Move from the core to the capsule surface facing the polygon.
+
+                        manifold.AddContactPoint(coreLowPoint + manifold.Normal * radius);
+
+                        manifold.AddContactPoint(coreHighPoint + manifold.Normal * radius);
+
+                        generatedTwoPoints = true;
+                    }
+                }
+            }
+        }
+
+        if (!generatedTwoPoints)
+        {
+            // Single contact at the capsule surface point deepest toward the polygon.
+
+            const float d0 = Vector2::Dot(pointA, manifold.Normal);
+
+            const float d1 = Vector2::Dot(pointB, manifold.Normal);
+
+            const Vector2 deepestCore = (d0 >= d1) ? pointA : pointB;
+
+            manifold.AddContactPoint(deepestCore + manifold.Normal * radius);
+        }
+
+        return true;
+    }
+
+
+    bool PhysicsWorld2D::PolygonVsPolygon(PolygonCollider2D& a, PolygonCollider2D& b, CollisionManifold2D& manifold) const
+    {
+        const Polygon2D polygonA = a.GetWorldPolygon();
+
+        const Polygon2D polygonB = b.GetWorldPolygon();
+
+        if (polygonA.Vertices.size() < 3 || polygonB.Vertices.size() < 3)
+        {
+            return false;
+        }
+
+        const PolygonSATResult2D sat = TestPolygonSAT(polygonA, polygonB);
+
+        if (!sat.Overlapping)
+        {
+            return false;
+        }
+
+        manifold.A = &a;
+
+        manifold.B = &b;
+
+        manifold.Normal = sat.Axis;
+
+        manifold.Penetration = sat.Overlap;
+
+        manifold.IsTrigger = a.IsTrigger() || b.IsTrigger();
+
+        manifold.ClearContacts();
+
+        Vector2 contacts[2];
+
+        const std::size_t contactCount = BuildPolygonContactPoints(polygonA, polygonB, sat, contacts);
+
+        for (std::size_t i = 0; i < contactCount; ++i)
+        {
+            manifold.AddContactPoint(contacts[i]);
+        }
+
+        // FALLBACK
+
+        if (manifold.ContactCount == 0)
+        {
+            const Vector2 pointA = GetPolygonSupportPoint(polygonA, manifold.Normal);
+
+            const Vector2 pointB = GetPolygonSupportPoint(polygonB, manifold.Normal * -1.0);
+
+            manifold.AddContactPoint((pointA + pointB) * 0.5f);
+        }
+
+        return true;
+    }
+
+
+    bool PhysicsWorld2D::PolygonVsBox(PolygonCollider2D& polygonCollider, BoxCollider2D& boxCollider, CollisionManifold2D& manifold) const
+    {
+        const Polygon2D polygonA = polygonCollider.GetWorldPolygon();
+
+        const Polygon2D polygonB = OrientedBoxToPolygon(boxCollider.GetWorldOrientedBox());
+
+        if (polygonA.Vertices.size() < 3)
+        {
+            return false;
+        }
+
+        const PolygonSATResult2D sat = TestPolygonSAT(polygonA, polygonB);
+
+        if (!sat.Overlapping)
+        {
+            return false;
+        }
+
+        manifold.A = &polygonCollider;
+
+        manifold.B = &boxCollider;
+
+        manifold.Normal = sat.Axis;
+
+        manifold.Penetration = sat.Overlap;
+
+        manifold.IsTrigger = polygonCollider.IsTrigger() || boxCollider.IsTrigger();
+
+        manifold.ClearContacts();
+
+        Vector2 contacts[2];
+
+        const std::size_t contactCount = BuildPolygonContactPoints(polygonA, polygonB, sat, contacts);
+
+        for (std::size_t i = 0; i < contactCount; ++i)
+        {
+            manifold.AddContactPoint(contacts[i]);
+        }
+
+        if (manifold.ContactCount == 0)
+        {
+            const Vector2 pointA = GetPolygonSupportPoint(polygonA, manifold.Normal);
+
+            const Vector2 pointB = GetPolygonSupportPoint(polygonB, manifold.Normal * -1.0f);
+
+            manifold.AddContactPoint((pointA + pointB) * 0.5f);
+        }
+
+        return true;
+    }
+
+
+    bool PhysicsWorld2D::PolygonVsCircle(PolygonCollider2D& polygonCollider, CircleCollider2D& circle, CollisionManifold2D& manifold) const
+    {
+        const Polygon2D polygon = polygonCollider.GetWorldPolygon();
+
+        if (polygon.Vertices.size() < 3)
+        {
+            return false;
+        }
+
+        const Vector2 circleCenter = circle.GetWorldCenter();
+
+        const float circleRadius = circle.GetWorldRadius();
+
+        float minimumOverlap = std::numeric_limits<float>::max();
+
+        Vector2 minimumAxis{0.0f, 0.0f};
+
+        // POLYGON EDGE NORMAL
+
+        for (const Vector2& axis : polygon.Normals)
+        {
+            if (axis.LengthSquared() <= 0.000001f)
+            {
+                continue;
+            }
+
+            float minPolygon = 0.0f;
+            float maxPolygon = 0.0f;
+
+            float minCircle = 0.0f;
+            float maxCircle = 0.0f;
+
+            ProjectPolygon(polygon, axis, minPolygon, maxPolygon);
+
+            ProjectCircle(circleCenter, circleRadius, axis, minCircle, maxCircle);
+
+            const float overlap = std::min(maxPolygon, maxCircle) - std::max(minPolygon, minCircle);
+
+            if (overlap <= 0.0f)
+            {
+                return false;
+            }
+
+            if (overlap < minimumOverlap)
+            {
+                minimumOverlap = overlap;
+
+                minimumAxis = axis;
+            }
+        }
+
+        // CLOSEST VERTEX AXIS
+
+        const Vector2 closestVertex = FindClosestPolygonVertex(polygon, circleCenter);
+
+        Vector2 vertexAxis = circleCenter - closestVertex;
+
+        const float vertexAxisLengthSquared = vertexAxis.LengthSquared();
+
+        if ( vertexAxisLengthSquared > 0.000001f)
+        {
+            vertexAxis *= 1.0f / std::sqrt(vertexAxisLengthSquared);
+
+            float minPolygon = 0.0f;
+            float maxPolygon = 0.0f;
+
+            float minCircle = 0.0f;
+            float maxCircle = 0.0f;
+
+            ProjectPolygon(polygon, vertexAxis, minPolygon, maxPolygon);
+
+            ProjectCircle(circleCenter, circleRadius, vertexAxis, minCircle, maxCircle);
+
+            const float overlap = std::min(maxPolygon, maxCircle) - std::max(minPolygon, minCircle);
+
+            if (overlap <= 0.0f)
+            {
+                return false;
+            }
+
+            if (overlap < minimumOverlap)
+            {
+                minimumOverlap = overlap;
+
+                minimumAxis = vertexAxis;
+            }
+        }
+
+        if (minimumOverlap == std::numeric_limits<float>::max())
+        {
+            return false;
+        }
+
+        // NORMAL A -> B
+        //
+        // A = Polygon
+        // B = Circle
+
+        const Vector2 polygonCenter = GetPolygonCenter(polygon);
+
+        if (Vector2::Dot(circleCenter - polygonCenter, minimumAxis) < 0.0f)
+        {
+            minimumAxis *= -1.0f;
+        }
+
+        // MANIFOLD
+
+        manifold.A = &polygonCollider;
+
+        manifold.B = &circle;
+
+        manifold.Normal = minimumAxis;
+
+        manifold.Penetration = minimumOverlap;
+
+        manifold.IsTrigger = polygonCollider.IsTrigger() || circle.IsTrigger();
+
+        manifold.ClearContacts();
+
+        // CONTACT
+
+        const Vector2 pointOnPolygon = GetPolygonSupportPoint(polygon, manifold.Normal);
+
+        const Vector2 pointOnCircle = circleCenter - manifold.Normal * circleRadius;
+
+        manifold.AddContactPoint((pointOnPolygon + pointOnCircle) * 0.5f);
 
         return true;
     }
@@ -717,7 +1536,7 @@ namespace Engine
     }
 
 
-    Vector2 PhysicsWorld2D::GetOBBSurpportPoint(const OrientedBox2D& box, const Vector2& direction) const
+    Vector2 PhysicsWorld2D::GetOBBSupportPoint(const OrientedBox2D& box, const Vector2& direction) const
     {
         std::size_t bestIndex = 0;
 
@@ -1075,6 +1894,135 @@ namespace Engine
             return hit;
         }
 
+        // Capsule Vs Circle
+
+        if (shapeA == ColliderShape2D::Capsule && shapeB == ColliderShape2D::Circle)
+        {
+            return CapsuleVsCircle(static_cast<CapsuleCollider2D&>(a), static_cast<CircleCollider2D&>(b), manifold);
+        }
+
+        // Circle Vs Capsule
+
+        if (shapeA == ColliderShape2D::Circle && shapeB == ColliderShape2D::Capsule)
+        {
+            const bool hit = CapsuleVsCircle(static_cast<CapsuleCollider2D&>(b), static_cast<CircleCollider2D&>(a), manifold);
+
+            if (hit)
+            {
+                std::swap(manifold.A, manifold.B);
+
+                manifold.Normal *= -1.0f;
+            }
+
+            return hit;
+        }
+
+        // Capsule Vs Capsule
+
+        if (shapeA == ColliderShape2D::Capsule && shapeB == ColliderShape2D::Capsule)
+        {
+            return CapsuleVsCapsule(static_cast<CapsuleCollider2D&>(a), static_cast<CapsuleCollider2D&>(b), manifold);
+        }
+
+        // Polygon Vs Polygon
+
+        if (shapeA == ColliderShape2D::Polygon && shapeB == ColliderShape2D::Polygon)
+        {
+            return PolygonVsPolygon(static_cast<PolygonCollider2D&>(a), static_cast<PolygonCollider2D&>(b), manifold);
+        }
+
+        // Polygon Vs Box
+
+        if (shapeA == ColliderShape2D::Polygon && shapeB == ColliderShape2D::Box)
+        {
+            return PolygonVsBox(static_cast<PolygonCollider2D&>(a), static_cast<BoxCollider2D&>(b), manifold);
+        }
+
+        // Box Vs Polygon
+
+        if (shapeA == ColliderShape2D::Box && shapeB == ColliderShape2D::Polygon)
+        {
+            const bool hit = PolygonVsBox(static_cast<PolygonCollider2D&>(b), static_cast<BoxCollider2D&>(a), manifold);
+
+            if (hit)
+            {
+                std::swap(manifold.A, manifold.B);
+
+                manifold.Normal *= -1.0f;
+            }
+
+            return hit;
+        }
+
+        // Polygon Vs Circle
+
+        if (shapeA == ColliderShape2D::Polygon && shapeB == ColliderShape2D::Circle)
+        {
+            return PolygonVsCircle(static_cast<PolygonCollider2D&>(a), static_cast<CircleCollider2D&>(b), manifold);
+        }
+
+        // Circle Vs Polygon
+
+        if (shapeA == ColliderShape2D::Circle && shapeB == ColliderShape2D::Polygon)
+        {
+            const bool hit = PolygonVsCircle(static_cast<PolygonCollider2D&>(b), static_cast<CircleCollider2D&>(a), manifold);
+
+            if (hit)
+            {
+                std::swap(manifold.A, manifold.B);
+
+                manifold.Normal *= -1.0f;
+            }
+
+            return hit;
+        }
+
+        // Capsule Vs Box
+
+        if (shapeA == ColliderShape2D::Capsule && shapeB == ColliderShape2D::Box)
+        {
+            return CapsuleVsBox(static_cast<CapsuleCollider2D&>(a), static_cast<BoxCollider2D&>(b), manifold);
+        }
+
+        // Box Vs Capsule
+
+        if (shapeA == ColliderShape2D::Box && shapeB == ColliderShape2D::Capsule)
+        {
+            const bool hit = CapsuleVsBox(static_cast<CapsuleCollider2D&>(b), static_cast<BoxCollider2D&>(a), manifold);
+
+            if (hit)
+            {
+                std::swap(manifold.A, manifold.B);
+
+                manifold.Normal *= -1.0f;
+            }
+
+            return hit;
+        }
+
+        // Capsule Vs Polygon
+
+        if (shapeA == ColliderShape2D::Capsule && shapeB == ColliderShape2D::Polygon)
+        {
+            return CapsuleVsPolygon(static_cast<CapsuleCollider2D&>(a), static_cast<PolygonCollider2D&>(b), manifold);
+        }
+
+        // Polygon Vs Capsule
+
+        if (shapeA == ColliderShape2D::Polygon && shapeB == ColliderShape2D::Capsule)
+        {
+            const bool hit = CapsuleVsPolygon(static_cast<CapsuleCollider2D&>(b), static_cast<PolygonCollider2D&>(a), manifold);
+
+            if (hit)
+            {
+                std::swap(manifold.A, manifold.B);
+
+                manifold.Normal *= -1.0f;
+            }
+
+            return hit;
+        }
+
         return false;
     }
 
@@ -1202,7 +2150,7 @@ namespace Engine
         m_Scene->GetEventBus().Publish<CollisionEndEvent2D>(event);
     }
 
-    std::size_t PhysicsWorld2D::GetAciveColliderCount() const
+    std::size_t PhysicsWorld2D::GetActiveColliderCount() const
     {
         return m_ActiveColliders.size();
     }
@@ -1214,12 +2162,12 @@ namespace Engine
 
     void PhysicsWorld2D::SetGravity(const Vector2& gravity)
     {
-        m_Gravity = gravity;
+        m_Settings.Gravity = gravity;
     }
 
     const Vector2& PhysicsWorld2D::GetGravity() const
     {
-        return m_Gravity;
+        return m_Settings.Gravity;
     }
 
     void PhysicsWorld2D::IntegrateDynamicBody(Rigidbody2D& body, TransformComponent& transform, float deltaTime)
@@ -1234,7 +2182,7 @@ namespace Engine
         // Gravity
         // -------------------------------
 
-        acceleration += m_Gravity * body.GetGravityScale();
+        acceleration += m_Settings.Gravity * body.GetGravityScale();
 
         const Vector2 startPosition = transform.GetWorldTransform().Position;
 
@@ -1285,9 +2233,9 @@ namespace Engine
         // ANGULAR DAMPING
         // -------------------------------
 
-        const float angularDampingFacter = 1.0f / (1.0f + body.GetangularDamping() * deltaTime);
+        const float angularDampingFactor = 1.0f / (1.0f + body.GetAngularDamping() * deltaTime);
 
-        angularVelocity *= angularDampingFacter;
+        angularVelocity *= angularDampingFactor;
 
         body.SetAngularVelocityFromPhysics(angularVelocity);
 
@@ -1314,6 +2262,14 @@ namespace Engine
     void PhysicsWorld2D::IntegrateKinematicBody(Rigidbody2D& body, TransformComponent& transform, float deltaTime)
     {
         // --------------------------------
+        // STORE START OF FIXED STEP
+        // --------------------------------
+
+        const Vector2 startPosition = transform.GetWorldTransform().Position;
+
+        body.SetPreviousPosition(startPosition);
+
+        // --------------------------------
         // LINEAR KINEMATIC MOTION
         // --------------------------------
 
@@ -1327,7 +2283,7 @@ namespace Engine
 
         transform.RotateBy(body.GetAngularVelocity() * deltaTime * radiansToDegrees);
 
-        // Kinematic bodies do not react to orce/torque.
+        // Kinematic bodies do not react to force/torque.
 
         body.ClearForces();
 
@@ -1360,13 +2316,10 @@ namespace Engine
             return;
         }
 
-        constexpr float slop = 0.01f;
 
-        constexpr float percent = 0.35f;
+        const float correctedPenetration = std::max(manifold.Penetration - m_Settings.PositionSlop, 0.0f);
 
-        const float correctedPenetration = std::max(manifold.Penetration - slop, 0.0f);
-
-        const Vector2 correction = manifold.Normal * (correctedPenetration * percent / totalInverseMass);
+        const Vector2 correction = manifold.Normal * (correctedPenetration * m_Settings.PositionCorrectionPercent / totalInverseMass);
 
         if (inverseMassA > 0.0f)
         {
@@ -1450,7 +2403,7 @@ namespace Engine
 
         constexpr float epsilon = 0.000001f;
 
-        if (manifold.ContactCount > CollisionManifold2D::MaxContacPoints)
+        if (manifold.ContactCount > CollisionManifold2D::MaxContactPoints)
         {
             std::cerr << "ERROR: Invalid manifold ContactCount: " << manifold.ContactCount << '\n';
 
@@ -1561,7 +2514,19 @@ namespace Engine
                 manifold.Normal.X
             };
 
-            const float velocityAlongTangent = Vector2::Dot(relativeVelocity, tangent);
+            // Surface velocity (conveyor belts). Friction normally drives the
+            // tangential relative velocity to zero; when a collider carries a
+            // surface velocity we instead drive it toward that belt speed by
+            // subtracting the desired relative tangential velocity from the
+            // measured one. Zero surface velocities leave behaviour unchanged.
+
+            const Vector2 surfaceVelocityA = manifold.A ? manifold.A->GetSurfaceVelocity() : Vector2{0.0f, 0.0f};
+
+            const Vector2 surfaceVelocityB = manifold.B ? manifold.B->GetSurfaceVelocity() : Vector2{0.0f, 0.0f};
+
+            const float surfaceRelativeTangent = Vector2::Dot(surfaceVelocityB - surfaceVelocityA, tangent);
+
+            const float velocityAlongTangent = Vector2::Dot(relativeVelocity, tangent) - surfaceRelativeTangent;
 
             // =====================================================
             // TANGENTIAL EFFECTIVE MASS
@@ -1704,22 +2669,22 @@ namespace Engine
 
     void PhysicsWorld2D::SetVelocityIterations(std::size_t iterations)
     {
-        m_VelocityIterations = std::max<std::size_t>(1, iterations);
+        m_Settings.VelocityIterations = std::max<std::size_t>(1, iterations);
     }
 
     std::size_t PhysicsWorld2D::GetVelocityIterations() const
     {
-        return m_VelocityIterations;
+        return m_Settings.VelocityIterations;
     }
 
     void PhysicsWorld2D::SetPositionIterations(std::size_t iterations)
     {
-        m_PositionIterations = std::max<std::size_t>(1, iterations);
+        m_Settings.PositionIterations = std::max<std::size_t>(1, iterations);
     }
 
     std::size_t PhysicsWorld2D::GetPositionIterations() const
     {
-        return m_PositionIterations;
+        return m_Settings.PositionIterations;
     }
 
     void PhysicsWorld2D::SolveVelocityContact(CollisionManifold2D& manifold)
@@ -1760,7 +2725,7 @@ namespace Engine
 
     void PhysicsWorld2D::SolveVelocityContacts()
     {
-        for (std::size_t iteration = 0; iteration < m_VelocityIterations; ++iteration)
+        for (std::size_t iteration = 0; iteration < m_Settings.VelocityIterations; ++iteration)
         {
             for (CollisionManifold2D& manifold : m_CurrentContacts)
             {
@@ -1790,7 +2755,7 @@ namespace Engine
 
     void PhysicsWorld2D::SolvePositionContacts()
     {
-        for (std::size_t iteration = 0; iteration < m_PositionIterations; ++iteration)
+        for (std::size_t iteration = 0; iteration < m_Settings.PositionIterations; ++iteration)
         {
             bool correctedAny = false;
 
@@ -1905,7 +2870,7 @@ namespace Engine
 
     void PhysicsWorld2D::WakeBodiesFromContacts()
     {
-        const float wakeSpeedSquared = m_CollisionWakeSpeed * m_CollisionWakeSpeed;
+        const float wakeSpeedSquared = m_Settings.CollisionWakeSpeed * m_Settings.CollisionWakeSpeed;
 
         for (const CollisionManifold2D& manifold : m_CurrentContacts)
         {
@@ -1966,7 +2931,7 @@ namespace Engine
 
                     const Vector2 relativeVelocity = contactVelocityB - contactVelocityA;
 
-                    if (relativeVelocity.LengthSqured() >= wakeSpeedSquared)
+                    if (relativeVelocity.LengthSquared() >= wakeSpeedSquared)
                     {
                         shouldWake = true;
 
@@ -1978,7 +2943,7 @@ namespace Engine
             {
                 const Vector2 relativeVelocity = velocityB - velocityA;
 
-                shouldWake = relativeVelocity.LengthSqured() >= wakeSpeedSquared;
+                shouldWake = relativeVelocity.LengthSquared() >= wakeSpeedSquared;
             }
 
             if (!shouldWake)
@@ -2022,17 +2987,17 @@ namespace Engine
 
         if (body && body->CanSleep() && !body->IsSleeping())
         {
-            const float LinearThresholdSquared = m_SleepLinearSpeedThreshold * m_SleepLinearSpeedThreshold;
+            const float LinearThresholdSquared = m_Settings.SleepLinearSpeedThreshold * m_Settings.SleepLinearSpeedThreshold;
 
-            const bool linearMotionIsSmall = body->GetVelocity().LengthSqured() <= LinearThresholdSquared;
+            const bool linearMotionIsSmall = body->GetVelocity().LengthSquared() <= LinearThresholdSquared;
 
-            const bool angularMotionIsSmall = std::abs(body->GetAngularVelocity()) <= m_SleepAngularSpeedThreshold;
+            const bool angularMotionIsSmall = std::abs(body->GetAngularVelocity()) <= m_Settings.SleepAngularSpeedThreshold;
 
             if (linearMotionIsSmall && angularMotionIsSmall)
             {
                 body->AddSleepTime(deltaTime);
 
-                if (body->GetSleepTimer() >= m_TimeToSleep)
+                if (body->GetSleepTimer() >= m_Settings.TimeToSleep)
                 {
                     body->Sleep();
                 }
@@ -2050,21 +3015,21 @@ namespace Engine
 
     void PhysicsWorld2D::SetSpatialCellSize(float cellSize)
     {
-        m_SpatialCellSize = std::max(1.0f, cellSize);
+        m_Settings.SpatialCellSize = std::max(1.0f, cellSize);
     }
 
     float PhysicsWorld2D::GetSpatialCellSize() const
     {
-        return m_SpatialCellSize;
+        return m_Settings.SpatialCellSize;
     }
 
     SpatialCell2D PhysicsWorld2D::WorldToCell(const Vector2& worldPosition) const
     {
         return 
         {
-            static_cast<std::int32_t>(std::floor(worldPosition.X / m_SpatialCellSize)),
+            static_cast<std::int32_t>(std::floor(worldPosition.X / m_Settings.SpatialCellSize)),
 
-            static_cast<std::int32_t>(std::floor(worldPosition.Y / m_SpatialCellSize))
+            static_cast<std::int32_t>(std::floor(worldPosition.Y / m_Settings.SpatialCellSize))
         };
     }
 
@@ -2094,7 +3059,7 @@ namespace Engine
         }
     }
 
-    void PhysicsWorld2D::GenerateCondidatePairs()
+    void PhysicsWorld2D::GenerateCandidatePairs()
     {
         m_CandidatePairs.clear();
 
@@ -2119,6 +3084,49 @@ namespace Engine
                 }
             }
         }
+    }
+
+    bool PhysicsWorld2D::ShouldBlockOneWayContact(const CollisionManifold2D& manifold) const
+    {
+        // Returns true when the contact should remain solid.
+        //
+        // manifold.Normal points from A toward B, i.e. it is the direction in
+        // which B is pushed away from A. For a one-way collider we require the
+        // other body to be pushed out roughly along that collider's one-way
+        // axis (its solid outward normal); otherwise the body is approaching
+        // from a pass-through side and the contact is discarded.
+
+        if (!manifold.A || !manifold.B)
+        {
+            return true;
+        }
+
+        if (manifold.A->IsOneWay())
+        {
+            // Direction B (the other body) is pushed away from A.
+
+            const Vector2 pushDirection = manifold.Normal;
+
+            if (Vector2::Dot(pushDirection, manifold.A->GetOneWayAxis()) < manifold.A->GetOneWayThreshold())
+            {
+                return false;
+            }
+        }
+
+        if (manifold.B->IsOneWay())
+        {
+            // Direction A (the other body) is pushed away from B is the
+            // opposite of the manifold normal.
+
+            const Vector2 pushDirection = manifold.Normal * -1.0f;
+
+            if (Vector2::Dot(pushDirection, manifold.B->GetOneWayAxis()) < manifold.B->GetOneWayThreshold())
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     void PhysicsWorld2D::ProcessCandidatePairs()
@@ -2147,16 +3155,37 @@ namespace Engine
 
             CollisionManifold2D manifold;
 
+            ++m_Stats.NarrowPhaseTests;
+
             if (!GenerateManifold(*a, *b, manifold))
             {
                 continue;
             }
+
+            // One-way (pass-through) platform filtering. Only solid contacts
+            // can be dropped this way; triggers still fire from every side.
+
+            if (!manifold.IsTrigger &&
+                (a->IsOneWay() || b->IsOneWay()) &&
+                !ShouldBlockOneWayContact(manifold))
+            {
+                continue;
+            }
+
+            if (manifold.IsTrigger)
+            {
+                ++m_Stats.TriggerPairs;
+            }
+
+            ++m_Stats.GeneratedManifolds;
 
             // Real contact
 
             m_CurrentOverlaps.insert(pair);
 
             m_CurrentContacts.push_back(manifold);
+
+            m_Stats.ContactPoints += manifold.ContactCount;
         }
     }
 
@@ -2165,12 +3194,12 @@ namespace Engine
         return m_SpatialGrid.size();
     }
 
-    std::size_t PhysicsWorld2D::GetCandidatePirCount() const
+    std::size_t PhysicsWorld2D::GetCandidatePairCount() const
     {
         return m_CandidatePairs.size();
     }
 
-    const std::vector<Collider2D*>& PhysicsWorld2D::GetactiveColliders() const
+    const std::vector<Collider2D*>& PhysicsWorld2D::GetActiveColliders() const
     {
         return m_ActiveColliders;
     }
@@ -2316,8 +3345,14 @@ namespace Engine
         return startBounds;
     }
 
-    bool PhysicsWorld2D::FindEarliestContinuousHit(Collider2D* movingCollider, const Bounds2D& startBounds, const Vector2& motion, SweepHit2D& outHit, Collider2D*& outOtherCollider)
+    bool PhysicsWorld2D::FindEarliestContinuousHit(Collider2D* movingCollider, const Bounds2D& movingStartBounds, const Vector2& movingMotion, float remainingFraction, SweepHit2D& outHit, Collider2D*& outOtherCollider, Vector2& outOtherMotion)
     {
+        outHit = SweepHit2D{};
+
+        outOtherCollider = nullptr;
+
+        outOtherMotion = {0.0f, 0.0f};
+
         if (!movingCollider)
         {
             return false;
@@ -2327,7 +3362,7 @@ namespace Engine
         // No movement = nothing to sweep.
         // -----------------------------------------
 
-        if (motion.LengthSqured() <= 0.000001f)
+        if (movingMotion.LengthSquared() <= 0.000001f)
         {
             return false;
         }
@@ -2336,7 +3371,7 @@ namespace Engine
         // Build AABB covering the entire motion.
         // -----------------------------------------
 
-        const Bounds2D sweptBounds = BuildSweptBounds(startBounds, motion);
+        const Bounds2D movingSweptBounds = BuildSweptBounds(movingStartBounds, movingMotion);
 
         // -----------------------------------------
         // Spatial query.
@@ -2353,7 +3388,9 @@ namespace Engine
 
         filter.LayerMask = movingCollider->GetMask();
 
-        QueryBounds(sweptBounds, filter, candidates);
+        QueryBounds(movingSweptBounds, filter, candidates);
+
+        CollectMovingCCDCandidates(movingCollider, movingSweptBounds, candidates);
 
         // -----------------------------------------
         // Find earliest actual shape hit.
@@ -2366,6 +3403,8 @@ namespace Engine
         Collider2D* earliestCollider = nullptr;
 
         SweepHit2D earliestHit;
+
+        Vector2 earliestOtherMotion{0.0f, 0.0f};
 
         for (Collider2D* other : candidates)
         {
@@ -2382,6 +3421,20 @@ namespace Engine
                 continue;
             }
 
+            if (movingCollider->IsTrigger() || other->IsTrigger())
+            {
+                continue;
+            }
+
+            const ColliderPair2D pair = ColliderPair2D::Make(movingCollider, other);
+
+            if (m_CCDResolvePairsThisStep.find(pair) != m_CCDResolvePairsThisStep.end())
+            {
+                continue;
+            }
+
+            ++m_Stats.CCDCandidateTests;
+
             Entity* otherOwner = other->GetOwner();
 
             if (!otherOwner)
@@ -2391,21 +3444,41 @@ namespace Engine
 
             Rigidbody2D* otherBody = otherOwner->GetComponent<Rigidbody2D>();
 
-            // -------------------------------------
-            // Current CCD scope:
-            // only Static or collider-only targets.
-            // -------------------------------------
-            if (otherBody && !otherBody->IsStatic())
+            TransformComponent* otherTransform = otherOwner->GetComponent<TransformComponent>();
+
+            Vector2 otherFullStepMotion{0.0f, 0.0f};
+
+            if (otherBody && otherTransform)
+            {
+                otherFullStepMotion = GetBodyStepMotion(otherBody, otherTransform);
+            }
+
+            const Vector2 otherMotion = otherFullStepMotion * remainingFraction;
+
+            const Vector2 relativeMotion = movingMotion - otherMotion;
+
+            if (relativeMotion.LengthSquared() <= 0.000001f)
             {
                 continue;
             }
 
-            if (movingCollider->IsTrigger() || other->IsTrigger())
+            Bounds2D otherStartBounds = other->GetWorldBounds();
+
+            if (otherBody && otherTransform)
+            {
+                otherStartBounds = ReconstructStartBounds(*other, *otherBody, *otherTransform);
+            }
+
+            const Bounds2D otherSweptBouds = BuildSweptBounds(otherStartBounds, otherMotion);
+
+            if (!AABBsOverlap(movingSweptBounds, otherSweptBouds))
             {
                 continue;
             }
 
-            const SweepHit2D hit = SweepColliderAgainstCollider(*movingCollider, startBounds, motion, *other);
+            ++m_Stats.CCDNarrowPhaseTests;
+
+            const SweepHit2D hit = SweepColliderAgainstMovingCollider(*movingCollider, movingStartBounds, movingMotion, *other, otherStartBounds, otherMotion);
 
             if (!hit.Hit)
             {
@@ -2413,10 +3486,12 @@ namespace Engine
             }
 
             // Prevent near-zero repeated hits.
-            if (hit.Time < m_CCDTimeEpsilon)
+            if (hit.Time < m_Settings.CCDTimeEpsilon)
             {
                 continue;
             }
+
+            ++m_Stats.CCDHits;
 
             if (hit.Time < earliestTime)
             {
@@ -2425,6 +3500,8 @@ namespace Engine
                 earliestHit = hit;
 
                 earliestCollider = other;
+
+                earliestOtherMotion = otherMotion;
 
                 foundHit = true;
             }
@@ -2438,6 +3515,8 @@ namespace Engine
         outHit = earliestHit;
 
         outOtherCollider = earliestCollider;
+
+        outOtherMotion = earliestOtherMotion;
 
         return true;
     }
@@ -2463,6 +3542,8 @@ namespace Engine
 
                 if (body && transform && body->IsDynamic() && !body->IsSleeping() && body->GetCollisionDetectionMode() == CollisionDetectionMode2D::Continuous)
                 {
+                    ++m_Stats.CCDBodies;
+
                     Collider2D* movingCollider = nullptr;
 
                     // Box first.
@@ -2544,6 +3625,8 @@ namespace Engine
 
         Vector2 remainingMotion = integratedEnd - originalStart;
 
+        Vector2 otherMotion{0.0f, 0.0f};
+
         float remainingFraction = 1.0f;
 
         // Go back to the actual start.
@@ -2551,9 +3634,9 @@ namespace Engine
 
         Bounds2D startBounds = movingCollider->GetWorldBounds();
 
-        for (std::size_t impactIndex = 0; impactIndex < m_MaxCCDImpacts; ++impactIndex)
+        for (std::size_t impactIndex = 0; impactIndex < m_Settings.MaxCCDImpacts; ++impactIndex)
         {
-            if (remainingMotion.LengthSqured() <= 0.000001f)
+            if (remainingMotion.LengthSquared() <= 0.000001f)
             {
                 break;
             }
@@ -2565,7 +3648,7 @@ namespace Engine
 
             Collider2D* other = nullptr;
 
-            if (!FindEarliestContinuousHit(movingCollider, startBounds, remainingMotion, hit, other))
+            if (!FindEarliestContinuousHit(movingCollider, startBounds, remainingMotion, remainingFraction, hit, other, otherMotion))
             {
                 currentPosition += remainingMotion;
 
@@ -2574,11 +3657,33 @@ namespace Engine
                 break;
             }
 
+            const Vector2 impactPoint = currentPosition + remainingMotion * hit.Time;
+
+            PhysicsCCDDebug2D debugRecord;
+
+            debugRecord.MovingCollider = movingCollider;
+
+            debugRecord.TargetCollider = other;
+
+            debugRecord.Start = currentPosition;
+
+            debugRecord.End = currentPosition + remainingMotion;
+
+            debugRecord.ImpactPoint = impactPoint;
+
+            debugRecord.ImpactNormal = hit.Normal;
+
+            debugRecord.TimeOfImpact = hit.Time;
+
+            debugRecord.Hit = hit.Hit;
+
+            m_CCDDebugRecords.push_back(debugRecord);
+
             // Move to impact.
 
             currentPosition += remainingMotion * hit.Time;
 
-            currentPosition += hit.Normal * m_CCDSeparation;
+            currentPosition += hit.Normal * m_Settings.CCDSeparation;
 
             transform->SetWorldPosition(currentPosition);
 
@@ -2587,6 +3692,27 @@ namespace Engine
             Entity* otherOwner = other ? other->GetOwner() : nullptr;
 
             Rigidbody2D* otherBody = otherOwner ? otherOwner->GetComponent<Rigidbody2D>() : nullptr;
+
+            TransformComponent* otherTransform = otherOwner ? otherOwner->GetComponent<TransformComponent>() : nullptr;
+
+            if (otherBody && otherTransform && !otherBody->IsStatic())
+            {
+                const Vector2 otherStartPosition = otherBody->GetPreviousPosition();
+
+                const Vector2 otherImpactPosition = otherStartPosition + otherMotion * hit.Time;
+
+                otherTransform->SetWorldPosition(otherImpactPosition);
+            }
+
+            if (otherBody && otherBody->IsDynamic() && otherBody->IsSleeping())
+            {
+                otherBody->Wake();
+            }
+
+            if (body->IsSleeping())
+            {
+                body->Wake();
+            }
 
             // Convert CCD result into the generic collision manifold.
 
@@ -2641,11 +3767,15 @@ namespace Engine
 
             ApplyVelocityResponse(manifold, body, otherBody);
 
+            ++m_Stats.CCDResolvedImpacts;
+
+            m_CCDResolvePairsThisStep.insert(ColliderPair2D::Make(movingCollider, other));
+
             // Remaining portion of the fixed step.
 
             remainingFraction *= (1.0f - hit.Time);
 
-            if (remainingFraction <= m_CCDTimeEpsilon)
+            if (remainingFraction <= m_Settings.CCDTimeEpsilon)
             {
                 break;
             }
@@ -2755,6 +3885,8 @@ namespace Engine
 
             event.TimeOfImpact = hit.Time;
 
+            ++m_Stats.SweptTriggerHits;
+
             m_Scene->GetEventBus().Publish<SweptTriggerEvent2D>(event);
         }
     }
@@ -2825,7 +3957,7 @@ namespace Engine
 
         Vector2 normal = impactCenter - centerB;
 
-        const float normalLengthSquared = normal.LengthSqured();
+        const float normalLengthSquared = normal.LengthSquared();
 
         if (normalLengthSquared <= 0.000001f)
         {
@@ -2847,7 +3979,7 @@ namespace Engine
     {
         SweepHit2D best;
 
-        if (motion.LengthSqured() <= 0.000001f)
+        if (motion.LengthSquared() <= 0.000001f)
         {
             return best;
         }
@@ -2863,7 +3995,7 @@ namespace Engine
 
         const Vector2 startDelta = startCenter - closestStart;
 
-        if (startDelta.LengthSqured() <= radius * radius)
+        if (startDelta.LengthSquared() <= radius * radius)
         {
             return best;
         }
@@ -3042,22 +4174,16 @@ namespace Engine
         const ColliderShape2D targetShape = target.GetShape();
 
         // =========================================================
-        // Box vs Box
+        // OBB vs OBB
         // =========================================================
 
         if (movingShape == ColliderShape2D::Box && targetShape == ColliderShape2D::Box)
         {
-            const SweptAABBHit2D boxHit = SweptAABB(movingStartBounds, motion, target.GetWorldBounds());
+            BoxCollider2D& movingBox = static_cast<BoxCollider2D&>(moving);
 
-            SweepHit2D result;
+            BoxCollider2D& targetBox = static_cast<BoxCollider2D&>(target);
 
-            result.Hit = boxHit.Hit;
-
-            result.Time = boxHit.Time;
-
-            result.Normal = boxHit.Normal;
-
-            return result;
+            return SweepOBBVsOBB(movingBox.GetWorldOrientedBox(), motion, targetBox.GetWorldOrientedBox());
         }
 
         // =========================================================
@@ -3081,48 +4207,273 @@ namespace Engine
         }
 
         // =========================================================
-        // Circle vs Box
+        // Circle vs OBB
         // =========================================================
 
         if (movingShape == ColliderShape2D::Circle && targetShape == ColliderShape2D::Box)
         {
-            auto& movingCircle = static_cast<CircleCollider2D&>(moving);
+            CircleCollider2D& movingCircle = static_cast<CircleCollider2D&>(moving);
 
-            return
-                SweepCircleVsBox(
-                    movingCircle.GetWorldCenter(),
-                    movingCircle.GetWorldRadius(),
-                    motion,
-                    target.GetWorldBounds()
-                );
+            BoxCollider2D& targetBox = static_cast<BoxCollider2D&>(target);
+
+            return SweepCircleVsOBB(movingCircle.GetWorldCenter(), movingCircle.GetWorldRadius(), motion, targetBox.GetWorldOrientedBox());
         }
 
         // =========================================================
-        // Box vs Circle
+        // OBB vs Circle
         // =========================================================
 
         if (movingShape == ColliderShape2D::Box && targetShape == ColliderShape2D::Circle)
         {
-            auto& targetCircle = static_cast<CircleCollider2D&>(target);
+            BoxCollider2D& movingBox = static_cast<BoxCollider2D&>(moving);
 
-            SweepHit2D result = 
-                SweepCircleVsBox(
-                    targetCircle.GetWorldCenter(),
-                    targetCircle.GetWorldRadius(),
-                    motion * -1.0f,
-                    movingStartBounds
-                );
+            CircleCollider2D& targetCircle = static_cast<CircleCollider2D&>(target);
 
-            if (result.Hit)
+            SweepHit2D hit = SweepCircleVsOBB(targetCircle.GetWorldCenter(), targetCircle.GetWorldRadius(), motion * -1.0f, movingBox.GetWorldOrientedBox());
+
+            if (hit.Hit)
             {
-                result.Normal *= -1.0f;
+                hit.Normal *= -1.0f;
             }
 
-            return result;
+            return hit;
         }
 
         return SweepHit2D{};
     }
+
+    SweepHit2D PhysicsWorld2D::SweepColliderAgainstMovingCollider(Collider2D& moving, const Bounds2D& movingStartBounds, const Vector2& movingMotion, Collider2D& target, const Bounds2D& targetStartBounds, const Vector2& targetMotion) const
+    {
+        const ColliderShape2D movingShape = moving.GetShape();
+
+        const ColliderShape2D targetShape = target.GetShape();
+
+        const Vector2 relativeMotion = movingMotion - targetMotion;
+
+        // BOX VS BOX
+
+        if (movingShape == ColliderShape2D::Box && targetShape == ColliderShape2D::Box)
+        {
+            BoxCollider2D& movingBoxCollider = static_cast<BoxCollider2D&>(moving);
+
+            BoxCollider2D& targetBoxCollider = static_cast<BoxCollider2D&>(target);
+
+            // A has already been placed at current CCD interval start.
+
+            const OrientedBox2D movingStartBox = movingBoxCollider.GetWorldOrientedBox();
+
+            // B is reconstructed translationally.
+
+            const OrientedBox2D targetStartBox = TranslateOrientedBox(targetBoxCollider.GetWorldOrientedBox(), targetMotion * -1.0f);
+
+            return SweepOBBVsOBB(movingStartBox, relativeMotion, targetStartBox);
+        }
+
+        // CIRCLE VS CIRCLE
+
+        if (movingShape == ColliderShape2D::Circle && targetShape == ColliderShape2D::Circle)
+        {
+            CircleCollider2D& movingCircle = static_cast<CircleCollider2D&>(moving);
+
+            CircleCollider2D& targetCircle = static_cast<CircleCollider2D&>(target);
+
+            const Vector2 movingStartCenter = movingCircle.GetWorldCenter();
+
+            const Vector2 targetStartCenter = targetCircle.GetWorldCenter() - targetMotion;
+
+            return SweepCircleVsCircle(movingStartCenter, movingCircle.GetWorldRadius(), relativeMotion, targetStartCenter, targetCircle.GetWorldRadius());
+        }
+
+        // CIRCLE VS BOX
+
+        if (movingShape == ColliderShape2D::Circle && targetShape == ColliderShape2D::Box)
+        {
+            CircleCollider2D& movingCircle = static_cast<CircleCollider2D&>(moving);
+
+            BoxCollider2D& targetBoxCollider = static_cast<BoxCollider2D&>(target);
+
+            // A is aleady at its sweep start.
+            const Vector2 movingStartCenter = movingCircle.GetWorldCenter();
+
+            // B currently represents its integrated transform.
+            // Reconstruct translational start state.
+
+            const OrientedBox2D targetStartBox = TranslateOrientedBox(targetBoxCollider.GetWorldOrientedBox(), targetMotion * -1.0f);
+
+            return SweepCircleVsOBB(movingStartCenter, movingCircle.GetWorldRadius(), relativeMotion, targetStartBox);
+        }
+
+        // BOX VS CIRCLE
+
+        if (movingShape == ColliderShape2D::Box && targetShape == ColliderShape2D::Circle)
+        {
+            BoxCollider2D& movingBox = static_cast<BoxCollider2D&>(moving);
+
+            CircleCollider2D& targetCircle = static_cast<CircleCollider2D&>(target);
+
+            // A has already been rewound by ProcessContinuousBody().
+            const OrientedBox2D movingStartBox = movingBox.GetWorldOrientedBox();
+
+            // Reconstruct B's trans;ational start position.
+
+            const Vector2 targetStartCenter = targetCircle.GetWorldCenter() - targetMotion;
+
+            SweepHit2D hit = SweepCircleVsOBB(targetStartCenter, targetCircle.GetWorldRadius(), relativeMotion * -1.0f, movingStartBox);
+
+            if (hit.Hit)
+            {
+                hit.Normal *= -1.0f;
+            }
+
+            return hit;
+        }
+
+        return SweepHit2D{};
+    }
+
+
+    SweepHit2D PhysicsWorld2D::SweepCircleVsOBB(const Vector2& startCenter, float radius, const Vector2& motion, const OrientedBox2D& box) const
+    {
+        // WORLD -> OBB LOCAL
+
+        const Vector2 localStartCenter = WorldPointToOBBLocal(box, startCenter);
+
+        const Vector2 localMotion{Vector2::Dot(motion, box.AxisX), Vector2::Dot(motion, box.AxisY)};
+
+        // OBB BECOMES LOCAL AABB
+
+        Bounds2D localBounds;
+
+        localBounds.Min = {-box.HalfExtents.X, -box.HalfExtents.Y};
+
+        localBounds.Max = {box.HalfExtents.X, box.HalfExtents.Y};
+
+        // EXISTING EXACT CIRCLE/AABB SWEEP
+
+        SweepHit2D hit = SweepCircleVsBox(localStartCenter, radius, localMotion, localBounds);
+
+        if (!hit.Hit)
+        {
+            return hit;
+        }
+
+        // LOCAL NORMAL -> WORLD NORMAL
+
+        hit.Normal = OBBLocalDirectionToWorld(box, hit.Normal);
+
+        return hit;
+    }
+
+
+    SweepHit2D PhysicsWorld2D::SweepOBBVsOBB(const OrientedBox2D& movingStartBox, const Vector2& relativeMotion, const OrientedBox2D& targetStartBox) const
+    {
+        SweepHit2D result;
+
+        const Vector2 axes[4]
+        {
+            movingStartBox.AxisX,
+            movingStartBox.AxisY,
+            targetStartBox.AxisX,
+            targetStartBox.AxisY
+        };
+
+        float globalEntryTime = -std::numeric_limits<float>::infinity();
+
+        float globalExitTime = std::numeric_limits<float>::infinity();
+
+        Vector2 impactNormal{0.0f, 0.0f};
+
+        for (const Vector2& axis : axes)
+        {
+            if (axis.LengthSquared() <= 0.000001f)
+            {
+                continue;
+            }
+
+            float minA = 0.0f;
+            float maxA = 0.0f;
+
+            float minB = 0.0f;
+            float maxB = 0.0f;
+
+            ProjectOrientedBox(movingStartBox, axis, minA, maxA);
+
+            ProjectOrientedBox(targetStartBox, axis, minB, maxB);
+
+            const float relativeSpeed = Vector2::Dot(relativeMotion, axis);
+
+            const SweptAxisResult2D axisResult = SweepIntervalsOnAxis(minA, maxA, minB, maxB, relativeSpeed, axis);
+
+            if (!axisResult.Valid)
+            {
+                return result;
+            }
+
+            if (axisResult.EntryTime > globalEntryTime)
+            {
+                globalEntryTime = axisResult.EntryTime;
+
+                impactNormal = axisResult.Normal;
+            }
+
+            globalExitTime = std::min(globalExitTime, axisResult.ExitTime);
+
+            // The shapes can never overlap simulaneously on all axes.
+
+            if (globalEntryTime > globalExitTime)
+            {
+                return result;
+            }
+        }
+
+        // RANGE TEST
+
+        if (globalExitTime < 0.0f)
+        {
+            return result;
+        }
+
+        // Initial overlap belongs to the discrete solver.
+
+        if (globalEntryTime < 0.0f)
+        {
+            return result;
+        }
+
+        if (globalEntryTime > 1.0f)
+        {
+            return result;
+        }
+
+        if (impactNormal.LengthSquared() <= 0.000001f)
+        {
+            return result;
+        }
+
+        result.Hit = true;
+
+        result.Time = globalEntryTime;
+
+        result.Normal = impactNormal;
+
+        return result;
+    }
+
+
+    OrientedBox2D PhysicsWorld2D::TranslateOrientedBox(const OrientedBox2D& box, const Vector2& translation) const
+    {
+        OrientedBox2D result = box;
+
+        result.Center += translation;
+
+        for (std::size_t i = 0; i < 4; ++i)
+        {
+            result.Vertices[i] += translation;
+        }
+
+        return result;
+    }
+
 
     void PhysicsWorld2D::ConsiderSweepCandidate(float time, const Vector2& normal, SweepHit2D& bestHit) const
     {
@@ -3241,7 +4592,7 @@ namespace Engine
 
         Vector2 rayDirection = direction;
 
-        const float directionLengthSquared = rayDirection.LengthSqured();
+        const float directionLengthSquared = rayDirection.LengthSquared();
 
         if (directionLengthSquared <= 0.000001f)
         {
@@ -3371,7 +4722,7 @@ namespace Engine
 
         Vector2 rayDirection = direction;
 
-        const float directionLengthSquared = rayDirection.LengthSqured();
+        const float directionLengthSquared = rayDirection.LengthSquared();
 
         if (directionLengthSquared <= 0.000001f)
         {
@@ -3646,7 +4997,7 @@ namespace Engine
 
         Vector2 castDirection = direction;
 
-        const float lengthSquared = castDirection.LengthSqured();
+        const float lengthSquared = castDirection.LengthSquared();
 
         if (lengthSquared <= 0.000001f)
         {
@@ -3761,7 +5112,7 @@ namespace Engine
 
         Vector2 castDirection = direction;
 
-        const float lengthSquared = castDirection.LengthSqured();
+        const float lengthSquared = castDirection.LengthSquared();
 
         if (lengthSquared <= 0.000001f)
         {
@@ -4032,7 +5383,7 @@ namespace Engine
 
         Vector2 normal = point - center;
 
-        const float lengthSquared = normal.LengthSqured();
+        const float lengthSquared = normal.LengthSquared();
 
         if (lengthSquared > 0.000001f)
         {
@@ -4067,6 +5418,13 @@ namespace Engine
 
                 return RaycastCircle(origin, direction, maxDistance, circle.GetWorldCenter(), circle.GetWorldRadius());
             }
+
+            // CAPSULE
+
+            case ColliderShape2D::Capsule:
+            {
+                return {};
+            }
         }
 
         return RayShapeHit2D{};
@@ -4084,7 +5442,7 @@ namespace Engine
     {
         const Vector2 delta = point - center;
 
-        return delta.LengthSqured() <= radius * radius;
+        return delta.LengthSquared() <= radius * radius;
     }
 
     bool PhysicsWorld2D::PointOverlapsCollider(const Vector2& point, const Collider2D& collider) const
@@ -4106,6 +5464,13 @@ namespace Engine
 
                 return PointInsideCircle(point, circle.GetWorldCenter(), circle.GetWorldRadius());
             }
+
+            // CAPSULE
+
+            case ColliderShape2D::Capsule:
+            {
+                return false;
+            }
         }
 
         return false;
@@ -4117,7 +5482,7 @@ namespace Engine
 
         const float combinedRadius = radiusA + radiusB;
 
-        return delta.LengthSqured() <= combinedRadius * combinedRadius;
+        return delta.LengthSquared() <= combinedRadius * combinedRadius;
     }
 
     bool PhysicsWorld2D::CircleOverlapsAABB(const Vector2& center, float radius, const Bounds2D& bounds) const
@@ -4126,7 +5491,7 @@ namespace Engine
 
         const Vector2 delta = center - closest;
 
-        return delta.LengthSqured() <= radius * radius;
+        return delta.LengthSquared() <= radius * radius;
     }
 
     bool PhysicsWorld2D::CircleOverlapsCollider(const Vector2& center, float radius, const Collider2D& collider) const
@@ -4147,6 +5512,13 @@ namespace Engine
                 const CircleCollider2D& circle = static_cast<const CircleCollider2D&>(collider);
 
                 return CirclesOverlap(center, radius, circle.GetWorldCenter(), circle.GetWorldRadius());
+            }
+
+            // CAPSULE
+
+            case ColliderShape2D::Capsule:
+            {
+                return false;
             }
         }
 
@@ -4179,6 +5551,13 @@ namespace Engine
                 const CircleCollider2D& circle = static_cast<const CircleCollider2D&>(collider);
 
                 return CircleOverlapsAABB(circle.GetWorldCenter(), circle.GetWorldRadius(), queryBox);
+            }
+
+            // CAPSULE
+
+            case ColliderShape2D::Capsule:
+            {
+                return false;
             }
         }
 
@@ -4489,9 +5868,9 @@ namespace Engine
 
     void PhysicsWorld2D::PrepareVelocityContacts()
     {
-        for (CollisionManifold2D& maniflod : m_CurrentContacts)
+        for (CollisionManifold2D& manifold : m_CurrentContacts)
         {
-            PrepareVelocityContact(maniflod);
+            PrepareVelocityContact(manifold);
         }
     }
 
@@ -4538,7 +5917,7 @@ namespace Engine
 
         const float restitution = CombineRestitution(*manifold.A, *manifold.B);
 
-        constexpr float restitutionVelocityThreshold = 20.0f;
+        const float restitutionVelocityThreshold = m_Settings.RestitutionVelocityThreshold;
 
         for (std::size_t i = 0; i <manifold.ContactCount; ++i)
         {
@@ -4712,6 +6091,8 @@ namespace Engine
                 continue;
             }
 
+            ++m_Stats.RestoredCachedContacts;
+
             const std::size_t index = static_cast<std::size_t>(cachedIndex);
 
             used[index] = true;
@@ -4741,9 +6122,9 @@ namespace Engine
 
             const Vector2 delta = cachedPair.Contacts[i].Point - point;
 
-            const float distanceSquared = delta.LengthSqured();
+            const float distanceSquared = delta.LengthSquared();
 
-            if (distanceSquared <= bestDistanceSquared)
+            if (distanceSquared < bestDistanceSquared)
             {
                 bestDistanceSquared = distanceSquared;
 
@@ -4852,6 +6233,8 @@ namespace Engine
                     bodyOrder.push_back(bodyB);
                 }
             }
+
+            m_Stats.Islands = m_Islands.size();
         }
 
         for (std::size_t contactIndex = 0; contactIndex < m_CurrentContacts.size(); ++contactIndex)
@@ -4971,8 +6354,9 @@ namespace Engine
                         }
 
                         // =============================================
-                        // ONLY AWAKE DYNAMIC BODIES PROPAGATE
-                        // THE GRAPH.
+                        // Only Dynamic bodies propagate the island graph.
+                        // Sleeping Dynamic bodies remain members so wake/sleep
+                        // state can propagate across the complete island.
                         // =============================================
 
                         if (!IsIslandDynamicBody(otherBody))
@@ -5071,7 +6455,7 @@ namespace Engine
 
     void PhysicsWorld2D::SolveVelocityIsland(PhysicsIsland2D& island)
     {
-        for (std::size_t iteration = 0; iteration < m_VelocityIterations; ++iteration)
+        for (std::size_t iteration = 0; iteration < m_Settings.VelocityIterations; ++iteration)
         {
             // CONTACT CONSTRAINTS
 
@@ -5082,6 +6466,8 @@ namespace Engine
                 {
                     continue;
                 }
+
+                ++m_Stats.VelocityContactSolves;
 
                 SolveVelocityContact(m_CurrentContacts[contactIndex]);
             }
@@ -5095,6 +6481,8 @@ namespace Engine
                     continue;
                 }
 
+                ++m_Stats.JointVelocitySolves;
+
                 joint->SolveVelocity(*this);
             }
         }
@@ -5102,7 +6490,7 @@ namespace Engine
 
     void PhysicsWorld2D::SolvePositionIsland(PhysicsIsland2D& island)
     {
-        for (std::size_t iteration = 0; iteration < m_PositionIterations; ++iteration)
+        for (std::size_t iteration = 0; iteration < m_Settings.PositionIterations; ++iteration)
         {
             bool correctedAny = false;
 
@@ -5161,6 +6549,8 @@ namespace Engine
                     continue;
                 }
 
+                ++m_Stats.PositionContactSolves;
+
                 ApplyPositionalCorrection(manifold, bodyA, bodyB, *transformA, *transformB);
 
                 correctedAny = true;
@@ -5172,6 +6562,8 @@ namespace Engine
                 {
                     continue;
                 }
+
+                ++m_Stats.JointPositionSolves;
 
                 if (joint->SolvePosition(*this))
                 {
@@ -5306,7 +6698,7 @@ namespace Engine
 
             body->AddSleepTime(deltaTime);
 
-            if (body->GetSleepTimer() < m_TimeToSleep)
+            if (body->GetSleepTimer() < m_Settings.TimeToSleep)
             {
                 allTimersReady = false;
             }
@@ -5372,11 +6764,11 @@ namespace Engine
 
     bool PhysicsWorld2D::IsBodyQuietForSleep(const Rigidbody2D& body) const
     {
-        const float linearThresholdSquared = m_SleepLinearSpeedThreshold * m_SleepLinearSpeedThreshold;
+        const float linearThresholdSquared = m_Settings.SleepLinearSpeedThreshold * m_Settings.SleepLinearSpeedThreshold;
 
-        const bool linearMotionIsSmall = body.GetVelocity().LengthSqured() <= linearThresholdSquared;
+        const bool linearMotionIsSmall = body.GetVelocity().LengthSquared() <= linearThresholdSquared;
 
-        const bool angularMotionIsSmall = std::abs(body.GetAngularVelocity()) <= m_SleepAngularSpeedThreshold;
+        const bool angularMotionIsSmall = std::abs(body.GetAngularVelocity()) <= m_Settings.SleepAngularSpeedThreshold;
 
         return linearMotionIsSmall && angularMotionIsSmall;
     }
@@ -5401,7 +6793,7 @@ namespace Engine
                 {
                     body->AddSleepTime(deltaTime);
 
-                    if (body->GetSleepTimer() >= m_TimeToSleep)
+                    if (body->GetSleepTimer() >= m_Settings.TimeToSleep)
                     {
                         body->Sleep();
                     }
@@ -5447,7 +6839,7 @@ namespace Engine
     }
 
 
-    void PhysicsWorld2D::PropergeteIslandWakeStates()
+    void PhysicsWorld2D::PropagateIslandWakeStates()
     {
         for (PhysicsIsland2D& island : m_Islands)
         {
@@ -5572,5 +6964,871 @@ namespace Engine
     Vector2 PhysicsWorld2D::GetConstraintPointVelocity(const Vector2& linearVelocity, float angularVelocity, const Vector2& leverArm) const
     {
         return GetVelocityAtPoint(linearVelocity, angularVelocity, leverArm);
+    }
+
+    PhysicsWorld2D::ClosestSegmentPoints2D PhysicsWorld2D::ClosestPointsBetweenSegments(const Vector2& a0, const Vector2& a1, const Vector2& b0, const Vector2& b1) const
+    {
+        ClosestSegmentPoints2D result;
+
+        const Vector2 d1 = a1 - a0;
+
+        const Vector2 d2 = b1 - b0;
+
+        const Vector2 r = a0 - b0;
+
+        const float a = Vector2::Dot(d1, d1);
+
+        const float e = Vector2::Dot(d2, d2);
+
+        const float f = Vector2::Dot(d2, r);
+
+        constexpr float epsilon = 0.000001f;
+
+        float s = 0.0f;
+
+        float t = 0.0f;
+
+        // BOTH SEGMENTS ARE POINTS
+
+        if (a <= epsilon && e <= epsilon)
+        {
+            result.PointA = a0;
+
+            result.PointB = b0;
+
+            return result;
+        }
+
+        // A IS A POINT
+
+        if (a <= epsilon)
+        {
+            s = 0.0f;
+
+            t = std::clamp(f / e, 0.0f, 1.0f);
+        }
+        else 
+        {
+            const float c = Vector2::Dot(d1, r);
+
+            // B IS A POINT
+
+            if (e <= epsilon)
+            {
+                t = 0.0f;
+
+                s = std::clamp(-c / a, 0.0f, 1.0f);
+            }
+            else 
+            {
+                const float b = Vector2::Dot(d1, d2);
+
+                const float denominator = a * e - b * b;
+
+                if (std::abs(denominator) > epsilon)
+                {
+                    s = std::clamp((b * f - c * e) / denominator, 0.0f, 1.0f);
+                }
+                else 
+                {
+                    // Nearly parallel segements.
+
+                    s = 0.0f;
+                }
+
+                t = (b * s + f) / e;
+
+                if (t < 0.0f)
+                {
+                    t = 0.0f;
+
+                    s = std::clamp(-c / a, 0.0f, 1.0f);
+                }
+                else if (t > 1.0f)
+                {
+                    t = 1.0f;
+
+                    s = std::clamp((b - c) / a, 0.0f, 1.0f);
+                }
+            }
+        }
+
+        result.PointA = a0 + d1 * s;
+
+        result.PointB = b0 + d2 * t;
+
+        return result;
+    }
+
+    Vector2 PhysicsWorld2D::GetPolygonSupportPoint(const Polygon2D& polygon, const Vector2& direction) const
+    {
+        if (polygon.Vertices.empty())
+        {
+            return{0.0f, 0.0f};
+        }
+
+        std::size_t bestIndex = 0;
+
+        float bestProjection = Vector2::Dot(polygon.Vertices[0], direction);
+
+        for (std::size_t i = 1; i < polygon.Vertices.size(); ++i)
+        {
+            const float projection = Vector2::Dot(polygon.Vertices[i], direction);
+
+            if (projection > bestProjection)
+            {
+                bestProjection = projection;
+
+                bestIndex = i;
+            }
+        }
+
+        return polygon.Vertices[bestIndex];
+    }
+
+    void PhysicsWorld2D::ProjectPolygon(const Polygon2D& polygon, const Vector2& axis, float& outMin, float& outMax) const
+    {
+        if (polygon.Vertices.empty())
+        {
+            outMin = 0.0f;
+
+            outMax = 0.0f;
+
+            return;
+        }
+
+        outMin = Vector2::Dot(polygon.Vertices[0], axis);
+
+        outMax = outMin;
+
+        for (std::size_t i = 1; i < polygon.Vertices.size(); ++i)
+        {
+            const float projection = Vector2::Dot(polygon.Vertices[i], axis);
+
+            outMin = std::min(outMin, projection);
+
+            outMax = std::max(outMax, projection);
+        }
+    }
+
+    Vector2 PhysicsWorld2D::GetPolygonCenter(const Polygon2D& polygon) const
+    {
+        if (polygon.Vertices.empty())
+        {
+            return{0.0f, 0.0f};
+        }
+
+        Vector2 center{0.0f, 0.0f};
+
+        for (const Vector2& vertex : polygon.Vertices)
+        {
+            center += vertex;
+        }
+
+        center *= 1.0f / static_cast<float>(polygon.Vertices.size());
+
+        return center;
+    }
+
+    bool PhysicsWorld2D::TestPolygonAxis(const Polygon2D& a, const Polygon2D& b, const Vector2& axis, float& outOverlap) const
+    {
+        constexpr float epsilon = 0.000001f;
+
+        if (axis.LengthSquared() <= epsilon)
+        {
+            outOverlap = 0.0f;
+
+            return true;
+        }
+
+        float minA = 0.0f;
+        float maxA = 0.0f;
+
+        float minB = 0.0f;
+        float maxB = 0.0f;
+
+        ProjectPolygon(a, axis, minA, maxA);
+
+        ProjectPolygon(b, axis, minB, maxB);
+
+        outOverlap = std::min(maxA, maxB) - std::max(minA, minB);
+
+        return outOverlap > 0.0f;
+    }
+
+    PhysicsWorld2D::PolygonSATResult2D PhysicsWorld2D::TestPolygonSAT(const Polygon2D& a, const Polygon2D& b) const
+    {
+        PolygonSATResult2D result;
+
+        if (a.Vertices.size() < 3 || b.Vertices.size() < 3)
+        {
+            return result;
+        }
+
+        float minimumOverlap = std::numeric_limits<float>::max();
+
+        Vector2 minimumAxis{0.0f, 0.0f};
+
+        bool minimumAxisFromA = true;
+
+        std::size_t minimumAxisIdex = 0;
+
+        // AXES FROM A
+
+        for (std::size_t i = 0; i < a.Normals.size(); ++i)
+        {
+            const Vector2& axis = a.Normals[i];
+
+            if (axis.LengthSquared() <= 0.000001f)
+            {
+                continue;
+            }
+
+            float overlap = 0.0f;
+
+            if (!TestPolygonAxis(a, b, axis, overlap))
+            {
+                return result;
+            }
+
+            if (overlap < minimumOverlap)
+            {
+                minimumOverlap = overlap;
+
+                minimumAxis = axis;
+
+                minimumAxisFromA = true;
+
+                minimumAxisIdex = i;
+            }
+        }
+
+        // AXES FROM B
+
+        for (std::size_t i = 0; i < b.Normals.size(); ++i)
+        {
+            const Vector2& axis = b.Normals[i];
+
+            if (axis.LengthSquared() <= 0.000001f)
+            {
+                continue;
+            }
+
+            float overlap = 0.0f;
+
+            if (!TestPolygonAxis(a, b, axis, overlap))
+            {
+                return result;
+            }
+
+            if (overlap < minimumOverlap)
+            {
+                minimumOverlap = overlap;
+
+                minimumAxis = axis;
+
+                minimumAxisFromA = false;
+
+                minimumAxisIdex = i;
+            }
+        }
+
+        if (minimumOverlap == std::numeric_limits<float>::max())
+        {
+            return result;
+        }
+
+        // FORCE NORMAL A -> B
+
+        const Vector2 centerA = GetPolygonCenter(a);
+
+        const Vector2 centerB = GetPolygonCenter(b);
+
+        if (Vector2::Dot(centerB - centerA, minimumAxis) < 0.0f)
+        {
+            minimumAxis *= -1.0f;
+        }
+
+        result.Overlapping = true;
+
+        result.Axis = minimumAxis;
+
+        result.Overlap = minimumOverlap;
+
+        result.AxisFromA = minimumAxisFromA;
+
+        result.AxisIndex = minimumAxisIdex;
+
+        return result;
+    }
+
+    PhysicsWorld2D::PolygonEdge2D PhysicsWorld2D::GetPolygonEdge(const Polygon2D& polygon, std::size_t edgeIndex) const
+    {
+        PolygonEdge2D edge;
+
+        if (polygon.Vertices.empty())
+        {
+            return edge;
+        }
+
+        const std::size_t count = polygon.Vertices.size();
+
+        edgeIndex %= count;
+
+        const std::size_t nestIndex = (edgeIndex + 1) % count;
+
+        edge.A = polygon.Vertices[edgeIndex];
+
+        edge.B = polygon.Vertices[nestIndex];
+
+
+        if (edgeIndex < polygon.Normals.size())
+        {
+            edge.Normal = polygon.Normals[edgeIndex];
+        }
+
+        edge.Index = edgeIndex;
+
+        return edge;
+    }
+
+    PhysicsWorld2D::PolygonEdge2D PhysicsWorld2D::FindIncidentPolygonEdge(const Polygon2D& polygon, const Vector2& referenceNormal) const
+    {
+        PolygonEdge2D result;
+
+        if (polygon.Normals.empty())
+        {
+            return result;
+        }
+
+        std::size_t bestIndex = 0;
+
+        float smallestDot = Vector2::Dot(polygon.Normals[0], referenceNormal);
+
+        for (std::size_t i = 1; i < polygon.Normals.size(); ++i)
+        {
+            const float dot = Vector2::Dot(polygon.Normals[i], referenceNormal);
+
+            if (dot < smallestDot)
+            {
+                smallestDot = dot;
+
+                bestIndex = i;
+            }
+        }
+
+        return GetPolygonEdge(polygon, bestIndex);
+    }
+
+    std::size_t PhysicsWorld2D::BuildPolygonContactPoints(const Polygon2D& polygonA, const Polygon2D& polygonB, const PolygonSATResult2D& sat, Vector2 outContacts[2]) const
+    {
+        // REFERENCE / INCIDENT
+
+        const Polygon2D& reference = sat.AxisFromA ? polygonA : polygonB;
+
+        const Polygon2D& incident = sat.AxisFromA ? polygonB : polygonA;
+
+        if (reference.Vertices.empty() || incident.Vertices.empty())
+        {
+            return 0;
+        }
+
+        // REFERENCE EDGE
+
+        const PolygonEdge2D referenceEdge = GetPolygonEdge(reference, sat.AxisIndex);
+
+        Vector2 referenceNormal = referenceEdge.Normal;
+
+        // Make the normal point:
+        //
+        // reference -> incident
+
+        const Vector2 referenceCenter = GetPolygonCenter(reference);
+
+        const Vector2 incidentCenter = GetPolygonCenter(incident);
+
+        if (Vector2::Dot(incidentCenter - referenceCenter, referenceNormal) < 0.0f)
+        {
+            referenceNormal *= -1.0f;
+        }
+
+        // REFERENCE TANGENT
+
+        Vector2 referenceTangent = referenceEdge.B - referenceEdge.A;
+
+        const float tangentLengthSquared = referenceTangent.LengthSquared();
+
+        constexpr float epsilon = 0.000001f;
+
+        if (tangentLengthSquared <= epsilon)
+        {
+            return 0;
+        }
+
+        const float tangentLength = std::sqrt(tangentLengthSquared);
+
+        referenceTangent *= 1.0f / tangentLength;
+
+        const Vector2 referenceFaceCenter = (referenceEdge.A + referenceEdge.B) * 0.5f;
+
+        const float referenceHalfLength = tangentLength * 0.5f;
+
+        // INCIDENT EDGE
+
+        const PolygonEdge2D incidentEdge = FindIncidentPolygonEdge(incident, referenceNormal);
+
+        // CLIP AGAINST SIDE PLANES
+
+        Vector2 clipped[2];
+
+        const std::size_t clippedCount = ClipSegmentToSpan(incidentEdge.A, incidentEdge.B, referenceFaceCenter, referenceTangent, referenceHalfLength, clipped);
+
+        if (clippedCount == 0)
+        {
+            return 0;
+        }
+
+        // KEEP POINTS BEHIND REFERENCE FACE
+
+        std::size_t contactCount = 0;
+
+        constexpr float contactTolerance = 0.001f;
+
+        for (std::size_t i = 0; i < clippedCount; ++i)
+        {
+            const float separation = Vector2::Dot(clipped[i] - referenceFaceCenter, referenceNormal);
+
+            if (separation > contactTolerance)
+            {
+                continue;
+            }
+
+            outContacts[contactCount++] = clipped[i] - referenceNormal * (separation * 0.5f);
+
+            if (contactCount == 2)
+            {
+                break;
+            }
+        }
+
+        return contactCount;
+    }
+
+    Polygon2D PhysicsWorld2D::OrientedBoxToPolygon(const OrientedBox2D& box) const
+    {
+        Polygon2D polygon;
+
+        polygon.Vertices.reserve(4);
+
+        polygon.Normals.reserve(4);
+
+        for (std::size_t i = 0; i < 4; ++i)
+        {
+            polygon.Vertices.push_back(box.Vertices[i]);
+        }
+
+        constexpr float epsilon = 0.000001f;
+
+        for (std::size_t i = 0; i < 4; ++i)
+        {
+            const Vector2& current = polygon.Vertices[i];
+
+            const Vector2& next = polygon.Vertices[(i + 1) % 4];
+
+            const Vector2 edge = next - current;
+
+            Vector2 normal{-edge.Y, edge.X};
+
+            const float lengthSquared = normal.LengthSquared();
+
+            if (lengthSquared > epsilon)
+            {
+                normal *= 1.0f / std::sqrt(lengthSquared);
+            }
+            else 
+            {
+                normal = {0.0f, 0.0f};
+            }
+
+            polygon.Normals.push_back(normal);
+        }
+
+        return polygon;
+    }
+
+
+    Vector2 PhysicsWorld2D::FindClosestPolygonVertex(const Polygon2D& polygon, const Vector2& point) const
+    {
+        if (polygon.Vertices.empty())
+        {
+            return{0.0f, 0.0f};
+        }
+
+        std::size_t closestIndex = 0;
+
+        float closestDistanceSquared = (polygon.Vertices[0] - point).LengthSquared();
+
+        for (std::size_t i = 1; i < polygon.Vertices.size(); ++i)
+        {
+            const float distanceSquared = (polygon.Vertices[i] - point).LengthSquared();
+
+            if (distanceSquared < closestDistanceSquared)
+            {
+                closestDistanceSquared = distanceSquared;
+
+                closestIndex = i;
+            }
+        }
+
+        return polygon.Vertices[closestIndex];
+    }
+
+    void PhysicsWorld2D::ProjectCircle(const Vector2& center, float radius, const Vector2& axis, float& outMin, float& outMax) const
+    {
+        const float projection = Vector2::Dot(center, axis);
+
+        outMin = projection - radius;
+
+        outMax = projection + radius;
+    }
+
+    Vector2 PhysicsWorld2D::GetBodyStepMotion(const Rigidbody2D* body, const TransformComponent* transform) const
+    {
+        if (!body || !transform)
+        {
+            return{0.0f, 0.0f};
+        }
+
+        if (body->IsStatic())
+        {
+            return{0.0f, 0.0f};
+        }
+
+        const Vector2 currentPosition = transform->GetWorldTransform().Position;
+
+        return currentPosition - body->GetPreviousPosition();
+    }
+
+    PhysicsWorld2D::SweptAxisResult2D PhysicsWorld2D::SweepIntervalsOnAxis(float minA, float maxA, float minB, float maxB, float relativeSpeed, const Vector2& axis) const
+    {
+        SweptAxisResult2D result;
+
+        constexpr float epsilon = 0.000001f;
+
+        // NO RELATIVE MOTION ON THIS AXIS
+
+        if (std::abs(relativeSpeed) <= epsilon)
+        {
+            // 
+            if (maxA < minB || maxB < minA)
+            {
+                result.Valid = false;
+
+                return result;
+            }
+
+            // Already overlapping on this axis for the entire interval.
+
+            result.EntryTime = -std::numeric_limits<float>::infinity();
+
+            result.ExitTime = std::numeric_limits<float>::infinity();
+
+            return result;
+        }
+
+        // TIMES AT WHICH INTERVAL BOUNDARIES MEET
+
+        const float t1 = (minB - maxA) / relativeSpeed;
+
+        const float t2 = (maxB - minA) / relativeSpeed;
+
+        result.EntryTime = std::min(t1, t2);
+
+        result.ExitTime = std::max(t1, t2);
+
+        // TARGET OUTWARD NORMAL
+
+        if (relativeSpeed > 0.0f)
+        {
+            result.Normal = axis * -1.0f;
+        }
+        else 
+        {
+            result.Normal = axis;
+        }
+
+        return result;
+    }
+
+    const PhysicsSettings2D& PhysicsWorld2D::GetSettings() const
+    {
+        return m_Settings;
+    }
+
+    void PhysicsWorld2D::SetSettings(const PhysicsSettings2D& settings)
+    {
+        m_Settings = settings;
+
+        ValidateSettings();
+    }
+
+    PhysicsSettings2D& PhysicsWorld2D::GetSettings()
+    {
+        return m_Settings;
+    }
+
+    void PhysicsWorld2D::ValidateSettings()
+    {
+        m_Settings.FixedDeltaTime = std::max(m_Settings.FixedDeltaTime, 0.000001f);
+
+        m_Settings.MaxSubSteps = std::max<std::size_t>(1, m_Settings.MaxSubSteps);
+
+        m_Settings.VelocityIterations = std::max<std::size_t>(1, m_Settings.VelocityIterations);
+
+        m_Settings.PositionIterations = std::max<std::size_t>(1, m_Settings.PositionIterations);
+
+        m_Settings.PositionSlop = std::max(0.0f, m_Settings.PositionSlop);
+
+        m_Settings.PositionCorrectionPercent = std::clamp(m_Settings.PositionCorrectionPercent, 0.0f, 1.0f);
+
+        m_Settings.RestitutionVelocityThreshold = std::max(0.0f, m_Settings.RestitutionVelocityThreshold);
+
+        m_Settings.SleepLinearSpeedThreshold = std::max(0.0f, m_Settings.SleepLinearSpeedThreshold);
+
+        m_Settings.SleepAngularSpeedThreshold = std::max(0.0f, m_Settings.SleepAngularSpeedThreshold);
+
+        m_Settings.TimeToSleep = std::max(0.0f, m_Settings.TimeToSleep);
+
+        m_Settings.CollisionWakeSpeed = std::max(0.0f, m_Settings.CollisionWakeSpeed);
+
+        m_Settings.SpatialCellSize = std::max(1.0f, m_Settings.SpatialCellSize);
+
+        m_Settings.MaxCCDImpacts = std::max<std::size_t>(1, m_Settings.MaxCCDImpacts);
+
+        m_Settings.CCDTimeEpsilon = std::max(0.0f, m_Settings.CCDTimeEpsilon);
+
+        m_Settings.CCDSeparation = std::max(0.0f, m_Settings.CCDSeparation);
+    }
+
+    const PhysicsStats2D& PhysicsWorld2D::GetStats() const
+    {
+        return m_Stats;
+    }
+
+    const std::vector<PhysicsCCDDebug2D>& PhysicsWorld2D::GetCCDDebugRecords() const
+    {
+        return m_CCDDebugRecords;
+    }
+
+    void PhysicsWorld2D::ResetStepStats(float deltaTime)
+    {
+        const std::uint64_t previousStepIndex = m_Stats.StepIndex;
+
+        m_Stats = PhysicsStats2D{} ;
+
+        m_Stats.StepIndex = previousStepIndex + 1;
+
+        m_Stats.StepDeltaTime = deltaTime;
+    }
+
+    void PhysicsWorld2D::CountBodiesForStats()
+    {
+        m_Stats.DynamicBodies = 0;
+
+        m_Stats.KinematicBodies = 0;
+
+        m_Stats.StaticBodies = 0;
+
+        m_Stats.SleepingBodies = 0;
+
+        if (!m_Scene)
+        {
+            return;
+        }
+
+        const auto countEntity = 
+           [&](auto&& self, Entity* entity) -> void
+           {
+                if (!entity)
+                {
+                    return;
+                }
+
+                Rigidbody2D* body = entity->GetComponent<Rigidbody2D>();
+
+                if (body)
+                {
+                    switch (body->GetBodyType())
+                    {
+                        case BodyType2D::Static:
+                            ++m_Stats.StaticBodies;
+                            break;
+
+                        case BodyType2D::Kinematic:
+                            ++m_Stats.KinematicBodies;
+                            break;
+
+                        case BodyType2D::Dynamic:
+                            ++m_Stats.DynamicBodies;
+
+                            if (body->IsSleeping())
+                            {
+                                ++m_Stats.SleepingBodies;
+                            }
+                            break;
+                    }
+                }
+
+                for (const EntityHandle& childHandle : entity->GetChildren())
+                {
+                    self(self, childHandle.Get());
+                }
+           };
+        
+        for (Entity* root : m_Scene->GetRootEntities())
+        {
+            countEntity(countEntity, root);
+        }
+    }
+
+    void PhysicsWorld2D::FinalizeStepStats()
+    {
+        m_Stats.ActiveColliders = m_ActiveColliders.size();
+
+
+        m_Stats.SpatialCells = m_SpatialGrid.size();
+
+
+        m_Stats.BroadPhaseProxies = m_BroadPhaseProxies.size();
+
+
+        m_Stats.CandidatePairs = m_CandidatePairs.size();
+
+
+        m_Stats.Islands = m_Islands.size();
+
+
+        m_Stats.Joints = m_Joints.size();
+
+
+        m_Stats.CachedContactPairs = m_ContactCache.size();
+
+
+        m_Stats.ActiveJointConstraints = 0;
+
+
+        for (Joint2D* joint : m_Joints)
+        {
+            if (joint &&joint->IsEnabled())
+            {
+                ++m_Stats.ActiveJointConstraints;
+            }
+        }
+
+
+        CountBodiesForStats();
+    }
+
+    void PhysicsWorld2D::PrintPhysicsStats() const
+    {
+        std::cout
+            << "\n=== Physics Stats ===\n"
+
+            << "Step: "
+            << m_Stats.StepIndex
+            << '\n'
+
+            << "Colliders: "
+            << m_Stats.ActiveColliders
+            << '\n'
+
+            << "Dynamic bodies: "
+            << m_Stats.DynamicBodies
+            << '\n'
+
+            << "Sleeping bodies: "
+            << m_Stats.SleepingBodies
+            << '\n'
+
+            << "Spatial cells: "
+            << m_Stats.SpatialCells
+            << '\n'
+
+            << "Candidate pairs: "
+            << m_Stats.CandidatePairs
+            << '\n'
+
+            << "Narrow tests: "
+            << m_Stats.NarrowPhaseTests
+            << '\n'
+
+            << "Manifolds: "
+            << m_Stats.GeneratedManifolds
+            << '\n'
+
+            << "Contact points: "
+            << m_Stats.ContactPoints
+            << '\n'
+
+            << "Islands: "
+            << m_Stats.Islands
+            << '\n'
+
+            << "Joints: "
+            << m_Stats.ActiveJointConstraints
+            << '\n'
+
+            << "CCD bodies: "
+            << m_Stats.CCDBodies
+            << '\n'
+
+            << "CCD tests: "
+            << m_Stats.CCDNarrowPhaseTests
+            << '\n'
+
+            << "CCD hits: "
+            << m_Stats.CCDHits
+            << '\n'
+
+            << "CCD resolved: "
+            << m_Stats.CCDResolvedImpacts
+            << '\n'
+
+            << "=====================\n";
+    }
+
+    float PhysicsWorld2D::GetBroadPhaseRejectionRatio() const
+    {
+        if (m_Stats.CandidatePairs == 0)
+        {
+            return 0.0f;
+        }
+
+        const float narrowRatio = static_cast<float>(m_Stats.NarrowPhaseTests) / static_cast<float>(m_Stats.CandidatePairs);
+
+        return 1.0f - narrowRatio;
+    }
+
+    const PhysicsDebugDrawSettings2D& PhysicsWorld2D::GetDebugDrawSettings() const
+    {
+        return m_DebugDrawSettings;
+    }
+
+    PhysicsDebugDrawSettings2D& PhysicsWorld2D::GetDebugDrawSettings()
+    {
+        return m_DebugDrawSettings;
+    }
+
+    PhysicsDebugSnapshot2D PhysicsWorld2D::GetDebugSnapshot() const
+    {
+        PhysicsDebugSnapshot2D snapshot;
+
+        snapshot.Settings = m_Settings;
+
+        snapshot.Stats = m_Stats;
+
+        snapshot.DrawSettings = m_DebugDrawSettings;
+
+        return snapshot;
     }
 }

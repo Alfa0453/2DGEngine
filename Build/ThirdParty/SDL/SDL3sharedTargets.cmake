@@ -62,29 +62,29 @@ set_target_properties(SDL3::SDL3-shared PROPERTIES
 # Import target "SDL3::SDL3-shared" for configuration "Debug"
 set_property(TARGET SDL3::SDL3-shared APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 set_target_properties(SDL3::SDL3-shared PROPERTIES
-  IMPORTED_IMPLIB_DEBUG "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/Debug/SDL3.lib"
-  IMPORTED_LOCATION_DEBUG "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/Debug/SDL3.dll"
+  IMPORTED_IMPLIB_DEBUG "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/Debug/SDL3.lib"
+  IMPORTED_LOCATION_DEBUG "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/Debug/SDL3.dll"
   )
 
 # Import target "SDL3::SDL3-shared" for configuration "Release"
 set_property(TARGET SDL3::SDL3-shared APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(SDL3::SDL3-shared PROPERTIES
-  IMPORTED_IMPLIB_RELEASE "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/Release/SDL3.lib"
-  IMPORTED_LOCATION_RELEASE "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/Release/SDL3.dll"
+  IMPORTED_IMPLIB_RELEASE "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/Release/SDL3.lib"
+  IMPORTED_LOCATION_RELEASE "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/Release/SDL3.dll"
   )
 
 # Import target "SDL3::SDL3-shared" for configuration "MinSizeRel"
 set_property(TARGET SDL3::SDL3-shared APPEND PROPERTY IMPORTED_CONFIGURATIONS MINSIZEREL)
 set_target_properties(SDL3::SDL3-shared PROPERTIES
-  IMPORTED_IMPLIB_MINSIZEREL "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/MinSizeRel/SDL3.lib"
-  IMPORTED_LOCATION_MINSIZEREL "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/MinSizeRel/SDL3.dll"
+  IMPORTED_IMPLIB_MINSIZEREL "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/MinSizeRel/SDL3.lib"
+  IMPORTED_LOCATION_MINSIZEREL "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/MinSizeRel/SDL3.dll"
   )
 
 # Import target "SDL3::SDL3-shared" for configuration "RelWithDebInfo"
 set_property(TARGET SDL3::SDL3-shared APPEND PROPERTY IMPORTED_CONFIGURATIONS RELWITHDEBINFO)
 set_target_properties(SDL3::SDL3-shared PROPERTIES
-  IMPORTED_IMPLIB_RELWITHDEBINFO "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/RelWithDebInfo/SDL3.lib"
-  IMPORTED_LOCATION_RELWITHDEBINFO "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/RelWithDebInfo/SDL3.dll"
+  IMPORTED_IMPLIB_RELWITHDEBINFO "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/RelWithDebInfo/SDL3.lib"
+  IMPORTED_LOCATION_RELWITHDEBINFO "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/RelWithDebInfo/SDL3.dll"
   )
 
 # Make sure the targets which have been exported in some other

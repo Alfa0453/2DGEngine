@@ -28,6 +28,49 @@ namespace Engine
 
         float GetBiasFactor() const;
 
+        // ---------------------------------------------------------------
+        // MOTOR
+        // ---------------------------------------------------------------
+        //
+        // The motor drives the translation speed along the joint axis toward
+        // GetMotorSpeed() (in world units/second), using no more than
+        // GetMaxMotorForce(). Use it for elevators, sliding doors, pistons,
+        // and moving platforms.
+
+        void EnableMotor(bool enable);
+
+        bool IsMotorEnabled() const;
+
+        void SetMotorSpeed(float unitsPerSecond);
+
+        float GetMotorSpeed() const;
+
+        void SetMaxMotorForce(float maxForce);
+
+        float GetMaxMotorForce() const;
+
+        // Force the motor actually applied on the last solved step
+        // (accumulated motor impulse / dt).
+        float GetMotorForce(float inverseDeltaTime) const;
+
+        // ---------------------------------------------------------------
+        // LIMIT
+        // ---------------------------------------------------------------
+        //
+        // When enabled, the translation along the axis (see GetTranslation) is
+        // clamped to [lower, upper], in world units. Use it to bound a
+        // slider's travel.
+
+        void EnableLimit(bool enable);
+
+        bool IsLimitEnabled() const;
+
+        void SetLimits(float lower, float upper);
+
+        float GetLowerLimit() const;
+
+        float GetUpperLimit() const;
+
         void Prepare(PhysicsWorld2D& world, float deltaTime) override;
 
         void WarmStart(PhysicsWorld2D& world) override;
@@ -69,5 +112,43 @@ namespace Engine
         float m_AccumulatedAngularImpulse = 0.0f;
 
         float m_BiasFactor = 0.2f;
+
+        // MOTOR / LIMIT CONFIGURATION
+
+        bool m_EnableMotor = false;
+
+        float m_MotorSpeed = 0.0f;
+
+        float m_MaxMotorForce = 0.0f;
+
+        bool m_EnableLimit = false;
+
+        float m_LowerTranslation = 0.0f;
+
+        float m_UpperTranslation = 0.0f;
+
+        // AXIAL SOLVER STATE (rebuilt every Prepare)
+
+        // Jacobian scalars for the axial constraint (Box2D convention):
+        //   s1 = cross(rA + d, axis), s2 = cross(rB, axis), d = anchorB - anchorA.
+        float m_AxialS1 = 0.0f;
+
+        float m_AxialS2 = 0.0f;
+
+        // Effective mass along the axis:
+        //   1 / (invMassA + invMassB + invIa*s1^2 + invIb*s2^2).
+        float m_AxialMass = 0.0f;
+
+        // Current translation along the axis, sampled in Prepare.
+        float m_AxialTranslation = 0.0f;
+
+        float m_InverseDeltaTime = 0.0f;
+
+        // Accumulated axial impulses (reset each Prepare).
+        float m_MotorImpulse = 0.0f;
+
+        float m_LowerImpulse = 0.0f;
+
+        float m_UpperImpulse = 0.0f;
     };
 }

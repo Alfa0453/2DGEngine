@@ -50,7 +50,7 @@ unset(_cmake_expected_targets)
 add_library(SDL3::Headers INTERFACE IMPORTED)
 
 set_target_properties(SDL3::Headers PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/include-revision;D:/C++_Projects/2DGEngine/ThirdParty/SDL/include"
+  INTERFACE_INCLUDE_DIRECTORIES "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/include-revision;D:/C++_Projects/2DGEngine/ThirdParty/SDL/include"
 )
 
 # This file does not depend on other imported targets which have

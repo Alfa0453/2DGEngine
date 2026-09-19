@@ -1,5 +1,8 @@
 #include "Collider2D.h"
 
+#include <algorithm>
+#include <cmath>
+
 namespace Engine
 {
     Collider2D::Collider2D(ColliderShape2D shape) 
@@ -88,6 +91,58 @@ namespace Engine
     PhysicsMaterial2D& Collider2D::GetPhysicsMaterial()
     {
         return m_PhysicsMaterial;
+    }
+
+    void Collider2D::SetOneWay(bool oneWay)
+    {
+        m_OneWay = oneWay;
+    }
+
+    bool Collider2D::IsOneWay() const
+    {
+        return m_OneWay;
+    }
+
+    void Collider2D::SetOneWayAxis(const Vector2& worldAxis)
+    {
+        // Store a normalized axis so the dot-product test in the solver is a
+        // true cosine. Reject degenerate input and keep the previous axis.
+
+        const float lengthSquared = worldAxis.LengthSquared();
+
+        constexpr float epsilon = 0.000001f;
+
+        if (lengthSquared <= epsilon)
+        {
+            return;
+        }
+
+        m_OneWayAxis = worldAxis * (1.0f / std::sqrt(lengthSquared));
+    }
+
+    const Vector2& Collider2D::GetOneWayAxis() const
+    {
+        return m_OneWayAxis;
+    }
+
+    void Collider2D::SetOneWayThreshold(float cosineThreshold)
+    {
+        m_OneWayThreshold = std::clamp(cosineThreshold, -1.0f, 1.0f);
+    }
+
+    float Collider2D::GetOneWayThreshold() const
+    {
+        return m_OneWayThreshold;
+    }
+
+    void Collider2D::SetSurfaceVelocity(const Vector2& worldVelocity)
+    {
+        m_SurfaceVelocity = worldVelocity;
+    }
+
+    const Vector2& Collider2D::GetSurfaceVelocity() const
+    {
+        return m_SurfaceVelocity;
     }
 
     std::uint64_t Collider2D::GetBoundsRevision() const

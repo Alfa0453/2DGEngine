@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\cmake_pch.cxx">
+    <ClCompile Include="D:\C++_Projects\2DGEngine\build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\cmake_pch.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\cmake_pch.c">
+    <ClCompile Include="D:\C++_Projects\2DGEngine\build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\cmake_pch.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\src\SDL.c">
@@ -1704,31 +1704,31 @@
     <ClInclude Include="D:\C++_Projects\2DGEngine\ThirdParty\SDL\include\SDL3\SDL_vulkan.h">
       <Filter>include\SDL3</Filter>
     </ClInclude>
-    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\include-revision\SDL3\SDL_revision.h">
+    <ClInclude Include="D:\C++_Projects\2DGEngine\build\ThirdParty\SDL\include-revision\SDL3\SDL_revision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\Debug\cmake_pch.h">
+    <ClInclude Include="D:\C++_Projects\2DGEngine\build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\Debug\cmake_pch.h">
       <Filter>Precompile Header File</Filter>
     </ClInclude>
-    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\Debug\cmake_pch.hxx">
+    <ClInclude Include="D:\C++_Projects\2DGEngine\build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\Debug\cmake_pch.hxx">
       <Filter>Precompile Header File</Filter>
     </ClInclude>
-    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\Release\cmake_pch.h">
+    <ClInclude Include="D:\C++_Projects\2DGEngine\build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\Release\cmake_pch.h">
       <Filter>Precompile Header File</Filter>
     </ClInclude>
-    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\Release\cmake_pch.hxx">
+    <ClInclude Include="D:\C++_Projects\2DGEngine\build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\Release\cmake_pch.hxx">
       <Filter>Precompile Header File</Filter>
     </ClInclude>
-    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\MinSizeRel\cmake_pch.h">
+    <ClInclude Include="D:\C++_Projects\2DGEngine\build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\MinSizeRel\cmake_pch.h">
       <Filter>Precompile Header File</Filter>
     </ClInclude>
-    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\MinSizeRel\cmake_pch.hxx">
+    <ClInclude Include="D:\C++_Projects\2DGEngine\build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\MinSizeRel\cmake_pch.hxx">
       <Filter>Precompile Header File</Filter>
     </ClInclude>
-    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\RelWithDebInfo\cmake_pch.h">
+    <ClInclude Include="D:\C++_Projects\2DGEngine\build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\RelWithDebInfo\cmake_pch.h">
       <Filter>Precompile Header File</Filter>
     </ClInclude>
-    <ClInclude Include="D:\C++_Projects\2DGEngine\Build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\RelWithDebInfo\cmake_pch.hxx">
+    <ClInclude Include="D:\C++_Projects\2DGEngine\build\ThirdParty\SDL\CMakeFiles\SDL3-shared.dir\RelWithDebInfo\cmake_pch.hxx">
       <Filter>Precompile Header File</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1742,277 +1742,277 @@
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{912567AF-0C51-3DAE-9B01-3FF572BFBE41}</UniqueIdentifier>
+      <UniqueIdentifier>{EBCD349A-CB13-35CF-AB46-85C460DF3AA6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Precompile Header File">
-      <UniqueIdentifier>{92135B92-EFAF-3D26-8755-CE7B5A984C73}</UniqueIdentifier>
+      <UniqueIdentifier>{0BE5EB16-886F-3A9A-83EF-96C724964BC3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{80E71F26-3C27-39AF-91C1-F68C1FBF5B8D}</UniqueIdentifier>
+      <UniqueIdentifier>{275A6291-A85C-35C1-9D76-4C2DE572FFA6}</UniqueIdentifier>
     </Filter>
     <Filter Include="include">
-      <UniqueIdentifier>{06924C44-5C13-32D0-9B6A-13AB2047C510}</UniqueIdentifier>
+      <UniqueIdentifier>{76942B1B-14EF-375F-808F-79FA8B663990}</UniqueIdentifier>
     </Filter>
     <Filter Include="include\SDL3">
-      <UniqueIdentifier>{8FD45864-81AF-3BCB-84D6-57DAF26B443E}</UniqueIdentifier>
+      <UniqueIdentifier>{7A3842B4-947D-3057-8B41-E16E0AEDA4EB}</UniqueIdentifier>
     </Filter>
     <Filter Include="src">
-      <UniqueIdentifier>{63E0F407-C423-3FE2-B037-C79C105DFD8F}</UniqueIdentifier>
+      <UniqueIdentifier>{8CF2F988-5554-374C-9A2D-20126D9AAE19}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\atomic">
-      <UniqueIdentifier>{14D9BA96-4923-3F19-8D81-ADD346CC84A0}</UniqueIdentifier>
+      <UniqueIdentifier>{7729DC44-A9F6-3BED-9BD7-B4C4744C62A2}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\audio">
-      <UniqueIdentifier>{28694DB7-D068-38C0-8A3A-9B1C69B3D340}</UniqueIdentifier>
+      <UniqueIdentifier>{4EFDA301-51CA-32E4-BA4D-11D882F26506}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\audio\directsound">
-      <UniqueIdentifier>{573ABC95-5EDE-3EFE-9708-68889A3891FB}</UniqueIdentifier>
+      <UniqueIdentifier>{D2B22035-1DFB-364B-ADA2-7F0FB4EA4661}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\audio\disk">
-      <UniqueIdentifier>{A6D4D55E-954E-3D95-9776-110A2A206F01}</UniqueIdentifier>
+      <UniqueIdentifier>{B77F8529-126B-30C2-A5E6-E31A1660497F}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\audio\dummy">
-      <UniqueIdentifier>{5A14E4AE-A483-38A9-A603-81AB188458A2}</UniqueIdentifier>
+      <UniqueIdentifier>{A8AA3C40-FEA9-3F43-9FFE-AA1FD6696930}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\audio\wasapi">
-      <UniqueIdentifier>{B125E2E7-EE49-3061-83B1-07E619EDE3B9}</UniqueIdentifier>
+      <UniqueIdentifier>{00ECB292-C1D7-3B8B-8C45-0A4A369B74D5}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\camera">
-      <UniqueIdentifier>{37581F82-72EE-358C-99FD-1A3E928E9447}</UniqueIdentifier>
+      <UniqueIdentifier>{6674E573-3DC0-3098-956E-02296EE3A20E}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\camera\dummy">
-      <UniqueIdentifier>{9A3941B8-4961-3319-93D4-4FD3B6E81B5C}</UniqueIdentifier>
+      <UniqueIdentifier>{988BD091-B0E1-365E-89BE-28A720E4A5E0}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\camera\mediafoundation">
-      <UniqueIdentifier>{83FF4857-FE4E-35FF-B9C2-CEA2C544A684}</UniqueIdentifier>
+      <UniqueIdentifier>{76350EB7-EE69-3F38-8F4C-B00929E85D8E}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\core">
-      <UniqueIdentifier>{33176D3C-16EE-3415-9E27-772023529C5E}</UniqueIdentifier>
+      <UniqueIdentifier>{8C497A46-1D36-32AB-88F7-B8BAF28AD6FE}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\core\windows">
-      <UniqueIdentifier>{CA48A49B-7727-3EBD-80B1-874830FCFE3E}</UniqueIdentifier>
+      <UniqueIdentifier>{4D64DD55-539B-3F8D-89A7-9BBBCD14534A}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\core\windows\gameinput">
-      <UniqueIdentifier>{2D885395-695C-3304-8367-F5B84D387960}</UniqueIdentifier>
+      <UniqueIdentifier>{0EF7C8D2-9EE5-378D-96B6-C1B1D6302186}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\cpuinfo">
-      <UniqueIdentifier>{0B629502-4FD5-320D-B3B0-335033C82685}</UniqueIdentifier>
+      <UniqueIdentifier>{50504F47-DCD8-323E-A5E8-220EADCAD6FF}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\dialog">
-      <UniqueIdentifier>{92792507-1791-3008-8BAC-EA4CF4EAFE0E}</UniqueIdentifier>
+      <UniqueIdentifier>{A918F037-FCA0-3E05-84D9-5437FE375752}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\dialog\windows">
-      <UniqueIdentifier>{898B0908-F616-3FA1-94D4-C03E7BFE6257}</UniqueIdentifier>
+      <UniqueIdentifier>{CC7029A6-0FEE-3A8E-883C-776483021353}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\dynapi">
-      <UniqueIdentifier>{6D5FDF47-6529-3717-9E06-FC3433A2D6B3}</UniqueIdentifier>
+      <UniqueIdentifier>{FDB15C86-885C-3F5D-9A35-A61004448D90}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\events">
-      <UniqueIdentifier>{AAC2800C-83B5-3056-BF13-5DF175DFAF77}</UniqueIdentifier>
+      <UniqueIdentifier>{6064BEB0-BA52-384B-9204-E7021AE5AC59}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\filesystem">
-      <UniqueIdentifier>{AAD43816-3CF2-351D-8D27-B8B3967B13D6}</UniqueIdentifier>
+      <UniqueIdentifier>{729934F8-47C7-3581-BC1A-0D52E631E5C6}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\filesystem\windows">
-      <UniqueIdentifier>{AE8B8725-FF7C-3FCD-B0A3-02A2D968E02D}</UniqueIdentifier>
+      <UniqueIdentifier>{8B851987-DD32-31DD-89B3-905D03CB4EF5}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\gpu">
-      <UniqueIdentifier>{A815409B-1730-3E07-A8CC-36C9DEAAB254}</UniqueIdentifier>
+      <UniqueIdentifier>{8478FACB-A3D5-34CB-85C3-ECC1EB3CF52C}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\gpu\d3d12">
-      <UniqueIdentifier>{EB01B187-036A-3136-8B9C-C640D7C5335A}</UniqueIdentifier>
+      <UniqueIdentifier>{5FE966AE-7FE2-3571-823E-39CA0EF213D5}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\gpu\vulkan">
-      <UniqueIdentifier>{B2034DEA-B574-3BFF-A6FA-26C55CD6AFAC}</UniqueIdentifier>
+      <UniqueIdentifier>{E3F28620-0CF9-3400-96F2-1CD7CBA45F69}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\gpu\xr">
-      <UniqueIdentifier>{99923F4E-3E5A-3116-9E21-3C9F7DD5F0EB}</UniqueIdentifier>
+      <UniqueIdentifier>{6301DDE9-EE4C-37C6-8268-CDB7E878F61C}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\haptic">
-      <UniqueIdentifier>{AD153287-F8EB-31FF-A99D-BD7379517937}</UniqueIdentifier>
+      <UniqueIdentifier>{C7B1F570-7D5A-3A8A-AE8C-0A95FA47BB7C}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\haptic\hidapi">
-      <UniqueIdentifier>{6138A4AD-104F-3F31-96ED-2D947080FD57}</UniqueIdentifier>
+      <UniqueIdentifier>{2193ADB5-62C8-3D85-B90B-8C97079FF0B1}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\haptic\windows">
-      <UniqueIdentifier>{D2EAE3D6-257E-3A87-B9C0-604FF43A45E0}</UniqueIdentifier>
+      <UniqueIdentifier>{4012751A-65B2-3FC0-BE78-237EAEA9E6E5}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\hidapi">
-      <UniqueIdentifier>{02B65DC4-A845-3E90-8B7B-8025C05E5785}</UniqueIdentifier>
+      <UniqueIdentifier>{C56C80B4-18CF-3ED1-A656-45E6785AD8DD}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\io">
-      <UniqueIdentifier>{5B5FAC4A-5589-34D8-979F-433C06EA8C0E}</UniqueIdentifier>
+      <UniqueIdentifier>{A2004B89-ABF9-3E74-B7AC-5E1D1E68E559}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\io\generic">
-      <UniqueIdentifier>{27491910-47F9-37E0-B072-A981D87B578E}</UniqueIdentifier>
+      <UniqueIdentifier>{22DBB0D7-F6EA-35AB-8D6D-0252D3EE3DB0}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\io\windows">
-      <UniqueIdentifier>{082EA2ED-6C1A-3E43-983A-50F10D33BF9C}</UniqueIdentifier>
+      <UniqueIdentifier>{0A0A3C05-E048-3074-91A5-D2E40B36FE39}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\joystick">
-      <UniqueIdentifier>{3457A147-DC56-3CBA-AA16-E29C020F97CC}</UniqueIdentifier>
+      <UniqueIdentifier>{FDBA9A27-7E5B-3F16-8D12-B46F388227D1}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\joystick\gdk">
-      <UniqueIdentifier>{7FE7295A-12FE-3780-BA79-26559494EF16}</UniqueIdentifier>
+      <UniqueIdentifier>{F52DEF4A-D40D-3349-BBFE-AC981C6378B6}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\joystick\hidapi">
-      <UniqueIdentifier>{C4DA93E7-9F31-3A33-971C-B3BB3054CD37}</UniqueIdentifier>
+      <UniqueIdentifier>{B6A6621D-769C-3ACB-BDAA-292D28675285}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\joystick\virtual">
-      <UniqueIdentifier>{9B436CF3-6D53-31CE-A842-5DD348D61548}</UniqueIdentifier>
+      <UniqueIdentifier>{2BD8EFA3-15CF-3329-8E1C-D7703465EFCC}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\joystick\windows">
-      <UniqueIdentifier>{3F2415DF-A41D-3E33-80F0-1521A02E57F7}</UniqueIdentifier>
+      <UniqueIdentifier>{C8EF5582-B773-3654-A200-91B81C464A08}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\loadso">
-      <UniqueIdentifier>{82FC38A7-7E77-3D74-AD61-32AF125FEF35}</UniqueIdentifier>
+      <UniqueIdentifier>{705A0FC3-1CEF-3C3B-A400-FCBF46CF0FA3}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\loadso\windows">
-      <UniqueIdentifier>{4D577925-87A0-301E-A71A-F7BC9BC127BD}</UniqueIdentifier>
+      <UniqueIdentifier>{40C354A1-8FC7-3F0E-B3D2-7E200CA17DC1}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\locale">
-      <UniqueIdentifier>{43E5B38B-F476-314B-8AB4-EEC9FAEB4785}</UniqueIdentifier>
+      <UniqueIdentifier>{994C43B4-1C8F-34B4-932B-5E7337D54BFB}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\locale\windows">
-      <UniqueIdentifier>{CF1FC6C0-29A8-30EC-A19E-F53BB749B1B1}</UniqueIdentifier>
+      <UniqueIdentifier>{C5D54ED0-46B6-3904-8801-F7D644BE2039}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\main">
-      <UniqueIdentifier>{4AA0A68F-34E9-335F-9003-388558192536}</UniqueIdentifier>
+      <UniqueIdentifier>{54176683-95DA-36F0-8E23-3AEB5F2408FB}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\main\generic">
-      <UniqueIdentifier>{589AFD96-8601-338D-9F34-58FA42B1CB86}</UniqueIdentifier>
+      <UniqueIdentifier>{34A5183D-CDE9-3C1E-BF1A-719A91E03755}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\main\windows">
-      <UniqueIdentifier>{082BE8EC-06F2-354C-BEAB-2C4CD704A8DB}</UniqueIdentifier>
+      <UniqueIdentifier>{8E26D6B0-4D8C-374E-9009-56B51911D6EE}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\misc">
-      <UniqueIdentifier>{58B8721A-3722-361F-B8A4-B53B88648B4A}</UniqueIdentifier>
+      <UniqueIdentifier>{7CB50959-B751-38CC-A0E4-3D6B3E324B3B}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\misc\windows">
-      <UniqueIdentifier>{6C3A6FCF-15CB-383B-BB88-CAE4CF22B0A1}</UniqueIdentifier>
+      <UniqueIdentifier>{44A42F82-BC63-3710-9089-D69995C3B22F}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\notification">
-      <UniqueIdentifier>{67C06133-A048-3FED-8559-8F745CF10D0D}</UniqueIdentifier>
+      <UniqueIdentifier>{4A0F0DBB-7E5A-3558-BDCC-E995DEF5537D}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\notification\windows">
-      <UniqueIdentifier>{76A4EF1D-9934-3950-946A-A44E465AE7B0}</UniqueIdentifier>
+      <UniqueIdentifier>{1FE44210-2677-3490-AB6C-663EEC11C88F}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\power">
-      <UniqueIdentifier>{727ED243-379E-3B56-9FCD-CA72E4BD748B}</UniqueIdentifier>
+      <UniqueIdentifier>{0C209E42-68D0-3AEC-961B-B8C9A912E214}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\power\windows">
-      <UniqueIdentifier>{DBB3C179-10B1-30BF-938B-D6DBD97EC0FD}</UniqueIdentifier>
+      <UniqueIdentifier>{A207ADEA-F32E-3AB0-9AFA-1771500DD7F2}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\process">
-      <UniqueIdentifier>{FA23B023-ABE1-32C0-A0DA-9D70B0128B55}</UniqueIdentifier>
+      <UniqueIdentifier>{C08BF18A-3A8D-3329-AEB3-A95B9B2FFAE0}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\process\windows">
-      <UniqueIdentifier>{A6A3EEA3-60B0-3B6C-B871-833F8B5CE801}</UniqueIdentifier>
+      <UniqueIdentifier>{A07B63E9-E185-36B7-B5CB-04623FFDE064}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render">
-      <UniqueIdentifier>{CAFF49F7-498D-3658-AE44-9B56F7166F98}</UniqueIdentifier>
+      <UniqueIdentifier>{9E11BB24-E8E3-3F93-BC7B-F93F40D1804A}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\direct3d">
-      <UniqueIdentifier>{26D02D7B-9DCB-3DBB-A91C-553FFCA65EAD}</UniqueIdentifier>
+      <UniqueIdentifier>{68994F44-2F04-3F74-AD80-D9307F2B640A}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\direct3d11">
-      <UniqueIdentifier>{34FA2E48-D9FB-37F6-9385-A672668E87BB}</UniqueIdentifier>
+      <UniqueIdentifier>{48B18ABF-C582-3B86-B57D-D39811118604}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\direct3d12">
-      <UniqueIdentifier>{37482F2F-0A9B-39A4-9F16-1998BF81187F}</UniqueIdentifier>
+      <UniqueIdentifier>{A3A50B95-A60F-37DB-829C-7F3BE0CAE2AF}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\gpu">
-      <UniqueIdentifier>{F1C53F94-000B-3B9F-B972-ED503CF54FAD}</UniqueIdentifier>
+      <UniqueIdentifier>{825123E1-5FC3-36CC-8E06-67E0B8F5DC4C}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\metal">
-      <UniqueIdentifier>{ADB1F8B4-E491-3FEA-9470-878D82054EE8}</UniqueIdentifier>
+      <UniqueIdentifier>{901A2756-AD4C-322B-BACD-F49440F5795C}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\ngage">
-      <UniqueIdentifier>{2271E62F-A4B6-3E10-A5C4-CE6BFE5969BD}</UniqueIdentifier>
+      <UniqueIdentifier>{3B11C104-9527-3C80-8F72-60E66B0F79C6}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\opengl">
-      <UniqueIdentifier>{11378F0A-D95E-3D40-BBA3-94DF6879A38D}</UniqueIdentifier>
+      <UniqueIdentifier>{8BB7C3F0-33DD-3000-A0F9-F44CA5491AC0}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\opengles">
-      <UniqueIdentifier>{C1E26EC0-9967-3E1B-B497-8E0CF7E4454C}</UniqueIdentifier>
+      <UniqueIdentifier>{16478913-3782-3140-B8DA-89FF08F9C78E}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\opengles2">
-      <UniqueIdentifier>{B0A70D33-2396-383C-A1A1-861CA422F582}</UniqueIdentifier>
+      <UniqueIdentifier>{4BAD8650-E919-3B6A-A09A-531F8D06664D}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\ps2">
-      <UniqueIdentifier>{D690A7A5-5BAE-3AA5-90DB-0BF229EDA3EE}</UniqueIdentifier>
+      <UniqueIdentifier>{0CEFBA72-BE78-3544-A64C-9FA621E3A092}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\psp">
-      <UniqueIdentifier>{7299BFF5-81F6-38F1-97D4-43E831AF16C3}</UniqueIdentifier>
+      <UniqueIdentifier>{E2E05085-F409-3FC0-9A68-6D3F699DE653}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\software">
-      <UniqueIdentifier>{35097BDE-FBD7-3FA2-8CF0-9C50C16FEC39}</UniqueIdentifier>
+      <UniqueIdentifier>{07596648-FB50-3695-B029-9B5A4AACC545}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\vitagxm">
-      <UniqueIdentifier>{ECE5EFA5-3627-327F-9A0E-3066C064B13D}</UniqueIdentifier>
+      <UniqueIdentifier>{30890B38-6E1E-377F-AF5A-03480355A9B8}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\render\vulkan">
-      <UniqueIdentifier>{F356C2CE-5D56-32F8-A5FB-0B78528D1F94}</UniqueIdentifier>
+      <UniqueIdentifier>{8ED67730-6359-3A45-B186-635C3DB2E9B3}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\sensor">
-      <UniqueIdentifier>{111C8CFE-4AFF-350F-B50A-85F74AEE154A}</UniqueIdentifier>
+      <UniqueIdentifier>{6939892C-97E2-35CE-ADCA-A2A80B360DDE}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\sensor\windows">
-      <UniqueIdentifier>{1B523670-E799-39DE-B785-149BF405D19E}</UniqueIdentifier>
+      <UniqueIdentifier>{F7B69412-D86B-3273-BB8C-8B0BCB09DDD2}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\stdlib">
-      <UniqueIdentifier>{F520E45B-A7F7-34ED-9786-BFC9E1811BD0}</UniqueIdentifier>
+      <UniqueIdentifier>{7E3540FA-CAD0-3739-B866-FEA2A5E13CC8}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\storage">
-      <UniqueIdentifier>{4E9126F1-D211-3504-ABDA-1103C7032584}</UniqueIdentifier>
+      <UniqueIdentifier>{F6B9BB15-B24E-3D02-9C36-C1595C877219}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\storage\generic">
-      <UniqueIdentifier>{17DF58BF-6C91-3B3A-9258-52E2D3DF428C}</UniqueIdentifier>
+      <UniqueIdentifier>{84CD6D9C-78FF-3325-8490-7B8197825AE4}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\storage\steam">
-      <UniqueIdentifier>{0289C2D2-6E78-31D8-8D11-F1A9B1080CFC}</UniqueIdentifier>
+      <UniqueIdentifier>{7B3E6ED6-E021-3039-95E1-3EA9F361AE70}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\thread">
-      <UniqueIdentifier>{D643E358-B104-304B-962D-0F496130C25B}</UniqueIdentifier>
+      <UniqueIdentifier>{DA076D12-DCE4-3BEF-97A4-8F1CFAC72E43}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\thread\generic">
-      <UniqueIdentifier>{5A3EDA90-054C-3525-BCFE-97CCD45B2FA3}</UniqueIdentifier>
+      <UniqueIdentifier>{245564F6-4C82-3056-BFAD-BC8CFE957A9F}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\thread\windows">
-      <UniqueIdentifier>{7C4671C5-109B-31C4-A86C-A4D336730D5F}</UniqueIdentifier>
+      <UniqueIdentifier>{1D290538-E913-38E8-B39F-9E49489D2409}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\time">
-      <UniqueIdentifier>{EAE56D58-6E93-3BB3-80BD-938BBD3A73A2}</UniqueIdentifier>
+      <UniqueIdentifier>{8C08BE01-418D-3AC8-B848-1D25903243F0}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\time\windows">
-      <UniqueIdentifier>{9E5D206D-9197-3E2D-9C99-F7EDF555A6B1}</UniqueIdentifier>
+      <UniqueIdentifier>{7002C8B7-E52D-34BD-8736-6BA37D0347F2}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\timer">
-      <UniqueIdentifier>{B26FC93D-DD3C-3140-A4C9-A83D52E2C40E}</UniqueIdentifier>
+      <UniqueIdentifier>{03BE7429-3091-366D-8BFD-209AEB9027E4}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\timer\windows">
-      <UniqueIdentifier>{561FD156-8B8B-35DB-B680-B2D5E49F7958}</UniqueIdentifier>
+      <UniqueIdentifier>{C85A65B6-08B5-30D5-A1D3-845D2E1C5F4C}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\tray">
-      <UniqueIdentifier>{3D28E1EB-8C3A-32A0-A231-D34BC5260F96}</UniqueIdentifier>
+      <UniqueIdentifier>{07D7A678-BC4F-3E02-8230-784044283FB2}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\tray\windows">
-      <UniqueIdentifier>{C22573CC-256C-3C56-A8E2-E7598105745C}</UniqueIdentifier>
+      <UniqueIdentifier>{734C676F-D4C0-3B97-9F40-73549113CB31}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\video">
-      <UniqueIdentifier>{03B82ED6-25A1-3016-A26B-F72AECE04368}</UniqueIdentifier>
+      <UniqueIdentifier>{56445B7E-AA7F-31D6-9C39-70B957F3A729}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\video\dummy">
-      <UniqueIdentifier>{E9E8D05E-99BD-392D-9D2C-C4B330F7CE95}</UniqueIdentifier>
+      <UniqueIdentifier>{F821BFB7-1269-37AC-994C-489DA6137B44}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\video\offscreen">
-      <UniqueIdentifier>{B6AAB7C9-B6DD-3AE3-B56C-1D9ECED21A48}</UniqueIdentifier>
+      <UniqueIdentifier>{0FFFB273-CE9B-3C35-942F-46C2521EBA15}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\video\windows">
-      <UniqueIdentifier>{87FAA08C-A41C-3C19-8FA4-0CFC133FDCB8}</UniqueIdentifier>
+      <UniqueIdentifier>{A4889825-9075-3549-912B-DAFC304100EE}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\video\yuv2rgb">
-      <UniqueIdentifier>{24B695DF-0C1A-32FA-BD24-871CE1387B40}</UniqueIdentifier>
+      <UniqueIdentifier>{7743C6D1-A3E0-38BD-95A1-CDA62A08A72B}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

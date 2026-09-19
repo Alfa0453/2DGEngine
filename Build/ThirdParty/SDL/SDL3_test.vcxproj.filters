@@ -42,10 +42,10 @@
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{912567AF-0C51-3DAE-9B01-3FF572BFBE41}</UniqueIdentifier>
+      <UniqueIdentifier>{EBCD349A-CB13-35CF-AB46-85C460DF3AA6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{80E71F26-3C27-39AF-91C1-F68C1FBF5B8D}</UniqueIdentifier>
+      <UniqueIdentifier>{275A6291-A85C-35C1-9D76-4C2DE572FFA6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

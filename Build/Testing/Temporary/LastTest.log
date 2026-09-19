@@ -1,0 +1,42 @@
+Start testing: Sep 15 10:33 E. Africa Standard Time
+----------------------------------------------------------
+1/1 Testing: 2DGTests
+1/1 Test: 2DGTests
+Command: "D:/C++_Projects/2DGEngine/build/Tests/Debug/2DGTests.exe"
+Directory: D:/C++_Projects/2DGEngine/build/Tests
+"2DGTests" start time: Sep 15 10:33 E. Africa Standard Time
+Output:
+----------------------------------------------------------
+
+=== 2DGEngine Tests ===
+
+[PASS] Bounds2D_OverlappingBoundsIntersect
+[PASS] Bounds2D_SeparatedBoundsDoNotIntersect
+[PASS] Bounds2D_TouchingEdgesInterset
+[PASS] Bounds2D_GetCenter
+[PASS] Bounds2D_GetSize
+[PASS] CCD_FastCircle_DoesNotTunnelThinWall
+[PASS] Discrete_FastCircle_TunnelsThinWall
+[PASS] CapsuleVsBox_Overlap_GeneratesContact
+[PASS] CapsuleVsBox_Parallel_GeneratesTwoContacts
+[PASS] CapsuleVsPolygon_Overlap_GeneratesContact
+[PASS] CapsuleVsBox_Separated_NoContact
+[PASS] ClosestPointOnSegment_MiddleProjection
+[PASS] ClosestPointOnSegment_ClampsToStart
+[PASS] ClosestPointOnSegment_ClampedToEnd
+[PASS] ClosestPointOnSegment_DegenerateSegment
+
+===========================
+Passed: 15
+Failed: 0
+Total: 15
+==============================
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"2DGTests" end time: Sep 15 10:33 E. Africa Standard Time
+"2DGTests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Sep 15 10:33 E. Africa Standard Time

@@ -43,10 +43,6 @@ C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Linker/Windows-MSVC.cmak
 C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Windows-MSVC-C.cmake
 C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Windows-MSVC.cmake
 C:/Program Files/CMake/share/cmake-4.3/Modules/WriteBasicConfigVersionFile.cmake
-D:/C++_Projects/2DGEngine/Build/CMakeFiles/4.3.3/CMakeCCompiler.cmake
-D:/C++_Projects/2DGEngine/Build/CMakeFiles/cmake.verify_globs
-D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/SDL_build_config.h.intermediate
-D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/git-data/grabRef.cmake
 D:/C++_Projects/2DGEngine/ThirdParty/SDL/.git/HEAD
 D:/C++_Projects/2DGEngine/ThirdParty/SDL/.git/refs/heads/main
 D:/C++_Projects/2DGEngine/ThirdParty/SDL/CMakeLists.txt
@@ -69,3 +65,7 @@ D:/C++_Projects/2DGEngine/ThirdParty/SDL/cmake/sdlmanpages.cmake
 D:/C++_Projects/2DGEngine/ThirdParty/SDL/cmake/sdlplatform.cmake
 D:/C++_Projects/2DGEngine/ThirdParty/SDL/include/build_config/SDL_build_config.h.cmake
 D:/C++_Projects/2DGEngine/ThirdParty/SDL/include/build_config/SDL_revision.h.cmake
+D:/C++_Projects/2DGEngine/build/CMakeFiles/4.3.3/CMakeCCompiler.cmake
+D:/C++_Projects/2DGEngine/build/CMakeFiles/cmake.verify_globs
+D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/CMakeFiles/SDL_build_config.h.intermediate
+D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/CMakeFiles/git-data/grabRef.cmake

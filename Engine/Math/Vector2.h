@@ -94,14 +94,14 @@ namespace Engine
             return *this;
         }
 
-        float LengthSqured() const
+        float LengthSquared() const
         {
             return X * X + Y * Y;
         }
 
         float Length() const
         {
-            return std::sqrt(LengthSqured());
+            return std::sqrt(LengthSquared());
         }
 
         Vector2 Normalized() const

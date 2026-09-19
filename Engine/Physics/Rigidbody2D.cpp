@@ -1,11 +1,13 @@
 #include "Rigidbody2D.h"
 
 #include "BoxCollider2D.h"
+#include "OrientedBox2D.h"
+#include "CapsuleCollider2D.h"
 #include "CircleCollider2D.h"
+#include "PolygonCollider2D.h"
 
 #include "../Scene/Entity.h"
 #include "../Scene/TransformComponent.h"
-#include "OrientedBox2D.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -130,6 +132,94 @@ namespace Engine
         Wake();
 
         m_Velocity += impulse * m_InverseMass;
+    }
+
+    void Rigidbody2D::AddForceAtPosition(const Vector2& force, const Vector2& worldPoint)
+    {
+        if (!IsDynamic())
+        {
+            return;
+        }
+
+        if (force.X == 0.0f && force.Y == 0.0f)
+        {
+            return;
+        }
+
+        // Linear part acts through the center of mass exactly like AddForce.
+
+        AddForce(force);
+
+        // Angular part: torque = cross(r, force), where r is the lever arm
+        // from the center of mass to the application point. AddTorque already
+        // no-ops when the body has fixed rotation, so no extra guard is needed.
+
+        Entity* owner = GetOwner();
+
+        if (!owner)
+        {
+            return;
+        }
+
+        TransformComponent* transform = owner->GetComponent<TransformComponent>();
+
+        if (!transform)
+        {
+            return;
+        }
+
+        const Vector2 center = transform->GetWorldTransform().Position;
+
+        const Vector2 leverArm = worldPoint - center;
+
+        const float torque = leverArm.X * force.Y - leverArm.Y * force.X;
+
+        AddTorque(torque);
+    }
+
+    void Rigidbody2D::AddImpulseAtPosition(const Vector2& impulse, const Vector2& worldPoint)
+    {
+        if (!IsDynamic())
+        {
+            return;
+        }
+
+        if (impulse.X == 0.0f && impulse.Y == 0.0f)
+        {
+            return;
+        }
+
+        Wake();
+
+        // Linear response.
+
+        m_Velocity += impulse * m_InverseMass;
+
+        // Angular response: delta angular velocity = inverseInertia * cross(r, impulse).
+        // GetInverseInertia() already returns 0 for fixed-rotation bodies, so
+        // this term vanishes automatically when rotation is locked.
+
+        Entity* owner = GetOwner();
+
+        if (!owner)
+        {
+            return;
+        }
+
+        TransformComponent* transform = owner->GetComponent<TransformComponent>();
+
+        if (!transform)
+        {
+            return;
+        }
+
+        const Vector2 center = transform->GetWorldTransform().Position;
+
+        const Vector2 leverArm = worldPoint - center;
+
+        const float angularImpulse = leverArm.X * impulse.Y - leverArm.Y * impulse.X;
+
+        m_AngularVelocity += angularImpulse * GetInverseInertia();
     }
 
     void Rigidbody2D::ClearForces()
@@ -261,8 +351,49 @@ namespace Engine
         return m_PreviousPosition;
     }
 
+    void Rigidbody2D::SetFixedRotation(bool fixedRotation)
+    {
+        if (m_FixedRotation == fixedRotation)
+        {
+            return;
+        }
+
+        m_FixedRotation = fixedRotation;
+
+        // Locking rotation must remove any spin the body currently carries,
+        // otherwise it would coast forever (there is no longer any inertia
+        // term for damping or contacts to act on).
+
+        if (m_FixedRotation)
+        {
+            m_AngularVelocity = 0.0f;
+
+            m_AccumulatedTorque = 0.0f;
+        }
+
+        if (IsDynamic())
+        {
+            Wake();
+        }
+    }
+
+    bool Rigidbody2D::IsFixedRotation() const
+    {
+        return m_FixedRotation;
+    }
+
     void Rigidbody2D::SetAngularVelocity(float angularVelocity)
     {
+        // A fixed-rotation body is not allowed to spin, regardless of who
+        // requests it. Force the stored value to zero and bail out.
+
+        if (m_FixedRotation)
+        {
+            m_AngularVelocity = 0.0f;
+
+            return;
+        }
+
         if (!IsDynamic())
         {
             m_AngularVelocity = angularVelocity;
@@ -285,9 +416,9 @@ namespace Engine
         return m_AngularVelocity;
     }
 
-    void Rigidbody2D::AddAngularVelociy(float deltaAngularVelocity)
+    void Rigidbody2D::AddAngularVelocity(float deltaAngularVelocity)
     {
-        if (!IsDynamic())
+        if (!IsDynamic() || m_FixedRotation)
         {
             return;
         }
@@ -307,14 +438,16 @@ namespace Engine
         m_AngularDamping = std::max(0.0f, damping);
     }
 
-    float Rigidbody2D::GetangularDamping() const
+    float Rigidbody2D::GetAngularDamping() const
     {
         return m_AngularDamping;
     }
 
     void Rigidbody2D::AddTorque(float torque)
     {
-        if (!IsDynamic())
+        // Torque has no effect on a rotation-locked body.
+
+        if (!IsDynamic() || m_FixedRotation)
         {
             return;
         }
@@ -344,7 +477,7 @@ namespace Engine
         m_AngularVelocity = angularVelocity;
     }
 
-    float Rigidbody2D::GetMomenOfInertia() const
+    float Rigidbody2D::GetMomentOfInertia() const
     {
         const float mass = GetMass();
 
@@ -376,7 +509,7 @@ namespace Engine
 
                 const Vector2 offset = obb.Center - bodyCenter;
 
-                inertia += mass * offset.LengthSqured();
+                inertia += mass * offset.LengthSquared();
             }
 
             return inertia;
@@ -396,10 +529,37 @@ namespace Engine
 
                 const Vector2 offset = circleCenter - bodyCenter;
 
-                inertia += mass * offset.LengthSqured();
+                inertia += mass * offset.LengthSquared();
             }
 
             return inertia;
+        }
+
+        if (CapsuleCollider2D* capsule = owner->GetComponent<CapsuleCollider2D>())
+        {
+            if (TransformComponent* transform = owner->GetComponent<TransformComponent>())
+            {
+                const Transform2D& world = transform->GetWorldTransform();
+
+                const float radiusScale = std::max(std::abs(world.Scale.X), std::abs(world.Scale.Y));
+
+                const float halfHeightScale = std::abs(world.Scale.Y);
+
+                const float worldRadius = capsule->GetRadius() * radiusScale;
+
+                const float worldHalfHeight = capsule->GetHalfHeight() * halfHeightScale;
+
+                return CalculateCapsuleInertia(mass, worldRadius, worldHalfHeight);
+            }
+            else
+            {
+                return CalculateCapsuleInertia(mass, capsule->GetRadius(), capsule->GetHalfHeight());
+            }   
+        }
+
+        if (PolygonCollider2D* polygon = owner->GetComponent<PolygonCollider2D>())
+        {
+            return CalculatePolygonInertia(mass, *polygon);
         }
 
         return 0.0f;
@@ -407,14 +567,24 @@ namespace Engine
 
     float Rigidbody2D::GetInverseInertia() const
     {
-        // Static and kinematic bodies do not respond rotationalltt y to physical impulse.
+        // Static and kinematic bodies do not respond rotationally to physical impulse.
 
         if (!IsDynamic())
         {
             return 0.0f;
         }
 
-        const float inertia = GetMomenOfInertia();
+        // A fixed-rotation body has, by definition, infinite rotational
+        // inertia. Returning a zero inverse inertia is what makes every
+        // rotational term in the contact solver, the joint solver and the
+        // integrator collapse to zero, so the body can never be spun.
+
+        if (m_FixedRotation)
+        {
+            return 0.0f;
+        }
+
+        const float inertia = GetMomentOfInertia();
 
         constexpr float epsilon = 0.000001f;
 
@@ -424,5 +594,102 @@ namespace Engine
         }
 
         return 1.0f / inertia;
+    }
+
+    float Rigidbody2D::CalculateCapsuleInertia(float mass, float radius, float halfHeight)
+    {
+        constexpr float Pi = 3.14159265358979323846f;
+
+        radius = std::max(radius, 0.0f);
+
+        halfHeight = std::max(halfHeight, 0.0f);
+
+        if (mass <= 0.0f || radius <= 0.0f)
+        {
+            return 0.0f;
+        }
+
+        const float rectangleWidth = 2.0f * radius;
+
+        const float rectangleHeight = 2.0f * halfHeight;
+
+        const float rectangleArea = rectangleWidth * rectangleHeight;
+
+        const float circleArea = Pi * radius * radius;
+
+        const float totalArea = rectangleArea + circleArea;
+
+        if (totalArea <= 0.000001f)
+        {
+            return 0.0f;
+        }
+
+        const float rectangleMass = mass * (rectangleArea / totalArea);
+
+        const float semicircleMass = mass * (circleArea * 0.5f / totalArea);
+
+        const float rectangleInertia = rectangleMass * (rectangleWidth * rectangleWidth + rectangleHeight * rectangleHeight) / 12.0f;
+
+        const float centroidOffset = 4.0f * radius / (3.0f * Pi);
+
+        const float distanceFromCenter = halfHeight + centroidOffset;
+
+        const float semicircleCentroidInertia = semicircleMass * radius * radius * (0.5f - 16.0f / (9.0f * Pi * Pi));
+
+        const float semicircleInertia = semicircleCentroidInertia + semicircleMass * distanceFromCenter * distanceFromCenter;
+
+        return rectangleInertia + 2.0f * semicircleInertia;
+    }
+
+    float Rigidbody2D::CalculatePolygonInertia(float mass, const PolygonCollider2D& polygon)
+    {
+        const auto& vertices = polygon.GetVertices();
+
+        if (mass <= 0.0f || vertices.size() < 3)
+        {
+            return 0.0f;
+        }
+
+        const Vector2 offset = polygon.GetOffset();
+
+        float twiceSignedArea = 0.0f;
+
+        float inertiaAccumulator = 0.0f;
+
+        for (std::size_t i = 0; i < vertices.size(); ++i)
+        {
+            const Vector2& a = vertices[i];
+
+            const Vector2& b = vertices[(i + 1) % vertices.size()] + offset;
+
+            const float cross = a.X * b.Y - b.X * a.Y;
+
+            twiceSignedArea += cross;
+
+            const float aa = Vector2::Dot(a, a);
+
+            const float ab = Vector2::Dot(a, b);
+
+            const float bb = Vector2::Dot(b, b);
+
+            inertiaAccumulator += cross * (aa + ab + bb);
+        }
+
+        const float signedArea = twiceSignedArea * 0.5f;
+
+        constexpr float epsilon = 0.000001f;
+
+        if (std::abs(signedArea) <= epsilon)
+        {
+            return 0.0f;
+        }
+
+        const float area = std::abs(signedArea);
+
+        const float density = mass / area;
+
+        const float inertia = density * inertiaAccumulator / 12.0f;
+
+        return std::abs(inertia);
     }
 }

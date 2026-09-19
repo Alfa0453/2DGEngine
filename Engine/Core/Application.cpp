@@ -24,7 +24,7 @@ namespace Engine
     {
         std::cout << "Starting 2DGEngine...\n";
 
-        if (!SDL_Init(SDL_INIT_VIDEO))
+        if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
         {
             std::cerr << "Failed to initialize SDL: " << SDL_GetError() << '\n';
 
@@ -42,6 +42,19 @@ namespace Engine
 
         if (!m_Renderer.Initialize(m_Window.GetNativeWindow()))
         {
+            m_Window.Shutdown();
+
+            SDL_Quit();
+
+            return false;
+        }
+
+        if (!m_AudioSystem.Initialize())
+        {
+            std::cerr << "Failed to initialize audio system.\n";
+
+            m_Renderer.Shutdown();
+
             m_Window.Shutdown();
 
             SDL_Quit();
@@ -129,15 +142,27 @@ namespace Engine
 
         bodyB->SetBodyType(BodyType2D::Dynamic);
 
+        auto* bodyBTransform = boxB->GetComponent<TransformComponent>();
+
+        //bodyB->SetVelocity(Vector2{200.0f, 0.0f});
+
         // Distance joint test.
 
         //m_TestDistanceJoint = std::make_unique<DistanceJoint2D>(bodyA, bodyB, Vector2{0.0f, 0.0f}, Vector2{0.0f, 0.0f}, 250.0f);
 
         //m_Scene.GetPhysicsWorld().AddJoint(m_TestDistanceJoint.get());
 
-        m_TestRevoluteJoint = std::make_unique<RevoluteJoint2D>(bodyA, bodyB, Vector2{0.0f, 0.0f}, Vector2{0.0f, -100.0f});
+        //m_TestRevoluteJoint = std::make_unique<RevoluteJoint2D>(bodyA, bodyB, Vector2{0.0f, 0.0f}, Vector2{0.0f, -200.0f});
 
-        m_Scene.GetPhysicsWorld().AddJoint(m_TestRevoluteJoint.get());
+        //m_Scene.GetPhysicsWorld().AddJoint(m_TestRevoluteJoint.get());
+
+        m_TestSpringJoint = std::make_unique<SpringJoint2D>(bodyA, bodyB, Vector2{0.0f, 0.0f}, Vector2{0.0f, 0.0f}, 150.0f);
+
+        m_TestSpringJoint->SetStiffness(150.0f);
+
+        m_TestSpringJoint->SetDamping(4.0f);
+
+        m_Scene.GetPhysicsWorld().AddJoint(m_TestSpringJoint.get());
 
         
         m_PhysicsDebugRenderer.SetDrawColliders(true);
@@ -179,6 +204,8 @@ namespace Engine
             }
 
             m_Scene.Update(deltaTime);
+
+            m_AudioSystem.UpdateAudio();
 
             m_Renderer.BeginFrame();
 
@@ -230,9 +257,18 @@ namespace Engine
             m_TestRevoluteJoint.reset();
         }
 
+        if (m_TestSpringJoint)
+        {
+            m_Scene.GetPhysicsWorld().RemoveJoint(m_TestSpringJoint.get());
+
+            m_TestDistanceJoint.reset();
+        }
+
         m_IsRunning = false;
 
         m_Scene.Clear();
+
+        m_AudioSystem.Shutdown();
 
         PrimitiveTextureFactory2D::Shutdown();
 

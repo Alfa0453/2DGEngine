@@ -28,8 +28,6 @@ C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Windows-MSVC-C.cmake
 C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Windows-MSVC.cmake
 C:/Program Files/CMake/share/cmake-4.3/Modules/SelectLibraryConfigurations.cmake
 C:/Program Files/CMake/share/cmake-4.3/Modules/WriteBasicConfigVersionFile.cmake
-D:/C++_Projects/2DGEngine/Build/CMakeFiles/4.3.3/CMakeCCompiler.cmake
-D:/C++_Projects/2DGEngine/Build/CMakeFiles/cmake.verify_globs
 D:/C++_Projects/2DGEngine/ThirdParty/SDL_image/CMakeLists.txt
 D:/C++_Projects/2DGEngine/ThirdParty/SDL_image/cmake/Findwebp.cmake
 D:/C++_Projects/2DGEngine/ThirdParty/SDL_image/cmake/GetGitRevisionDescription.cmake
@@ -37,3 +35,5 @@ D:/C++_Projects/2DGEngine/ThirdParty/SDL_image/cmake/PrivateSdlFunctions.cmake
 D:/C++_Projects/2DGEngine/ThirdParty/SDL_image/cmake/sdlcpu.cmake
 D:/C++_Projects/2DGEngine/ThirdParty/SDL_image/cmake/sdlmanpages.cmake
 D:/C++_Projects/2DGEngine/ThirdParty/SDL_image/cmake/sdlplatform.cmake
+D:/C++_Projects/2DGEngine/build/CMakeFiles/4.3.3/CMakeCCompiler.cmake
+D:/C++_Projects/2DGEngine/build/CMakeFiles/cmake.verify_globs

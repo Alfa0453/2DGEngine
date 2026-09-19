@@ -19,19 +19,19 @@ namespace Engine
 
         float Penetration = 0.0f;
 
-        static constexpr std::size_t MaxContacPoints = 2;
+        static constexpr std::size_t MaxContactPoints = 2;
 
-        Vector2 ContactPoints[MaxContacPoints]
+        Vector2 ContactPoints[MaxContactPoints]
         {
             Vector2{0.0f, 0.0f},
             Vector2{0.0f, 0.0f}
         };
 
-        float AccumulatedNormalImpulses[MaxContacPoints]{0.0f, 0.0f};
+        float AccumulatedNormalImpulses[MaxContactPoints]{0.0f, 0.0f};
 
-        float AccumulatedTangentImpulses[MaxContacPoints]{0.0f, 0.0f};
+        float AccumulatedTangentImpulses[MaxContactPoints]{0.0f, 0.0f};
 
-        float RestitutionBiases[MaxContacPoints]{0.0f, 0.0f};
+        float RestitutionBiases[MaxContactPoints]{0.0f, 0.0f};
 
         std::size_t ContactCount = 0;
 
@@ -48,7 +48,7 @@ namespace Engine
         {
             ContactCount = 0;
 
-            for (std::size_t i = 0; i < MaxContacPoints; ++i)
+            for (std::size_t i = 0; i < MaxContactPoints; ++i)
             {
                 ContactPoints[i] = {0.0f, 0.0f};
 
@@ -62,7 +62,7 @@ namespace Engine
 
         bool AddContactPoint(const Vector2& point)
         {
-            if (ContactCount >= MaxContacPoints)
+            if (ContactCount >= MaxContactPoints)
             {
                 return false;
             }

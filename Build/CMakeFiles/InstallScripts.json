@@ -1,9 +1,20 @@
 {
 	"InstallScripts" : 
 	[
-		"D:/C++_Projects/2DGEngine/Build/cmake_install.cmake",
-		"D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/cmake_install.cmake",
-		"D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL_image/cmake_install.cmake"
+		"D:/C++_Projects/2DGEngine/build/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/build/ThirdParty/SDL_image/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/build/Engine/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/build/Engine/Math/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/build/Engine/Events/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/build/Engine/Input/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/build/Engine/Graphics/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/build/Engine/Audio/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/build/Engine/Scene/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/build/Engine/Physics/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/build/Engine/Core/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/build/Runtime/cmake_install.cmake",
+		"D:/C++_Projects/2DGEngine/build/Tests/cmake_install.cmake"
 	],
 	"Parallel" : false
 }

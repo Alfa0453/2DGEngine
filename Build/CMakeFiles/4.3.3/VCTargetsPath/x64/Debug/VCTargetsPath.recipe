@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>D:\C++_Projects\2DGEngine\Build\CMakeFiles\4.3.3\x64\Debug\VCTargetsPath</FullPath>
+      <FullPath>D:\C++_Projects\2DGEngine\build\CMakeFiles\4.3.3\x64\Debug\VCTargetsPath</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

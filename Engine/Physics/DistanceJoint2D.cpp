@@ -143,7 +143,7 @@ namespace Engine
 
         Vector2 delta = anchorB - anchorA;
 
-        const float distanceSquared = delta.LengthSqured();
+        const float distanceSquared = delta.LengthSquared();
 
         constexpr float epsilon = 0.000001f;
 
@@ -371,7 +371,7 @@ namespace Engine
 
         Vector2 delta = anchorB - anchorA;
 
-        const float distanceSquared = delta.LengthSqured();
+        const float distanceSquared = delta.LengthSquared();
 
         constexpr float epsilon = 0.000001f;
 
@@ -435,6 +435,22 @@ namespace Engine
         if (inverseMassB > 0.0f)
         {
             transformB->Translate(correctionImpulse * inverseMassB);
+        }
+
+        const float angularCorrectionA = -world.Cross(rA, correctionImpulse) * inverseInertiaA;
+
+        const float angularCorrectionB = world.Cross(rB, correctionImpulse) * inverseInertiaB;
+
+        constexpr float radiansToDegrees = 57.29577951308232f;
+
+        if (inverseInertiaA > 0.0f)
+        {
+            transformA->RotateBy(angularCorrectionA * radiansToDegrees);
+        }
+
+        if (inverseInertiaB > 0.0f)
+        {
+            transformB->RotateBy(angularCorrectionB * radiansToDegrees);
         }
 
         return true;

@@ -17,29 +17,29 @@
 
 set(HEAD_HASH)
 
-file(READ "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/git-data/HEAD" HEAD_CONTENTS LIMIT 1024)
+file(READ "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/CMakeFiles/git-data/HEAD" HEAD_CONTENTS LIMIT 1024)
 
 string(STRIP "${HEAD_CONTENTS}" HEAD_CONTENTS)
 if(HEAD_CONTENTS MATCHES "ref")
 	# named branch
 	string(REPLACE "ref: " "" HEAD_REF "${HEAD_CONTENTS}")
 	if(EXISTS "D:/C++_Projects/2DGEngine/ThirdParty/SDL/.git/${HEAD_REF}")
-		configure_file("D:/C++_Projects/2DGEngine/ThirdParty/SDL/.git/${HEAD_REF}" "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/git-data/head-ref" COPYONLY)
+		configure_file("D:/C++_Projects/2DGEngine/ThirdParty/SDL/.git/${HEAD_REF}" "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/CMakeFiles/git-data/head-ref" COPYONLY)
 	elseif(EXISTS "D:/C++_Projects/2DGEngine/ThirdParty/SDL/.git/packed-refs")
-		configure_file("D:/C++_Projects/2DGEngine/ThirdParty/SDL/.git/packed-refs" "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/git-data/packed-refs" COPYONLY)
-		file(READ "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/git-data/packed-refs" PACKED_REFS)
+		configure_file("D:/C++_Projects/2DGEngine/ThirdParty/SDL/.git/packed-refs" "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/CMakeFiles/git-data/packed-refs" COPYONLY)
+		file(READ "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/CMakeFiles/git-data/packed-refs" PACKED_REFS)
 		if(${PACKED_REFS} MATCHES "([0-9a-z]*) ${HEAD_REF}")
 			set(HEAD_HASH "${CMAKE_MATCH_1}")
 		endif()
 	elseif(EXISTS "D:/C++_Projects/2DGEngine/ThirdParty/SDL/.git/reftable/tables.list")
-		configure_file("D:/C++_Projects/2DGEngine/ThirdParty/SDL/.git/reftable/tables.list" "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/git-data/reftable-tables.list" COPYONLY)
+		configure_file("D:/C++_Projects/2DGEngine/ThirdParty/SDL/.git/reftable/tables.list" "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/CMakeFiles/git-data/reftable-tables.list" COPYONLY)
 	endif()
 else()
 	# detached HEAD
-	configure_file("D:/C++_Projects/2DGEngine/ThirdParty/SDL/.git/HEAD" "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/git-data/head-ref" COPYONLY)
+	configure_file("D:/C++_Projects/2DGEngine/ThirdParty/SDL/.git/HEAD" "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/CMakeFiles/git-data/head-ref" COPYONLY)
 endif()
 
-if(NOT HEAD_HASH AND EXISTS "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/git-data/head-ref")
-	file(READ "D:/C++_Projects/2DGEngine/Build/ThirdParty/SDL/CMakeFiles/git-data/head-ref" HEAD_HASH LIMIT 1024)
+if(NOT HEAD_HASH AND EXISTS "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/CMakeFiles/git-data/head-ref")
+	file(READ "D:/C++_Projects/2DGEngine/build/ThirdParty/SDL/CMakeFiles/git-data/head-ref" HEAD_HASH LIMIT 1024)
 	string(STRIP "${HEAD_HASH}" HEAD_HASH)
 endif()

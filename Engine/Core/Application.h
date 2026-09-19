@@ -18,6 +18,8 @@
 #include "../Physics/PhysicsDebugRenderer2D.h"
 #include "../Physics/DistanceJoint2D.h"
 #include "../Physics/RevoluteJoint2D.h"
+#include "../Physics/SpringJoint2D.h"
+#include "../Audio/Core/AudioSystem.h"
 
 namespace Engine
 {
@@ -50,6 +52,10 @@ namespace Engine
 
         Input m_Input;
 
+        AudioSystem m_AudioSystem;
+
+        Scene m_Scene;
+
         Texture2D m_PlayerIdleTexture;
         Texture2D m_PlayerWalkTexture;
         Texture2D m_PlayerRunTexture;
@@ -59,8 +65,6 @@ namespace Engine
         AnimationClip2D m_PlayerWalkClip;
         AnimationClip2D m_PlayerRunClip;
         AnimationClip2D m_PlayerAttackClip;
-
-        Scene m_Scene;
 
         EntityID m_PlayerID = InvalidEntityID;
 
@@ -73,5 +77,7 @@ namespace Engine
         std::unique_ptr<DistanceJoint2D> m_TestDistanceJoint;
 
         std::unique_ptr<RevoluteJoint2D> m_TestRevoluteJoint;
+
+        std::unique_ptr<SpringJoint2D> m_TestSpringJoint;
     };
 }

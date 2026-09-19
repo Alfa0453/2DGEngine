@@ -65,7 +65,7 @@ namespace Engine
 
         if (m_DrawColliders || m_DrawAABBs)
         {
-            for (Collider2D* collider : world.GetactiveColliders())
+            for (Collider2D* collider : world.GetActiveColliders())
             {
                 if (!collider)
                 {
@@ -204,7 +204,7 @@ namespace Engine
 
         for (const CollisionManifold2D& manifold : world.GetCurrentContacts())
         {
-            if (!manifold.A || manifold.B)
+            if (!manifold.A || !manifold.B)
             {
                 continue;
             }

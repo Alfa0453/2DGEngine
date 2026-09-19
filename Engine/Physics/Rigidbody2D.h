@@ -6,9 +6,12 @@
 #include "../Scene/Component.h"
 #include "../Math/Vector2.h"
 
+#include <vector>
+
 namespace Engine
 {
     class PhysicsWorld2D;
+    class PolygonCollider2D;
 
     class Rigidbody2D : public Component
     {
@@ -44,6 +47,23 @@ namespace Engine
 
         void AddImpulse(const Vector2& impulse);
 
+        // Applies a continuous force at an arbitrary world-space point.
+        //
+        // Unlike AddForce (which is treated as acting through the center of
+        // mass and therefore produces no rotation), a force applied off the
+        // center generates a torque equal to cross(r, force), where r is the
+        // lever arm from the body's world center of mass to worldPoint. This
+        // is the correct way to model explosions, thrusters, recoil, or any
+        // hit that should also spin the body. The torque contribution is
+        // suppressed automatically when the body has fixed rotation.
+        void AddForceAtPosition(const Vector2& force, const Vector2& worldPoint);
+
+        // Instantaneous equivalent of AddForceAtPosition: applies a linear
+        // impulse at a world-space point, changing both linear velocity
+        // (impulse * inverseMass) and angular velocity
+        // (inverseInertia * cross(r, impulse)) in a single step.
+        void AddImpulseAtPosition(const Vector2& impulse, const Vector2& worldPoint);
+
         void ClearForces();
 
         const Vector2& GetAccumulatedForce() const;
@@ -78,11 +98,20 @@ namespace Engine
 
         float GetAngularVelocity() const;
 
-        void AddAngularVelociy(float deltaAngularVelocity);
+        void AddAngularVelocity(float deltaAngularVelocity);
+
+        // Rotation lock. When enabled the body behaves as if it had infinite
+        // rotational inertia: GetInverseInertia() returns 0, so contacts,
+        // joints and torque can never spin it, and any existing spin is
+        // cleared. This is the standard tool for player/character bodies and
+        // top-down actors that must translate but never topple or rotate.
+        void SetFixedRotation(bool fixedRotation);
+
+        bool IsFixedRotation() const;
 
         void SetAngularDamping(float damping);
 
-        float GetangularDamping() const;
+        float GetAngularDamping() const;
 
         void AddTorque(float torque);
 
@@ -90,7 +119,7 @@ namespace Engine
 
         void ClearTorque();
 
-        float GetMomenOfInertia() const;
+        float GetMomentOfInertia() const;
 
         float GetInverseInertia() const;
 
@@ -109,6 +138,10 @@ namespace Engine
         void AddSleepTime(float deltaTime);
 
         void ResetSleepTimer();
+
+        static float CalculateCapsuleInertia(float mass, float radius, float halfHeight);
+
+        static float CalculatePolygonInertia(float mass, const PolygonCollider2D& polygon);
 
     private:
 
@@ -137,6 +170,10 @@ namespace Engine
         float m_AccumulatedTorque = 0.0f;
 
         float m_AngularDamping = 0.0f;
+
+        // When true the body's rotational degree of freedom is locked (see
+        // SetFixedRotation). Reflected through GetInverseInertia().
+        bool m_FixedRotation = false;
 
         CollisionDetectionMode2D m_CollisionDetectionMode = CollisionDetectionMode2D::Discrete;
 

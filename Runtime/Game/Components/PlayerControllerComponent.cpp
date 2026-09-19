@@ -92,7 +92,7 @@ void PlayerControllerComponent::Update(float deltaTime)
 
     m_Animator->SetBool("Running", isRunning);
 
-    if (movementDirection.LengthSqured() > 0.0f)
+    if (movementDirection.LengthSquared() > 0.0f)
     {
         movementDirection = movementDirection.Normalized();
     }
@@ -135,7 +135,7 @@ void PlayerControllerComponent::Update(float deltaTime)
 
 
     /*
-    if (movementDirection.LengthSqured() > 0.0f)
+    if (movementDirection.LengthSquared() > 0.0f)
     {
         movementDirection = movementDirection.Normalized();
     }
