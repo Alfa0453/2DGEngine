@@ -5,6 +5,8 @@
 #include "../Audio/Playback/AudioPlaybackHandle.h"
 #include "../Audio/Playback/AudioPlaybackSettings.h"
 
+#include "../Math/Vector2.h"
+
 namespace Engine
 {
     class AudioClip;
@@ -110,6 +112,22 @@ namespace Engine
 
         AudioAttenuationModel GetAttenuationModel() const;
 
+        void SetVelocity(const Vector2& velocity);
+
+        const Vector2& GetVelocity() const;
+
+        void SetAutomaticVelocity(bool automatic);
+
+        bool IsAutomaticVelocityEnabled() const;
+
+        void SetDopplerEnabled(bool enabled);
+
+        bool IsDopplerEnabled() const;
+
+        void SetDopplerStrength(float strength);
+
+        float GetDopplerStrength() const;
+
     private:
 
         void ClearPlaybackHandleIfInvalid();
@@ -129,5 +147,15 @@ namespace Engine
         bool m_StopOnDestroy = true;
 
         std::uint64_t m_LastTransformWorldVersion = 0;
+
+        Vector2 m_PreviousWorldPosition{0.0f, 0.0f};
+
+        Vector2 m_SpatialVelocity{0.0f, 0.0f};
+
+        bool m_HasPreviousWorldPosition = false;
+
+        bool m_AutomaticVelocity = true;
+
+        bool m_HadAutomaticMotion = false;
     };
 }

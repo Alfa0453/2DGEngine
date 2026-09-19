@@ -5,6 +5,8 @@
 #include "../Playback/AudioPlaybackHandle.h"
 #include "../Spatial/AudioListenerState.h"
 #include "../Spatial/AudioSpatialization2D.h"
+#include "../Types/AudioSettings.h"
+#include "../Types/AudioLimits.h"
 
 #include "AudioMixVoiceResult.h"
 
@@ -63,7 +65,7 @@ namespace Engine
         return m_MixBuffer;
     }
 
-    bool AudioMixer::Mix(std::vector<AudioVoice>& voices, const AudioBusSystem& busSystem, const AudioListenerState& listener, std::vector<AudioPlaybackHandle>& outFinishedVoices)
+    bool AudioMixer::Mix(std::vector<AudioVoice>& voices, const AudioBusSystem& busSystem, const AudioListenerState& listener, const AudioSettings& audioSettings, std::vector<AudioPlaybackHandle>& outFinishedVoices)
     {
         if (!m_Initialized || m_MixBuffer.empty())
         {
@@ -85,18 +87,22 @@ namespace Engine
 
             float distanceGain = 1.0f;
 
+            float dopplerFactor = 1.0f;
+
             if (voice.IsSpatial())
             {
-                const AudioSpatialResult2D spatialResult = AudioSpatialization2D::Calculate(voice.GetSpatialPosition(), listener, voice.GetSpatialPanDistance(), voice.GetSpatialPanDistance(), voice.GetMinDistance(), voice.GetMaxDistance(), voice.GetAttenuationStrength(), voice.GetAttenuationModel());
+                const AudioSpatialResult2D spatialResult = AudioSpatialization2D::Calculate(voice.GetSpatialPosition(), voice.GetSpatialVelocity(), listener, voice.GetSpatialPanDistance(), voice.GetSpatialPanDistance(), voice.GetMinDistance(), voice.GetMaxDistance(), voice.GetAttenuationStrength(), voice.GetAttenuationModel(), voice.IsDopplerEnabled(), voice.GetDopplerStrength(), audioSettings.SpeedOfSound, audioSettings.MinDopplerFactor, audioSettings.MaxDopplerFactor);
 
                 spatialPan = spatialResult.Pan;
 
                 distanceGain = spatialResult.DistanceGain;
+
+                dopplerFactor = spatialResult.DopplerFactor;
             }
 
             const float busGain = busSystem.GetEffectiveVolume(voice.GetBus());
 
-            const AudioMixVoiceResult result = MixVoice(voice, m_MixBuffer.data(), m_FramesPerBlock, busGain, spatialPan);
+            const AudioMixVoiceResult result = MixVoice(voice, m_MixBuffer.data(), m_FramesPerBlock, busGain, spatialPan, distanceGain, dopplerFactor);
 
             if (result.Finished && result.FinishedHandle.IsValid())
             {
@@ -112,7 +118,7 @@ namespace Engine
         return true;
     }
 
-    AudioMixVoiceResult AudioMixer::MixVoice(AudioVoice& voice, float* output, std::size_t frameCount, float busGain, float spatialPan, float distanceGain)
+    AudioMixVoiceResult AudioMixer::MixVoice(AudioVoice& voice, float* output, std::size_t frameCount, float busGain, float spatialPan, float distanceGain, float dopplerFactor)
     {
         AudioMixVoiceResult result;
 
@@ -170,7 +176,7 @@ namespace Engine
 
         float currentPitch = voice.GetCurrentPitch();
 
-        float targetPitch = voice.GetPitch();
+        float targetPitch = std::clamp(voice.GetPitch() * dopplerFactor , AudioLimits::MinPitch, AudioLimits::MaxPitch);
 
         const float inverseFrameCount = 1.0f / static_cast<float>(frameCount);
 

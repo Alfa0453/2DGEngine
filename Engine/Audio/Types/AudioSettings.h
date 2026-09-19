@@ -17,5 +17,11 @@ namespace Engine
         std::size_t MixFramesPerBlock = 512;
 
         std::size_t MaxPendingCommands = 128;
+
+        float SpeedOfSound = 1000.0f;
+
+        float MinDopplerFactor = 0.5f;
+
+        float MaxDopplerFactor = 2.0f;
     };
 }

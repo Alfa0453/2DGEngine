@@ -39,8 +39,6 @@ namespace Engine
 
     void AudioListenerComponent::Update(float deltaTime)
     {
-        (void)deltaTime;
-
         if (!m_AudioSystem)
         {
             return;
@@ -67,6 +65,28 @@ namespace Engine
         if (!transformChanged && !m_ListenerStateDirty)
         {
             return;
+        }
+
+        const Vector2 currentPosition = ownerTransform->GetWorldPosition();
+
+        if (m_AutomaticVelocity && deltaTime > 0.000001f)
+        {
+            if (m_HasPreviousWorldPosition)
+            {
+                m_Velocity = (currentPosition - m_PreviousWorldPosition) / deltaTime;
+            }
+            else 
+            {
+                m_Velocity = Vector2{0.0f, 0.0f};
+            }
+
+            m_PreviousWorldPosition = currentPosition;
+
+            m_HasPreviousWorldPosition = true;
+
+            m_HadAutomaticMotion = m_Velocity.LengthSquared() > 0.000001f;
+
+            m_ListenerStateDirty = true;
         }
 
         SyncToAudioSystem();
@@ -111,6 +131,8 @@ namespace Engine
     void AudioListenerComponent::SetVelocity(const Vector2& velocity)
     {
         m_Velocity = velocity;
+
+        m_AutomaticVelocity = false;
 
         m_ListenerStateDirty = true;
     }
@@ -192,5 +214,26 @@ namespace Engine
         }
 
         m_AudioSystem->SetListenerState(state);
+    }
+
+    void AudioListenerComponent::SetAutomaticVelocity(bool automatic)
+    {
+        if (m_AutomaticVelocity == automatic)
+        {
+            return;
+        }
+
+        m_AutomaticVelocity = automatic;
+
+        if (automatic)
+        {
+            m_HasPreviousWorldPosition = false;
+
+            m_HadAutomaticMotion = false;
+
+            m_Velocity = Vector2{0.0f, 0.0f};
+        }
+
+        m_ListenerStateDirty = true;
     }
 }

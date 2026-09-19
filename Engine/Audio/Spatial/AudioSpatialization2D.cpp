@@ -1,5 +1,6 @@
 #include "AudioSpatialization2D.h"
 #include "AudioAttenuationModel.h"
+#include "AudioListenerState.h"
 
 #include <algorithm>
 #include <cmath>
@@ -90,9 +91,37 @@ namespace Engine
 
             return ApplyAttenuationStrength(gain, strength);
         }
+
+        float CalculateDopplerFactor(const Vector2& sourcePosition, const Vector2& sourceVelocity, const AudioListenerState& listener, float distance, float strength, float speedOfSound, float minFactor, float maxFactor)
+        {
+            if (strength <= 0.0f || distance <= 0.0001f || speedOfSound <= 0.0001f)
+            {
+                return 1.0f;
+            }
+
+            const float directionX = (sourcePosition.X - listener.Position.X) / distance;
+
+            const float directionY = (sourcePosition.Y - listener.Position.Y) / distance;
+
+            const float listenerRadial = listener.Velocity.X * directionX + listener.Velocity.Y * directionY;
+
+            const float sourceRadial = sourceVelocity.X * directionX + sourceVelocity.Y * directionY;
+
+            const float velocityLimit = speedOfSound * 0.95f;
+
+            const float safeListener = std::clamp(listenerRadial, -velocityLimit, velocityLimit);
+
+            const float safeSource = std::clamp(sourceRadial, -velocityLimit, velocityLimit);
+
+            const float raw = (speedOfSound + safeListener) / (speedOfSound + safeSource);
+
+            const float scaled = 1.0f + (raw - 1.0f) * strength;
+
+            return std::clamp(scaled, minFactor, maxFactor);
+        }
     }
 
-    AudioSpatialResult2D AudioSpatialization2D::Calculate(const Vector2 &sourcePosition, const AudioListenerState &listener, float panDistance, float panStrength, float minDistance, float maxDistance, float attenuationStrength, AudioAttenuationModel attenuationModel)
+    AudioSpatialResult2D AudioSpatialization2D::Calculate(const Vector2 &sourcePosition, const Vector2& sourceVelocity, const AudioListenerState &listener, float panDistance, float panStrength, float minDistance, float maxDistance, float attenuationStrength, AudioAttenuationModel attenuationModel, bool dopplerEnabled, float dopplerStrength, float speedOfSound, float minDopplerFactor, float maxDopplerFactor)
     {
         AudioSpatialResult2D result;
 
@@ -126,6 +155,15 @@ namespace Engine
         result.Pan = std::clamp(normalizedHorizontal * panStrength, -1.0f, 1.0f);
 
         result.DistanceGain = CalculateDistanceGain(result.Distance, minDistance, maxDistance, attenuationStrength, attenuationModel);
+
+        if (dopplerEnabled && listener.Enabled)
+        {
+            result.DopplerFactor = CalculateDopplerFactor(sourcePosition, sourceVelocity, listener, result.Distance, dopplerStrength, speedOfSound, minDopplerFactor, maxDopplerFactor);
+        }
+        else 
+        {
+            result.DopplerFactor = 1.0f;
+        }
 
         return result;
     }

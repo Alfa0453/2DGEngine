@@ -28,6 +28,8 @@ namespace Engine
 
         SetSourcePosition,
 
+        SetSourceSpatialState,
+
         SetBusVolume,
 
         SetBusMute,
@@ -54,6 +56,8 @@ namespace Engine
         AudioListenerState ListenerState;
 
         Vector2 SourcePosition{0.0f, 0.0f};
+
+        Vector2 SourceVelocity{0.0f, 0.0f};
 
         float Value = 0.0f;
 

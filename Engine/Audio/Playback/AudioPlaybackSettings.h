@@ -26,6 +26,8 @@ namespace Engine
 
         float AttenuationStrength = 1.0f;
 
+        float DopplerStrength = 1.0f;
+
         std::uint8_t Priority = 128;
 
         AudioBusID Bus = AudioBusID::SFX;
@@ -39,6 +41,8 @@ namespace Engine
         bool AllowVoiceSteal = true;
 
         bool Spatial = false;
+
+        bool DopplerEnabled = false;
     };
 
     AudioPlaybackSettings SanitizeAudioPlaybackSettings(const AudioPlaybackSettings& settings);

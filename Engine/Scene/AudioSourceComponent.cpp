@@ -58,9 +58,47 @@ namespace Engine
 
         const Vector2 worldPosition = transform->GetWorldPosition();
 
-        if (m_AudioSystem->SetSourcePosition(m_PlaybackHandle, worldPosition))
+        const bool transformChanged = worldVersion != m_LastTransformWorldVersion;
+
+        if (transformChanged)
         {
-            m_LastTransformWorldVersion = worldVersion;
+            const Vector2 worldPosition = transform->GetWorldPosition();
+
+            if (m_AutomaticVelocity && deltaTime > 0.000001f)
+            {
+                if (m_HasPreviousWorldPosition)
+                {
+                    m_SpatialVelocity = (worldPosition - m_PreviousWorldPosition) / deltaTime;
+                }
+                else {
+                    m_SpatialVelocity = {};
+                }
+
+                m_PreviousWorldPosition = worldPosition;
+
+                m_HasPreviousWorldPosition = true;
+
+                m_HadAutomaticMotion = m_SpatialVelocity.LengthSquared() > 0.000001f;
+            }
+
+            if (m_AudioSystem->SetSourceSpatialState(m_PlaybackHandle, worldPosition, m_SpatialVelocity))
+            {
+                m_LastTransformWorldVersion = worldVersion;
+            }
+
+            return;
+        }
+
+        if (m_AutomaticVelocity && m_HadAutomaticMotion)
+        {
+            m_SpatialVelocity = Vector2{0.0f, 0.0f};
+
+            const Vector2 worldPosition = transform->GetWorldPosition();
+
+            if (m_AudioSystem->SetSourceSpatialState(m_PlaybackHandle, worldPosition, m_SpatialVelocity))
+            {
+                m_HadAutomaticMotion = false;
+            }
         }
     }
 
@@ -148,10 +186,16 @@ namespace Engine
 
             sourcePosition = transform->GetWorldPosition();
 
+            m_PreviousWorldPosition = sourcePosition;
+
+            m_HasPreviousWorldPosition = true;
+
             m_LastTransformWorldVersion = transform->GetWorldVersion();
         }
 
-        m_PlaybackHandle = m_AudioSystem->Play(*m_Clip, m_PlaybackSettings, sourcePosition);
+        m_SpatialVelocity = Vector2{0.0f, 0.0f};
+
+        m_PlaybackHandle = m_AudioSystem->Play(*m_Clip, m_PlaybackSettings, sourcePosition, m_SpatialVelocity);
 
         return m_PlaybackHandle.IsValid();
     }
@@ -363,5 +407,106 @@ namespace Engine
     float AudioSourceComponent::GetSpatialPanStrength() const
     {
         return m_PlaybackSettings.SpatialPanStrength;
+    }
+
+    void AudioSourceComponent::SetMinDistance(float distance)
+    {
+        distance = std::max(distance, 0.0f);
+
+        m_PlaybackSettings.MinDistance = distance;
+
+        if (m_PlaybackSettings.MaxDistance <= distance)
+        {
+            m_PlaybackSettings.MaxDistance = distance + 1.0f;
+        }
+    }
+
+    float AudioSourceComponent::GetMinDistance() const
+    {
+        return m_PlaybackSettings.MinDistance;
+    }
+
+    void AudioSourceComponent::SetMaxDistance(float distance)
+    {
+        m_PlaybackSettings.MaxDistance = std::max(distance, m_PlaybackSettings.MinDistance + 1.0f);
+    }
+
+    float AudioSourceComponent::GetMaxDistance() const
+    {
+        return m_PlaybackSettings.MaxDistance;
+    }
+
+    void AudioSourceComponent::SetAttenuationStrength(float strength)
+    {
+        m_PlaybackSettings.AttenuationStrength = std::max(strength, 0.0f);
+    }
+
+    float AudioSourceComponent::GetAttenuationStrength() const
+    {
+        return m_PlaybackSettings.AttenuationStrength;
+    }
+
+    void AudioSourceComponent::SetAttenuationModel(AudioAttenuationModel model)
+    {
+        m_PlaybackSettings.AttenuationModel = model;
+    }
+
+    AudioAttenuationModel AudioSourceComponent::GetAttenuationModel() const
+    {
+        return m_PlaybackSettings.AttenuationModel;
+    }
+
+    void AudioSourceComponent::SetVelocity(const Vector2& velocity)
+    {
+        m_SpatialVelocity = velocity;
+
+        m_AutomaticVelocity = false;
+    }
+
+    const Vector2& AudioSourceComponent::GetVelocity() const
+    {
+        return m_SpatialVelocity;
+    }
+
+    void AudioSourceComponent::SetAutomaticVelocity(bool automatic)
+    {
+        if (m_AutomaticVelocity == automatic)
+        {
+            return;
+        }
+
+        m_AutomaticVelocity = automatic;
+
+        if (automatic)
+        {
+            m_HasPreviousWorldPosition = false;
+
+            m_SpatialVelocity = Vector2{0.0f, 0.0f};
+        }
+    }
+
+    bool AudioSourceComponent::IsAutomaticVelocityEnabled() const
+    {
+        return m_AutomaticVelocity;
+    }
+
+    void AudioSourceComponent::SetDopplerEnabled(bool enabled)
+    {
+        m_PlaybackSettings.DopplerEnabled = enabled;
+    }
+
+    bool AudioSourceComponent::IsDopplerEnabled() const
+    {
+        return m_PlaybackSettings.DopplerEnabled;
+    }
+
+    void AudioSourceComponent::SetDopplerStrength(float strength)
+    {
+        m_PlaybackSettings.DopplerStrength = std::max(strength, 0.0f);
+    }
+
+    float AudioSourceComponent::GetDopplerStrength() const
+    {
+        return m_PlaybackSettings.DopplerStrength;
     }
 }

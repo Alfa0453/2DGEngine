@@ -42,6 +42,10 @@ namespace Engine
 
         void SyncToAudioSystem();
 
+        void SetAutomaticVelocity(bool automatic);
+
+        bool IsAutomaticVelocityEnabled() const;
+
     private:
         
         AudioSystem* m_AudioSystem = nullptr;
@@ -55,5 +59,13 @@ namespace Engine
         std::uint64_t m_LastTransformWorldVersion = 0;
 
         bool m_ListenerStateDirty = true;
+
+        Vector2 m_PreviousWorldPosition{0.0f, 0.0f};
+
+        bool m_HasPreviousWorldPosition = false;
+
+        bool m_AutomaticVelocity = true;
+
+        bool m_HadAutomaticMotion = false;
     };
 }

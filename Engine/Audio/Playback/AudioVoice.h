@@ -20,7 +20,7 @@ namespace Engine
 
         AudioVoice() = default;
 
-        void Start(const AudioClip* clip, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings, const Vector2& sourcePosition);
+        void Start(const AudioClip* clip, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity);
 
         void Stop();
 
@@ -91,6 +91,14 @@ namespace Engine
 
         AudioAttenuationModel GetAttenuationModel() const;
 
+        void SetSpatialVelocity(const Vector2& velocity);
+
+        const Vector2& GetSpatialVelocity() const;
+
+        bool IsDopplerEnabled() const;
+
+        float GetDopplerStrength() const;
+
     private:
 
         const AudioClip* m_Clip = nullptr;
@@ -134,5 +142,11 @@ namespace Engine
         float m_AttenuationStrength = 1.0f;
 
         AudioAttenuationModel m_AttenuationModel = AudioAttenuationModel::Linear;
+
+        Vector2 m_SpatialVelocity{0.0f, 0.0f};
+
+        float m_DopplerStrength = 1.0f;
+
+        bool m_DopplerEnabled = false;
     };
 }

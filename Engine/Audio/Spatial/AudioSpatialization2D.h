@@ -14,12 +14,18 @@ namespace Engine
         float Distance = 0.0f;
 
         float DistanceGain = 1.0f;
+
+        float DopplerFactor = 1.0f;
     };
 
     class AudioSpatialization2D
     {
     public:
 
-        static AudioSpatialResult2D Calculate(const Vector2& sourcePosition, const AudioListenerState& listener, float panDistance, float panStrength, float minDistance, float maxDistance, float attenuationStrength, AudioAttenuationModel attenuationModel);
+        static AudioSpatialResult2D Calculate(const Vector2& sourcePosition, const Vector2& sourceVelocity, const AudioListenerState& listener, 
+                                             float panDistance, float panStrength, float minDistance, float maxDistance, 
+                                             float attenuationStrength, AudioAttenuationModel attenuationModel, 
+                                             bool dopplerEnabled, float dopplerStrength, float speedOfSound, 
+                                             float minDopplerFactor, float maxDopplerFactor);
     };
 }

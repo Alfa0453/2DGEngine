@@ -8,7 +8,7 @@
 
 namespace Engine
 {
-    void AudioVoice::Start(const AudioClip* clip, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings, const Vector2& sourcePosition)
+    void AudioVoice::Start(const AudioClip* clip, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity)
     {
         m_Clip = clip;
 
@@ -49,6 +49,12 @@ namespace Engine
         m_AttenuationStrength = settings.AttenuationStrength;
 
         m_AttenuationModel = settings.AttenuationModel;
+
+        m_SpatialVelocity = sourceVelocity;
+
+        m_DopplerEnabled = settings.DopplerEnabled;
+
+        m_DopplerStrength = settings.DopplerStrength;
     }
 
     void AudioVoice::Stop()
@@ -92,6 +98,12 @@ namespace Engine
         m_AttenuationStrength = 1.0f;
 
         m_AttenuationModel = AudioAttenuationModel::Linear;
+
+        m_SpatialVelocity = Vector2{0.0f, 0.0f};
+
+        m_DopplerEnabled = false;
+
+        m_DopplerStrength = 1.0f;
     }
 
     bool AudioVoice::IsActive() const
@@ -288,5 +300,25 @@ namespace Engine
     AudioAttenuationModel AudioVoice::GetAttenuationModel() const
     {
         return m_AttenuationModel;
+    }
+
+    void AudioVoice::SetSpatialVelocity(const Vector2& velocity)
+    {
+        m_SpatialVelocity = velocity;
+    }
+
+    const Vector2& AudioVoice::GetSpatialVelocity() const
+    {
+        return m_SpatialVelocity;
+    }
+
+    bool AudioVoice::IsDopplerEnabled() const
+    {
+        return m_DopplerEnabled;
+    }
+
+    float AudioVoice::GetDopplerStrength() const
+    {
+        return m_DopplerStrength;
     }
 }

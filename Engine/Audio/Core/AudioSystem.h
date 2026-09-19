@@ -47,7 +47,9 @@ namespace Engine
 
         AudioPlaybackHandle Play(const AudioClip& clip, const AudioPlaybackSettings& settings);
 
-        AudioPlaybackHandle Play(const AudioClip& clip, const AudioPlaybackSettings& settings, const Vector2& sourcePosiion);
+        AudioPlaybackHandle Play(const AudioClip& clip, const AudioPlaybackSettings& settings, const Vector2& sourcePosition);
+
+        AudioPlaybackHandle Play(const AudioClip& clip, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity);
 
         bool Stop(AudioPlaybackHandle handle);
 
@@ -94,6 +96,8 @@ namespace Engine
         AudioListenerState GetRequestedListenerState() const;
 
         bool SetSourcePosition(AudioPlaybackHandle handle, const Vector2& position);
+
+        bool SetSourceSpatialState(AudioPlaybackHandle handle, const Vector2& position, const Vector2& velocity);
 
     private:
 

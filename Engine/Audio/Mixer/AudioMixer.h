@@ -14,6 +14,7 @@ namespace Engine
     class AudioPlaybackHandle;
     class AudioClip;
     struct AudioListenerState;
+    struct AudioSettings;
 
     class AudioMixer
     {
@@ -33,11 +34,11 @@ namespace Engine
 
         const std::vector<float>& GetMixBuffer() const;
 
-        bool Mix(std::vector<AudioVoice>& voices, const AudioBusSystem& busSystem, const AudioListenerState& listener, std::vector<AudioPlaybackHandle>& outFinishedVoices);
+        bool Mix(std::vector<AudioVoice>& voices, const AudioBusSystem& busSystem, const AudioListenerState& listener, const AudioSettings& audioSettings, std::vector<AudioPlaybackHandle>& outFinishedVoices);
 
     private:
 
-        AudioMixVoiceResult MixVoice(AudioVoice& voice, float* output, std::size_t frameCount, float busGain, float spatialPan, float distanceGain);
+        AudioMixVoiceResult MixVoice(AudioVoice& voice, float* output, std::size_t frameCount, float busGain, float spatialPan, float distanceGain, float dopplerFactor);
 
         float SampleChannelLinear(const AudioClip& clip, double playbackFrame, std::size_t channel, bool looping) const;
 

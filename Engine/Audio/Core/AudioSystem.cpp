@@ -167,7 +167,7 @@ namespace Engine
 
         m_FinishedVoiceScratch.clear();
 
-        if (!m_Mixer.Mix(m_Voices, m_BusSystem, m_AudioListenerState, m_FinishedVoiceScratch))
+        if (!m_Mixer.Mix(m_Voices, m_BusSystem, m_AudioListenerState, m_Settings, m_FinishedVoiceScratch))
         {
             return false;
         }
@@ -221,7 +221,7 @@ namespace Engine
 
     AudioPlaybackHandle AudioSystem::Play(const AudioClip& clip)
     {
-        return Play(clip, AudioPlaybackSettings{}, Vector2{0.0f, 0.0f});
+        return Play(clip, AudioPlaybackSettings{});
     }
 
     AudioPlaybackHandle AudioSystem::Play(const AudioClip& clip, const AudioPlaybackSettings& settings)
@@ -229,7 +229,12 @@ namespace Engine
         return Play(clip, settings, Vector2{0.0f, 0.0f});
     }
 
-    AudioPlaybackHandle AudioSystem::Play(const AudioClip& clip, const AudioPlaybackSettings& settings, const Vector2& sourcePosiion)
+    AudioPlaybackHandle AudioSystem::Play(const AudioClip& clip, const AudioPlaybackSettings& settings, const Vector2& sourcePosition)
+    {
+        return Play(clip, settings, sourcePosition, Vector2{0.0f, 0.0f});
+    }
+
+    AudioPlaybackHandle AudioSystem::Play(const AudioClip& clip, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity)
     {
          if (!m_Initialized || !clip.IsValid())
         {
@@ -254,7 +259,7 @@ namespace Engine
 
             command.PlaybackSettings = sanitizedSettings;
 
-            command.SourcePosition = sourcePosiion;
+            command.SourcePosition = sourcePosition;
 
             if (!m_CommandQueue.Push(command))
             {
@@ -296,7 +301,9 @@ namespace Engine
 
         command.PreviousHandle = previousHandle;
 
-        command.SourcePosition = sourcePosiion;
+        command.SourcePosition = sourcePosition;
+
+        command.SourceVelocity = sourceVelocity;
 
         command.Clip = &clip;
 
@@ -939,7 +946,7 @@ namespace Engine
                     break;
                 }
 
-                voice.Start(command.Clip, command.Handle, command.PlaybackSettings, command.SourcePosition);
+                voice.Start(command.Clip, command.Handle, command.PlaybackSettings, command.SourcePosition, command.SourceVelocity);
 
                 if (!voice.IsActive())
                 {
@@ -1088,7 +1095,7 @@ namespace Engine
                     voice.Stop();
                 }
 
-                voice.Start(command.Clip, command.Handle, command.PlaybackSettings, command.SourcePosition);
+                voice.Start(command.Clip, command.Handle, command.PlaybackSettings, command.SourcePosition, command.SourceVelocity);
 
                 if (!voice.IsActive())
                 {
@@ -1116,6 +1123,20 @@ namespace Engine
                 if (voice)
                 {
                     voice->SetSpatialPosition(command.SourcePosition);
+                }
+
+                break;
+            }
+
+            case AudioCommandType::SetSourceSpatialState:
+            {
+                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+
+                if (voice)
+                {
+                    voice->SetSpatialPosition(command.SourcePosition);
+
+                    voice->SetSpatialVelocity(command.SourceVelocity);
                 }
 
                 break;
@@ -1396,6 +1417,33 @@ namespace Engine
         command.Handle = handle;
 
         command.SourcePosition = position;
+
+        if (!m_CommandQueue.Push(command))
+        {
+            ++m_CommandQueueFullCount;
+
+            return false;
+        }
+
+        return true;
+    }
+
+    bool AudioSystem::SetSourceSpatialState(AudioPlaybackHandle handle, const Vector2& position, const Vector2& velocity)
+    {
+        if (!IsHandleKnown(handle))
+        {
+            return false;
+        }
+
+        AudioCommand command;
+
+        command.Type = AudioCommandType::SetSourceSpatialState;
+
+        command.Handle = handle;
+
+        command.SourcePosition = position;
+
+        command.SourceVelocity = velocity;
 
         if (!m_CommandQueue.Push(command))
         {

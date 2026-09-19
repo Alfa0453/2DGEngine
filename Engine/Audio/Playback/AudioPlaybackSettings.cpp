@@ -26,6 +26,8 @@ namespace Engine
 
         sanitized.AttenuationStrength = std::max(sanitized.AttenuationStrength, 0.0f);
 
+        sanitized.DopplerStrength = std::max(sanitized.DopplerStrength, 0.0f);
+
         return sanitized;
     }
 }
