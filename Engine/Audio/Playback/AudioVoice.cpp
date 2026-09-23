@@ -16,6 +16,8 @@ namespace Engine
 
         m_PlaybackFrame = 0;
 
+        m_Paused = false;
+
         m_CurrentVolume = settings.Volume;
 
         m_TargetVolume = settings.Volume;
@@ -55,6 +57,16 @@ namespace Engine
         m_DopplerEnabled = settings.DopplerEnabled;
 
         m_DopplerStrength = settings.DopplerStrength;
+
+        m_FadeGain = 1.0f;
+
+        m_FadeTargetGain = 1.0f;
+
+        m_FadeStepPerFrame = 0.0f;
+
+        m_FadeFramesRemaining = 0;
+
+        m_StopWhenFadeComplete = false;
     }
 
     void AudioVoice::Stop()
@@ -81,6 +93,8 @@ namespace Engine
 
         m_Active = false;
 
+        m_Paused = false;
+
         m_Bus = AudioBusID::SFX;
 
         m_SpatialPosition = Vector2{0.0f, 0.0f};
@@ -104,6 +118,16 @@ namespace Engine
         m_DopplerEnabled = false;
 
         m_DopplerStrength = 1.0f;
+
+        m_FadeGain = 1.0f;
+
+        m_FadeTargetGain = 1.0f;
+
+        m_FadeStepPerFrame = 0.0f;
+
+        m_FadeFramesRemaining = 0;
+
+        m_StopWhenFadeComplete = false;
     }
 
     bool AudioVoice::IsActive() const
@@ -320,5 +344,143 @@ namespace Engine
     float AudioVoice::GetDopplerStrength() const
     {
         return m_DopplerStrength;
+    }
+
+    void AudioVoice::Pause()
+    {
+        if (!m_Active)
+        {
+            return;
+        }
+
+        m_Paused = true;
+    }
+
+    void AudioVoice::Resume()
+    {
+        if (!m_Active)
+        {
+            return;
+        }
+
+        m_Paused = false;
+    }
+
+    bool AudioVoice::IsPaused() const
+    {
+        return m_Paused;
+    }
+
+    bool AudioVoice::SeekSeconds(float seconds)
+    {
+        if (!m_Active || !m_Clip)
+        {
+            return false;
+        }
+
+        seconds = std::max(seconds, 0.0f);
+
+        const AudioFormat& format = m_Clip->GetFormat();
+
+        if (format.SampleRate <= 0)
+        {
+            return false;
+        }
+
+        double targetFrame = static_cast<double>(seconds) * static_cast<double>(format.SampleRate);
+
+        const double frameCount = static_cast<double>(m_Clip->GetFrameCount());
+
+        targetFrame = std::clamp(targetFrame, 0.0, std::max(frameCount - 1.0, 0.0));
+
+        m_PlaybackFrame = targetFrame;
+
+        if (m_Looping && frameCount > 0.0)
+        {
+            targetFrame = std::fmod(targetFrame, frameCount);
+
+            if (targetFrame < 0.0)
+            {
+                targetFrame += frameCount;
+            }
+        }
+        else
+        {
+            targetFrame = std::clamp(targetFrame, 0.0, frameCount - 1.0);
+        }
+
+        m_PlaybackFrame = targetFrame;
+
+        return true;
+    }
+
+    void AudioVoice::StartFade(float targetGain, std::uint64_t durationFrames, bool stopWhenComplete)
+    {
+        targetGain = std::clamp(targetGain, 0.0f, 1.0f);
+
+        m_FadeTargetGain = targetGain;
+
+        m_StopWhenFadeComplete = stopWhenComplete;
+
+        if (durationFrames == 0)
+        {
+            m_FadeGain = targetGain;
+
+            m_FadeFramesRemaining = 0;
+
+            m_FadeStepPerFrame = 0.0f;
+
+            return;
+        }
+
+        m_FadeFramesRemaining = durationFrames;
+
+        m_FadeStepPerFrame = (m_FadeTargetGain - m_FadeGain) / static_cast<float>(durationFrames);
+    }
+
+    bool AudioVoice::AdvanceFade()
+    {
+        if (m_FadeFramesRemaining == 0)
+        {
+            return false;
+        }
+
+        m_FadeGain += m_FadeStepPerFrame;
+
+        --m_FadeFramesRemaining;
+
+        if (m_FadeFramesRemaining == 0)
+        {
+            m_FadeGain = m_FadeTargetGain;
+
+            m_FadeStepPerFrame = 0.0f;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    float AudioVoice::GetFadeGain() const
+    {
+        return m_FadeGain;
+    }
+
+    bool AudioVoice::ShouldStopAfterFade() const
+    {
+        return m_StopWhenFadeComplete;
+    }
+
+    void AudioVoice::SetFadeGainImmediate(float gain)
+    {
+        gain = std::clamp(gain, 0.0f, 1.0f);
+
+            m_FadeGain = gain;
+
+            m_FadeTargetGain = gain;
+
+            m_FadeStepPerFrame = 0.0f;
+
+            m_FadeFramesRemaining = 0;
     }
 }

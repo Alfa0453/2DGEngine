@@ -40,7 +40,7 @@ namespace Engine
         void SetVolume(float volume);
 
         float GetCurrentVolume() const;
-        
+
         void SetCurrenVolume(float volume);
 
         float GetPan() const;
@@ -99,6 +99,24 @@ namespace Engine
 
         float GetDopplerStrength() const;
 
+        void Pause();
+
+        void Resume();
+
+        bool IsPaused() const;
+
+        bool SeekSeconds(float seconds);
+
+        void StartFade(float targetGain, std::uint64_t durationFrames, bool stopWhenComplete);
+
+        float GetFadeGain() const;
+
+        bool AdvanceFade();
+
+        bool ShouldStopAfterFade() const;
+
+        void SetFadeGainImmediate(float gain);
+
     private:
 
         const AudioClip* m_Clip = nullptr;
@@ -148,5 +166,17 @@ namespace Engine
         float m_DopplerStrength = 1.0f;
 
         bool m_DopplerEnabled = false;
+
+        float m_FadeGain = 1.0f;
+
+        float m_FadeTargetGain = 1.0f;
+
+        float m_FadeStepPerFrame = 0.0f;
+
+        std::uint64_t m_FadeFramesRemaining = 0;
+
+        bool m_StopWhenFadeComplete = false;
+
+        bool m_Paused = false;
     };
 }

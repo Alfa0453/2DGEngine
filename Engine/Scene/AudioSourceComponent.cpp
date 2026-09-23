@@ -509,4 +509,90 @@ namespace Engine
     {
         return m_PlaybackSettings.DopplerStrength;
     }
+
+    bool AudioSourceComponent::Pause()
+    {
+        if (!m_AudioSystem || !m_PlaybackHandle.IsValid())
+        {
+            return false;
+        }
+
+        return m_AudioSystem->Pause(m_PlaybackHandle);
+    }
+
+    bool AudioSourceComponent::Resume()
+    {
+        if (!m_AudioSystem || !m_PlaybackHandle.IsValid())
+        {
+            return false;
+        }
+
+        return m_AudioSystem->Resume(m_PlaybackHandle);
+    }
+
+    bool AudioSourceComponent::IsPaused() const
+    {
+        if (!m_AudioSystem || !m_PlaybackHandle.IsValid())
+        {
+            return false;
+        }
+
+        return m_AudioSystem->IsPaused(m_PlaybackHandle);
+    }
+
+    bool AudioSourceComponent::SeekSeconds(float seconds)
+    {
+        if (!m_AudioSystem || !m_PlaybackHandle.IsValid())
+        {
+            return false;
+        }
+
+        return m_AudioSystem->SeekSeconds(m_PlaybackHandle, seconds);
+    }
+
+    bool AudioSourceComponent::FadeTo(float gain, float durationSeconds)
+    {
+        if (!m_AudioSystem || !m_PlaybackHandle.IsValid())
+        {
+            return false;
+        }
+
+        return m_AudioSystem->FadeTo(m_PlaybackHandle, gain, durationSeconds);
+    }
+
+    bool AudioSourceComponent::FadeIn(float durationSeconds)
+    {
+        return FadeTo(1.0f, durationSeconds);
+    }
+
+    bool AudioSourceComponent::FadeOut(float durationSeconds)
+    {
+        return FadeTo(0.0f, durationSeconds);
+    }
+
+    bool AudioSourceComponent::FadeOutAndStop(float durationSeconds)
+    {
+        if (!m_AudioSystem || !m_PlaybackHandle.IsValid())
+        {
+            return false;
+        }
+
+        const bool queued = m_AudioSystem->FadeOutAndStop(m_PlaybackHandle, durationSeconds);
+
+        if (queued)
+        {
+            //
+            // This component no longer needs to treat the Voice as normal controllable playback.
+            //
+            // You can either clear now or retain until terminal event/state invalidation.
+            //
+        }
+
+        return queued;
+    }
+
+    void AudioSourceComponent::SetFadeInSeconds(float seconds)
+    {
+        m_PlaybackSettings.FadeInSeconds = std::max(seconds, 0.0f);
+    }
 }

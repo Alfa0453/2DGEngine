@@ -128,6 +128,24 @@ namespace Engine
 
         float GetDopplerStrength() const;
 
+        bool Pause();
+
+        bool Resume();
+
+        bool IsPaused() const;
+
+        bool SeekSeconds(float seconds);
+
+        bool FadeTo(float gain, float durationSeconds);
+
+        bool FadeIn(float durationSeconds);
+
+        bool FadeOut(float durationSeconds);
+
+        bool FadeOutAndStop(float durationSeconds);
+
+        void SetFadeInSeconds(float seconds);
+
     private:
 
         void ClearPlaybackHandleIfInvalid();

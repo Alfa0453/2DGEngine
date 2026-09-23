@@ -28,6 +28,8 @@ namespace Engine
 
         sanitized.DopplerStrength = std::max(sanitized.DopplerStrength, 0.0f);
 
+        sanitized.FadeInSeconds = std::max(sanitized.FadeInSeconds, 0.0f);
+
         return sanitized;
     }
 }

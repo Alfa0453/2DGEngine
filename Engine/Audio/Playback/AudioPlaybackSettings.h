@@ -43,6 +43,8 @@ namespace Engine
         bool Spatial = false;
 
         bool DopplerEnabled = false;
+
+        float FadeInSeconds = 0.0f;
     };
 
     AudioPlaybackSettings SanitizeAudioPlaybackSettings(const AudioPlaybackSettings& settings);

@@ -17,5 +17,7 @@ namespace Engine
         bool Looping = false;
 
         std::uint64_t StartSequence = 0;
+
+        bool Paused = false;
     };
 }

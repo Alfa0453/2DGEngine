@@ -13,30 +13,31 @@ namespace Engine
     enum class AudioCommandType
     {
         Play,
-
         ReplaceVoice,
 
         Stop,
+        StopAll,
+
+        Pause,
+        Resume,
+
+        SeekSeconds,
 
         SetVolume,
-
         SetPan,
-
         SetPitch,
-
         SetLooping,
 
         SetSourcePosition,
-
         SetSourceSpatialState,
 
-        SetBusVolume,
+        FadeTo,
+        FadeOutAndStop,
 
+        SetBusVolume,
         SetBusMute,
 
-        SetListenerState,
-
-        StopAll
+        SetListenerState
     };
 
     struct AudioCommand
@@ -58,6 +59,8 @@ namespace Engine
         Vector2 SourcePosition{0.0f, 0.0f};
 
         Vector2 SourceVelocity{0.0f, 0.0f};
+
+        float DurationSeconds = 0.0f;
 
         float Value = 0.0f;
 

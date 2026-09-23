@@ -3,6 +3,7 @@
 #include "../Types/AudioFormat.h"
 #include "../Bus/AudioBusSystem.h"
 
+#include "AudioMixCompletion.h"
 #include "AudioMixVoiceResult.h"
 
 #include <cstddef>
@@ -34,7 +35,7 @@ namespace Engine
 
         const std::vector<float>& GetMixBuffer() const;
 
-        bool Mix(std::vector<AudioVoice>& voices, const AudioBusSystem& busSystem, const AudioListenerState& listener, const AudioSettings& audioSettings, std::vector<AudioPlaybackHandle>& outFinishedVoices);
+        bool Mix(std::vector<AudioVoice>& voices, const AudioBusSystem& busSystem, const AudioListenerState& listener, const AudioSettings& audioSettings, std::vector<AudioMixCompletion>& outCompletions);
 
     private:
 

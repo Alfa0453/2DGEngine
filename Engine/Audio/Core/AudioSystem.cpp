@@ -55,9 +55,9 @@ namespace Engine
             return false;
         }
 
-        m_FinishedVoiceScratch.clear();
+        m_AudioCompletionScratch.clear();
 
-        m_FinishedVoiceScratch.reserve(m_Settings.MaxVoices);
+        m_AudioCompletionScratch.reserve(m_Settings.MaxVoices);
 
         m_Mixer.Initialize(m_Settings.OutputFormat, m_Settings.MixFramesPerBlock);
 
@@ -132,7 +132,7 @@ namespace Engine
 
         m_PlaybackEventQueue.Shutdown();
 
-        m_FinishedVoiceScratch.clear();
+        m_AudioCompletionScratch.clear();
 
         for (AudioVoice& voice : m_Voices)
         {
@@ -165,16 +165,31 @@ namespace Engine
 
         m_BusSystem.AdvanceSmoothing(m_Mixer.GetFramesPerBlock());
 
-        m_FinishedVoiceScratch.clear();
+        m_AudioCompletionScratch.clear();
 
-        if (!m_Mixer.Mix(m_Voices, m_BusSystem, m_AudioListenerState, m_Settings, m_FinishedVoiceScratch))
+        if (!m_Mixer.Mix(m_Voices, m_BusSystem, m_AudioListenerState, m_Settings, m_AudioCompletionScratch))
         {
             return false;
         }
 
-        for (const AudioPlaybackHandle handle : m_FinishedVoiceScratch)
+        for (const AudioMixCompletion& completion : m_AudioCompletionScratch)
         {
-            QueuePlaybackEvent(AudioPlaybackEventType::Finished, handle);
+            switch (completion.Type)
+            {
+                case AudioMixCompletionType::Finished:
+                {
+                    QueuePlaybackEvent(AudioPlaybackEventType::Finished, completion.Handle);
+
+                    break;
+                }
+
+                case AudioMixCompletionType::Stopped:
+                {
+                    QueuePlaybackEvent(AudioPlaybackEventType::Stopped, completion.Handle);
+
+                    break;
+                }
+            }
         }
 
         const std::vector<float>& buffer = m_Mixer.GetMixBuffer();
@@ -767,7 +782,7 @@ namespace Engine
 
         return true;
     }
-    
+
     AudioVoice* AudioSystem::GetAudioVoiceForHandle(AudioPlaybackHandle handle)
     {
         if (!handle.IsValid())
@@ -936,7 +951,7 @@ namespace Engine
 
                     break;
                 }
-                
+
                 AudioVoice& voice = m_Voices[slotIndex];
 
                 if (voice.IsActive())
@@ -947,6 +962,15 @@ namespace Engine
                 }
 
                 voice.Start(command.Clip, command.Handle, command.PlaybackSettings, command.SourcePosition, command.SourceVelocity);
+
+                if (command.PlaybackSettings.FadeInSeconds > 0.0f)
+                {
+                    const std::uint64_t frames = static_cast<std::uint64_t>(command.PlaybackSettings.FadeInSeconds * static_cast<float>(m_Settings.OutputFormat.SampleRate));
+
+                    voice.SetFadeGainImmediate(0.0f);
+
+                    voice.StartFade(1.0f, frames, false);
+                }
 
                 if (!voice.IsActive())
                 {
@@ -1137,6 +1161,68 @@ namespace Engine
                     voice->SetSpatialPosition(command.SourcePosition);
 
                     voice->SetSpatialVelocity(command.SourceVelocity);
+                }
+
+                break;
+            }
+
+            case AudioCommandType::Pause:
+            {
+                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+
+                if (voice)
+                {
+                    voice->Pause();
+                }
+
+                break;
+            }
+
+            case AudioCommandType::Resume:
+            {
+                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+
+                if (voice)
+                {
+                    voice->Resume();
+                }
+
+                break;
+            }
+
+            case AudioCommandType::SeekSeconds:
+            {
+                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+
+                if (voice)
+                {
+                    voice->SeekSeconds(command.Value);
+                }
+
+                break;
+            }
+
+            case AudioCommandType::FadeTo:
+            {
+                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+
+                if (voice)
+                {
+                    const std::uint64_t frames = static_cast<std::uint64_t>(command.DurationSeconds * static_cast<float>(m_Settings.OutputFormat.SampleRate));
+
+                    voice->StartFade(command.Value, frames, false);
+                }
+            }
+
+            case AudioCommandType::FadeOutAndStop:
+            {
+                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+
+                if (voice)
+                {
+                    const std::uint64_t frames = static_cast<std::uint64_t>(command.DurationSeconds * static_cast<float>(m_Settings.OutputFormat.SampleRate));
+
+                    voice->StartFade(0.0f, frames, true);
                 }
 
                 break;
@@ -1451,6 +1537,186 @@ namespace Engine
 
             return false;
         }
+
+        return true;
+    }
+
+    bool AudioSystem::Pause(AudioPlaybackHandle handle)
+    {
+        if (!IsHandleKnown(handle))
+        {
+            return false;
+        }
+
+        const std::size_t index = static_cast<std::size_t>(handle.ID - 1);
+
+
+        if (index >= m_VoiceSlotMetadata.size())
+        {
+            return false;
+        }
+
+        if (m_VoiceSlotMetadata[index].Paused)
+        {
+            return true;
+        }
+
+        AudioCommand command;
+
+        command.Type = AudioCommandType::Pause;
+
+        command.Handle = handle;
+
+        if (!m_CommandQueue.Push(command))
+        {
+            ++m_CommandQueueFullCount;
+
+            return false;
+        }
+
+        m_VoiceSlotMetadata[index].Paused = true;
+
+        return true;
+    }
+
+    bool AudioSystem::Resume(AudioPlaybackHandle handle)
+    {
+        if (!IsHandleKnown(handle))
+        {
+            return false;
+        }
+
+        const std::size_t index = static_cast<std::size_t>(handle.ID - 1);
+
+        if (index >= m_VoiceSlotMetadata.size())
+        {
+            return false;
+        }
+
+        if (!m_VoiceSlotMetadata[index].Paused)
+        {
+            return true;
+        }
+
+        AudioCommand command;
+
+        command.Type = AudioCommandType::Resume;
+
+        command.Handle = handle;
+
+        if (!m_CommandQueue.Push(command))
+        {
+            ++m_CommandQueueFullCount;
+
+            return false;
+        }
+
+        m_VoiceSlotMetadata[index].Paused = false;
+
+        return true;
+    }
+
+    bool AudioSystem::IsPaused(AudioPlaybackHandle handle) const
+    {
+        if (!IsHandleKnown(handle))
+        {
+            return false;
+        }
+
+        const std::size_t index = static_cast<std::size_t>(handle.ID - 1);
+
+        return m_VoiceSlotMetadata[index].Paused;
+    }
+
+    bool AudioSystem::SeekSeconds(AudioPlaybackHandle handle, float seconds)
+    {
+        if (!IsHandleKnown(handle))
+        {
+            return false;
+        }
+
+        AudioCommand command;
+
+        command.Type = AudioCommandType::SeekSeconds;
+
+        command.Handle = handle;
+
+        command.Value = std::max(seconds, 0.0f);
+
+        if (!m_CommandQueue.Push(command))
+        {
+            ++m_CommandQueueFullCount;
+
+            return false;
+        }
+
+        return true;
+    }
+
+    bool AudioSystem::FadeTo(AudioPlaybackHandle handle, float targetGain, float durationSeconds)
+    {
+        if (!IsHandleKnown(handle))
+        {
+            return false;
+        }
+
+        AudioCommand command;
+
+        command.Type = AudioCommandType::FadeTo;
+
+        command.Handle = handle;
+
+        command.Value = std::clamp(targetGain, 0.0f, 1.0f);
+
+        command.DurationSeconds = std::max(durationSeconds, 0.0f);
+
+        if (!m_CommandQueue.Push(command))
+        {
+            ++m_CommandQueueFullCount;
+
+            return false;
+        }
+
+        return true;
+    }
+
+    bool AudioSystem::FadeOut(AudioPlaybackHandle handle, float durationSeconds)
+    {
+        return FadeTo(handle, 0.0f, durationSeconds);
+    }
+
+    bool AudioSystem::FadeIn(AudioPlaybackHandle handle, float durationSeconds)
+    {
+        return FadeTo(handle, 1.0f, durationSeconds);
+    }
+
+    bool AudioSystem::FadeOutAndStop(AudioPlaybackHandle handle, float durationSeconds)
+    {
+        if (!IsHandleKnown(handle))
+        {
+            return false;
+        }
+
+        AudioCommand command;
+
+        command.Type = AudioCommandType::FadeOutAndStop;
+
+        command.Handle = handle;
+
+        command.Value = 0.0f;
+
+        command.DurationSeconds = std::max(durationSeconds, 0.0f);
+
+        if (!m_CommandQueue.Push(command))
+        {
+            ++m_CommandQueueFullCount;
+
+            return false;
+        }
+
+        const std::size_t index = static_cast<std::size_t>(handle.ID - 1);
+
+        m_VoiceSlotStates[index] = AudioVoiceSlotState::PendingStop;
 
         return true;
     }

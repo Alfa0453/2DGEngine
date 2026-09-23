@@ -9,6 +9,7 @@
 #include "../Spatial/AudioListenerState.h"
 #include "../Types/AudioSettings.h"
 #include "../Mixer/AudioMixer.h"
+#include "../Mixer/AudioMixCompletion.h"
 #include "../Debug/AudioStats.h"
 #include "../Bus/AudioBusSystem.h"
 #include "../Commands/AudioCommandQueue.h"
@@ -99,6 +100,22 @@ namespace Engine
 
         bool SetSourceSpatialState(AudioPlaybackHandle handle, const Vector2& position, const Vector2& velocity);
 
+        bool Pause(AudioPlaybackHandle handle);
+
+        bool Resume(AudioPlaybackHandle handle);
+
+        bool IsPaused(AudioPlaybackHandle handle) const;
+
+        bool SeekSeconds(AudioPlaybackHandle handle, float seconds);
+
+        bool FadeTo(AudioPlaybackHandle handle, float targetGain, float durationSeconds);
+
+        bool FadeOut(AudioPlaybackHandle handle, float durationSeconds);
+
+        bool FadeIn(AudioPlaybackHandle handle, float durationSeconds);
+
+        bool FadeOutAndStop(AudioPlaybackHandle handle, float durationSeconds);
+
     private:
 
         AudioVoice* FindVoice(AudioPlaybackHandle handle);
@@ -163,7 +180,7 @@ namespace Engine
 
         AudioPlaybackEventQueue m_PlaybackEventQueue;
 
-        std::vector<AudioPlaybackHandle> m_FinishedVoiceScratch;
+        std::vector<AudioMixCompletion> m_AudioCompletionScratch;
 
         AudioBusSystem m_BusSystem;
 

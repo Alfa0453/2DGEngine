@@ -4,9 +4,16 @@
 
 namespace Engine
 {
+    enum class AudioMixVoiceEndReason
+    {
+        None,
+        Finished,
+        FadeStopped
+    };
+
     struct AudioMixVoiceResult
     {
-        bool Finished = false;
+        AudioMixVoiceEndReason EndReason = AudioMixVoiceEndReason::None;
 
         AudioPlaybackHandle FinishedHandle;
     };

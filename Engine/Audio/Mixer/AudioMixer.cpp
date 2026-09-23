@@ -8,6 +8,7 @@
 #include "../Types/AudioSettings.h"
 #include "../Types/AudioLimits.h"
 
+#include "AudioMixCompletion.h"
 #include "AudioMixVoiceResult.h"
 
 #include <algorithm>
@@ -65,14 +66,14 @@ namespace Engine
         return m_MixBuffer;
     }
 
-    bool AudioMixer::Mix(std::vector<AudioVoice>& voices, const AudioBusSystem& busSystem, const AudioListenerState& listener, const AudioSettings& audioSettings, std::vector<AudioPlaybackHandle>& outFinishedVoices)
+    bool AudioMixer::Mix(std::vector<AudioVoice>& voices, const AudioBusSystem& busSystem, const AudioListenerState& listener, const AudioSettings& audioSettings, std::vector<AudioMixCompletion>& outCompletions)
     {
         if (!m_Initialized || m_MixBuffer.empty())
         {
             return false;
         }
 
-        outFinishedVoices.clear();
+        outCompletions.clear();
 
         std::fill(m_MixBuffer.begin(), m_MixBuffer.end(), 0.0f);
 
@@ -104,9 +105,13 @@ namespace Engine
 
             const AudioMixVoiceResult result = MixVoice(voice, m_MixBuffer.data(), m_FramesPerBlock, busGain, spatialPan, distanceGain, dopplerFactor);
 
-            if (result.Finished && result.FinishedHandle.IsValid())
+            if (result.EndReason == AudioMixVoiceEndReason::Finished)
             {
-                outFinishedVoices.push_back(result.FinishedHandle);
+                outCompletions.push_back(AudioMixCompletion{result.FinishedHandle, AudioMixCompletionType::Finished});
+            }
+            else if (result.EndReason == AudioMixVoiceEndReason::FadeStopped)
+            {
+                outCompletions.push_back(AudioMixCompletion{result.FinishedHandle, AudioMixCompletionType::Stopped});
             }
         }
 
@@ -131,7 +136,7 @@ namespace Engine
 
         if (!clip || !clip->IsValid())
         {
-            result.Finished = true;
+            result.EndReason = AudioMixVoiceEndReason::Finished;
 
             result.FinishedHandle = voice.GetHandle();
 
@@ -142,7 +147,7 @@ namespace Engine
 
         if (clip->GetFormat() != m_Format)
         {
-            result.Finished = true;
+            result.EndReason = AudioMixVoiceEndReason::Finished;
 
             result.FinishedHandle = voice.GetHandle();
 
@@ -155,7 +160,7 @@ namespace Engine
 
         if (totalFrames == 0)
         {
-            result.Finished = true;
+            result.EndReason = AudioMixVoiceEndReason::Finished;
 
             result.FinishedHandle = voice.GetHandle();
 
@@ -194,9 +199,9 @@ namespace Engine
                 {
                     playbackFrame -= static_cast<double>(totalFrames);
                 }
-                else 
+                else
                 {
-                    result.Finished = true;
+                    result.EndReason = AudioMixVoiceEndReason::Finished;
 
                     result.FinishedHandle = voice.GetHandle();
 
@@ -209,6 +214,8 @@ namespace Engine
             float leftPanGain = 1.0f;
 
             float rightPanGain = 1.0f;
+
+            const float fadeGain = voice.GetFadeGain();
 
             if (m_Format.Channels == 2)
             {
@@ -223,9 +230,9 @@ namespace Engine
 
                 const std::size_t outputBase = outputFrame * 2;
 
-                output[outputBase] += leftSample * currentVolume * busGain * leftPanGain * distanceGain;
+                output[outputBase] += leftSample * currentVolume * fadeGain * busGain * leftPanGain * distanceGain;
 
-                output[outputBase + 1] += rightSample * currentVolume * busGain * rightPanGain * distanceGain;
+                output[outputBase + 1] += rightSample * currentVolume * fadeGain * busGain * rightPanGain * distanceGain;
             }
             else {
                 const std::size_t channelCount = static_cast<std::size_t>(m_Format.Channels);
@@ -236,7 +243,7 @@ namespace Engine
                 {
                     const float sample = SampleChannelLinear(*clip, playbackFrame, channel, voice.IsLooping());
 
-                    output[outputBase + channel] += sample * currentVolume * busGain * distanceGain;
+                    output[outputBase + channel] += sample * currentVolume * fadeGain * busGain * distanceGain;
                 }
             }
 
@@ -258,6 +265,19 @@ namespace Engine
             voice.SetCurrentPan(targetPan);
 
             voice.SetCurrentPitch(targetPitch);
+        }
+
+        const bool fadeCompleted = voice.AdvanceFade();
+
+        if (fadeCompleted && voice.ShouldStopAfterFade())
+        {
+            result.EndReason = AudioMixVoiceEndReason::FadeStopped;
+
+            result.FinishedHandle = voice.GetHandle();
+
+            voice.Stop();
+
+            return result;
         }
 
         return result;
