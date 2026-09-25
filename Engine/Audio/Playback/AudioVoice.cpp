@@ -4,15 +4,23 @@
 
 #include "../Types/AudioLimits.h"
 #include "../Streaming/AudioStream.h"
+#include "../Assets/AudioAssetRecord.h"
+
 #include "AudioSourceKind.h"
 
 #include <algorithm>
 
 namespace Engine
 {
-    void AudioVoice::Start(const AudioClip* clip, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity)
+    void AudioVoice::Start(const AudioClip* clip, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity, AudioAssetRecord* assetRecord)
     {
+        m_SourceKind = AudioSourceKind::Clip;
+
+        m_Stream = nullptr;
+
         m_Clip = clip;
+
+        m_AssetRecord = assetRecord;
 
         m_Handle = handle;
 
@@ -69,19 +77,17 @@ namespace Engine
         m_FadeFramesRemaining = 0;
 
         m_StopWhenFadeComplete = false;
-
-        m_SourceKind = AudioSourceKind::Clip;
-
-        m_Stream = nullptr;
     }
 
-    void AudioVoice::StartStream(AudioStream* stream, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings)
+    void AudioVoice::StartStream(AudioStream* stream, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings, AudioAssetRecord* assetRecord)
     {
         m_SourceKind = AudioSourceKind::Stream;
 
         m_Clip = nullptr;
 
         m_Stream = stream;
+
+        m_AssetRecord = assetRecord;
 
         m_Handle = handle;
 
@@ -130,7 +136,17 @@ namespace Engine
 
     void AudioVoice::Stop()
     {
+        AudioStream* streamToRelease = m_Stream;
+
+        AudioAssetRecord* assetRecordToRelease = m_AssetRecord;
+
         m_Clip = nullptr;
+
+        m_Stream = nullptr;
+
+        m_AssetRecord = nullptr;
+
+        m_SourceKind = AudioSourceKind::None;
 
         m_Handle = {};
 
@@ -193,11 +209,10 @@ namespace Engine
             m_Stream->ReleaseConsumer();
         }
 
-        m_SourceKind = AudioSourceKind::None;
-
-        m_Clip = nullptr;
-
-        m_Stream = nullptr;
+        if (assetRecordToRelease)
+        {
+            assetRecordToRelease->ReleasePlaybackReference();
+        }
     }
 
     bool AudioVoice::IsActive() const
@@ -208,6 +223,11 @@ namespace Engine
     const AudioClip* AudioVoice::GetClip() const
     {
         return m_Clip;
+    }
+
+    AudioAssetRecord* AudioVoice::GetAssetRecord() const
+    {
+        return m_AssetRecord;
     }
 
     const AudioPlaybackHandle& AudioVoice::GetHandle() const

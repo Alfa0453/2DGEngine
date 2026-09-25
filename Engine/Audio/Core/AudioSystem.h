@@ -13,6 +13,7 @@
 #include "../Debug/AudioStats.h"
 #include "../Bus/AudioBusSystem.h"
 #include "../Commands/AudioCommandQueue.h"
+#include "../Assets/AudioAssetHandle.h"
 #include "AudioRendererSource.h"
 #include "AudioDevice.h"
 
@@ -27,6 +28,8 @@ namespace Engine
     class AudioClip;
     class AudioDevice;
     class AudioStream;
+    class AudioResourceManager;
+    class AudioAssetRecord;
 
 
     class AudioSystem : public AudioRendererSource
@@ -54,6 +57,12 @@ namespace Engine
         AudioPlaybackHandle Play(const AudioClip& clip, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity);
 
         AudioPlaybackHandle PlayStream(AudioStream& stream, const AudioPlaybackSettings& settings);
+
+        AudioPlaybackHandle PlayAsset(AudioAssetHandle asset);
+
+        AudioPlaybackHandle PlayAsset(AudioAssetHandle asset, const AudioPlaybackSettings& settings);
+
+        AudioPlaybackHandle PlayAsset(AudioAssetHandle asset, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity);
 
         bool Stop(AudioPlaybackHandle handle);
 
@@ -119,6 +128,11 @@ namespace Engine
 
         bool FadeOutAndStop(AudioPlaybackHandle handle, float durationSeconds);
 
+        void SetResourceManager(AudioResourceManager* resourceManager);
+
+        AudioResourceManager* GetResourceManager() const;
+
+
     private:
 
         AudioVoice* FindVoice(AudioPlaybackHandle handle);
@@ -157,7 +171,13 @@ namespace Engine
 
         AudioPlaybackHandle CreatePlaybackHandleForGeneration(std::size_t slotIndex, std::uint32_t generation) const;
 
+        AudioPlaybackHandle PlayInternal(AudioSourceKind sourceKind, const AudioClip* clip, AudioStream* stream, AudioAssetRecord* assetRecord, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity);
+
+        void ReleaseCommandPlaybackResources(const AudioCommand& command);
+
     private:
+
+        AudioResourceManager* m_ResourceManager = nullptr;
 
         AudioSettings m_Settings;
 

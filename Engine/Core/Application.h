@@ -20,6 +20,7 @@
 #include "../Physics/RevoluteJoint2D.h"
 #include "../Physics/SpringJoint2D.h"
 #include "../Audio/Core/AudioSystem.h"
+#include "../Audio/Assets/AudioResourceManager.h"
 
 namespace Engine
 {
@@ -51,6 +52,8 @@ namespace Engine
         Time m_Time;
 
         Input m_Input;
+
+        AudioResourceManager m_AudioResources;
 
         AudioSystem m_AudioSystem;
 

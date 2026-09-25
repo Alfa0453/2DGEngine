@@ -62,6 +62,21 @@ namespace Engine
             return false;
         }
 
+        if (!m_AudioResources.Initialize(m_AudioSystem.GetSettings()))
+        {
+            m_AudioSystem.Shutdown();
+
+            m_Renderer.Shutdown();
+
+            m_Window.Shutdown();
+
+            SDL_Quit();
+
+            return false;
+        }
+
+        m_AudioSystem.SetResourceManager(&m_AudioResources);
+
         if (!PrimitiveTextureFactory2D::Initialize(m_Renderer.GetNativeRenderer()))
         {
             m_Window.Shutdown();
@@ -164,7 +179,7 @@ namespace Engine
 
         m_Scene.GetPhysicsWorld().AddJoint(m_TestSpringJoint.get());
 
-        
+
         m_PhysicsDebugRenderer.SetDrawColliders(true);
 
         m_PhysicsDebugRenderer.SetDrawAABBs(true);
@@ -174,7 +189,7 @@ namespace Engine
         m_PhysicsDebugRenderer.SetDrawContacts(true);
 
         m_PhysicsDebugRenderer.SetDrawSleepingState(true);
-        
+
         m_Scene.Start();
 
         m_Time.Initialize();
@@ -206,6 +221,8 @@ namespace Engine
             m_Scene.Update(deltaTime);
 
             m_AudioSystem.UpdateAudio();
+
+            m_AudioResources.CollectGarbage();
 
             m_Renderer.BeginFrame();
 
@@ -269,6 +286,8 @@ namespace Engine
         m_Scene.Clear();
 
         m_AudioSystem.Shutdown();
+
+        m_AudioResources.Shutdown();
 
         PrimitiveTextureFactory2D::Shutdown();
 

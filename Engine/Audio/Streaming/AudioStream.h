@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AudioStreamBuffer.h"
+#include "AudioStreamDecoder.h"
 #include "AudioStreamState.h"
 
 #include "../Types/AudioFormat.h"

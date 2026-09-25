@@ -11,6 +11,7 @@ namespace Engine
 {
     class AudioClip;
     class AudioStream;
+    class AudioAssetRecord;
 
     enum class AudioCommandType
     {
@@ -55,6 +56,8 @@ namespace Engine
         AudioSourceKind SourceKind = AudioSourceKind::None;
 
         AudioStream* Stream = nullptr;
+
+        AudioAssetRecord* AssetRecord = nullptr;
 
         AudioPlaybackSettings PlaybackSettings;
 

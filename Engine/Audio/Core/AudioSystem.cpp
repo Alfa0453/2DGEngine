@@ -4,6 +4,8 @@
 #include "../Backend/SDL/SDLAudioDevice.h"
 #include "../Types/AudioLimits.h"
 #include "../Streaming/AudioStream.h"
+#include "../Assets/AudioResourceManager.h"
+#include "../Assets/AudioAssetRecord.h"
 
 #include <algorithm>
 #include <atomic>
@@ -125,15 +127,7 @@ namespace Engine
             m_Device.reset();
         }
 
-        m_VoiceSlotMetadata.clear();
-
-        m_NextVoiceStartSequence = 1;
-
-        m_CommandQueue.Shutdown();
-
-        m_PlaybackEventQueue.Shutdown();
-
-        m_AudioCompletionScratch.clear();
+        ProcessAudioCommands();
 
         for (AudioVoice& voice : m_Voices)
         {
@@ -142,11 +136,23 @@ namespace Engine
 
         m_Voices.clear();
 
+        m_CommandQueue.Shutdown();
+
+        m_PlaybackEventQueue.Shutdown();
+
+        m_AudioCompletionScratch.clear();
+
+        m_VoiceSlotMetadata.clear();
+
         m_VoiceSlotStates.clear();
 
         m_VoiceGenerations.clear();
 
         m_Mixer.Shutdown();
+
+        m_NextVoiceStartSequence = 1;
+
+        m_ResourceManager = nullptr;
 
         m_Initialized = false;
     }
@@ -252,12 +258,141 @@ namespace Engine
 
     AudioPlaybackHandle AudioSystem::Play(const AudioClip& clip, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity)
     {
-         if (!m_Initialized || !clip.IsValid())
+        return PlayInternal(AudioSourceKind::Clip, &clip, nullptr, nullptr, settings, sourcePosition, sourceVelocity);
+    }
+
+    AudioPlaybackHandle AudioSystem::PlayStream(AudioStream& stream, const AudioPlaybackSettings& settings)
+    {
+        return PlayInternal(AudioSourceKind::Stream, nullptr, &stream, nullptr, settings, Vector2{}, Vector2{});
+    }
+
+    AudioPlaybackHandle AudioSystem::PlayAsset(AudioAssetHandle asset)
+    {
+        return PlayAsset(asset, AudioPlaybackSettings{});
+    }
+
+    AudioPlaybackHandle AudioSystem::PlayAsset(AudioAssetHandle asset, const AudioPlaybackSettings& settings)
+    {
+        return PlayAsset(asset, settings, Vector2{}, Vector2{});
+    }
+
+    AudioPlaybackHandle AudioSystem::PlayAsset(AudioAssetHandle asset, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity)
+    {
+        if (!m_Initialized || !m_ResourceManager)
         {
             return {};
         }
 
-        const AudioPlaybackSettings sanitizedSettings = SanitizeAudioPlaybackSettings(settings);
+        AudioAssetRecord* record = m_ResourceManager->Resolve(asset);
+
+        if (!record || record->IsUnloadRequested())
+        {
+            return {};
+        }
+
+        // Protect asset immediately, including the time spent waiting in the SPSC command queue,
+        record->RetainPlaybackReference();
+
+        switch (record->GetType())
+        {
+            case AudioAssetType::Clip:
+            {
+                return PlayInternal(AudioSourceKind::Clip, record->GetClip(), nullptr, record, settings, sourcePosition, sourceVelocity);
+            }
+
+            case AudioAssetType::Stream:
+            {
+                return PlayInternal(AudioSourceKind::Stream, nullptr, record->GetStream(), record, settings, sourcePosition, sourceVelocity);
+            }
+
+            case AudioAssetType::None:
+            default:
+            {
+                record->ReleasePlaybackReference();
+
+                return {};
+            }
+        }
+    }
+
+    AudioPlaybackHandle AudioSystem::PlayInternal(AudioSourceKind sourceKind, const AudioClip *clip, AudioStream *stream, AudioAssetRecord *assetRecord, const AudioPlaybackSettings &settings, const Vector2 &sourcePosition, const Vector2 &sourceVelocity)
+    {
+        bool streamConsumerAcquired = false;
+
+        auto rollback =
+            [&]()
+            {
+                if (streamConsumerAcquired && stream)
+                {
+                    stream->ReleaseConsumer();
+                }
+
+                if (assetRecord)
+                {
+                    assetRecord->ReleasePlaybackReference();
+                }
+            };
+
+        if (!m_Initialized)
+        {
+            rollback();
+
+            return {};
+        }
+
+        if (sourceKind == AudioSourceKind::Clip)
+        {
+            if (!clip || !clip->IsValid())
+            {
+                rollback();
+
+                return {};
+            }
+        }
+        else if (sourceKind == AudioSourceKind::Stream)
+        {
+            if (!stream || !stream->IsOpen())
+            {
+                rollback();
+
+                return {};
+            }
+
+            if (stream->GetFormat() != m_Settings.OutputFormat)
+            {
+                rollback();
+
+                return {};
+            }
+
+            if (!stream->TryAcquireConsumer())
+            {
+                rollback();
+
+                return {};
+            }
+
+            streamConsumerAcquired = true;
+        }
+        else
+        {
+            rollback();
+
+            return {};
+        }
+
+        AudioPlaybackSettings sanitized = SanitizeAudioPlaybackSettings(settings);
+
+        if (sourceKind == AudioSourceKind::Stream)
+        {
+            sanitized.Spatial = false;
+
+            sanitized.DopplerEnabled = false;
+
+            sanitized.Pitch = 1.0f;
+
+            stream->SetLooping(sanitized.Looping);
+        }
 
         const std::size_t freeSlot = FindFreeVoiceSlot();
 
@@ -269,13 +404,17 @@ namespace Engine
 
             command.Type = AudioCommandType::Play;
 
-            command.SourceKind = AudioSourceKind::Clip;
+            command.SourceKind = sourceKind;
 
             command.Handle = handle;
 
-            command.Clip = &clip;
+            command.Clip = clip;
 
-            command.PlaybackSettings = sanitizedSettings;
+            command.Stream = stream;
+
+            command.AssetRecord = assetRecord;
+
+            command.PlaybackSettings = sanitized;
 
             command.SourcePosition = sourcePosition;
 
@@ -285,122 +424,13 @@ namespace Engine
             {
                 ++m_CommandQueueFullCount;
 
-                return {};
-            }
-
-            m_VoiceSlotStates[freeSlot] = AudioVoiceSlotState::PendingStart;
-
-            ApplySlotMetadata(freeSlot, sanitizedSettings);
-
-            return handle;
-        }
-
-        if (!sanitizedSettings.AllowVoiceSteal)
-        {
-            return {};
-        }
-
-        const std::size_t stealSlot = FindVoiceStealCandidtae(sanitizedSettings);
-
-        if (stealSlot >= m_VoiceSlotStates.size())
-        {
-            return {};
-        }
-
-        const AudioPlaybackHandle previousHandle = CreatePlaybackHandleForSlot(stealSlot);
-
-        const std::uint32_t newGeneration = GetNextGeneration(m_VoiceGenerations[stealSlot]);
-
-        const AudioPlaybackHandle newHandle = CreatePlaybackHandleForGeneration(stealSlot, newGeneration);
-
-        AudioCommand command;
-
-        command.Type = AudioCommandType::ReplaceVoice;
-
-        command.SourceKind = AudioSourceKind::Clip;
-
-        command.Handle = newHandle;
-
-        command.PreviousHandle = previousHandle;
-
-        command.SourcePosition = sourcePosition;
-
-        command.SourceVelocity = sourceVelocity;
-
-        command.Clip = &clip;
-
-        command.PlaybackSettings = sanitizedSettings;
-
-        if (!m_CommandQueue.Push(command))
-        {
-            ++m_CommandQueueFullCount;
-
-            return {};
-        }
-
-        m_VoiceGenerations[stealSlot] = newGeneration;
-
-        m_VoiceSlotStates[stealSlot] = AudioVoiceSlotState::PendingStart;
-
-        ApplySlotMetadata(stealSlot, sanitizedSettings);
-
-        return newHandle;
-    }
-
-    AudioPlaybackHandle AudioSystem::PlayStream(AudioStream& stream, const AudioPlaybackSettings& settings)
-    {
-        if (!m_Initialized || !stream.IsOpen())
-        {
-            return {};
-        }
-
-        if (stream.GetFormat() != m_Settings.OutputFormat)
-        {
-            return {};
-        }
-
-        // One consuming Voice per AudioStream.
-        if (!stream.TryAcquireConsumer())
-        {
-            return {};
-        }
-
-        AudioPlaybackSettings sanitized = SanitizeAudioPlaybackSettings(settings);
-
-        sanitized.Spatial = false;
-
-        sanitized.DopplerEnabled = false;
-
-        sanitized.Pitch = 1.0f;
-
-        stream.SetLooping(sanitized.Looping);
-
-        const std::size_t freeSlot = FindFreeVoiceSlot();
-
-        if (freeSlot != m_VoiceSlotMetadata.size())
-        {
-            const AudioPlaybackHandle handle = CreatePlaybackHandleForSlot(freeSlot);
-
-            AudioCommand command;
-
-            command.Type = AudioCommandType::Play;
-
-            command.SourceKind = AudioSourceKind::Stream;
-
-            command.Handle = handle;
-
-            command.Stream = &stream;
-
-            command.PlaybackSettings = sanitized;
-
-            if (!m_CommandQueue.Push(command))
-            {
-                ++m_CommandQueueFullCount;
-
-                stream.ReleaseConsumer();
+                rollback();
 
                 return {};
             }
+
+            // Ownership has transferred to queued command / eventual AudioVoice.
+            streamConsumerAcquired = false;
 
             m_VoiceSlotStates[freeSlot] = AudioVoiceSlotState::PendingStart;
 
@@ -413,7 +443,7 @@ namespace Engine
         {
             ++m_PlayFailuresNoVoice;
 
-            stream.ReleaseConsumer();
+            rollback();
 
             return {};
         }
@@ -424,7 +454,7 @@ namespace Engine
         {
             ++m_PlayFailuresNoVoice;
 
-            stream.ReleaseConsumer();
+            rollback();
 
             return {};
         }
@@ -437,28 +467,37 @@ namespace Engine
 
         AudioCommand command;
 
+
         command.Type = AudioCommandType::ReplaceVoice;
 
-        command.SourceKind = AudioSourceKind::Stream;
+        command.SourceKind = sourceKind;
 
         command.Handle = newHandle;
 
         command.PreviousHandle = previousHandle;
 
-        command.Stream = &stream;
+        command.Clip = clip;
+
+        command.Stream = stream;
+
+        command.AssetRecord = assetRecord;
 
         command.PlaybackSettings = sanitized;
+
+        command.SourcePosition = sourcePosition;
+
+        command.SourceVelocity = sourceVelocity;
 
         if (!m_CommandQueue.Push(command))
         {
             ++m_CommandQueueFullCount;
 
-            stream.ReleaseConsumer();
+            rollback();
 
             return {};
         }
 
-        // Commi generation only after successful queue push.
+        streamConsumerAcquired = false;
 
         m_VoiceGenerations[stealSlot] = newGeneration;
 
@@ -1078,10 +1117,7 @@ namespace Engine
 
                 if (slotIndex >= m_Voices.size())
                 {
-                    if (command.SourceKind == AudioSourceKind::Stream && command.Stream)
-                    {
-                        command.Stream->ReleaseConsumer();
-                    }
+                    ReleaseCommandPlaybackResources(command);
 
                     QueuePlaybackEvent(AudioPlaybackEventType::FailedToStart, command.Handle);
 
@@ -1099,7 +1135,7 @@ namespace Engine
                         break;
                     }
 
-                    voice.Start(command.Clip, command.Handle, command.PlaybackSettings, command.SourcePosition, command.SourceVelocity);
+                    voice.Start(command.Clip, command.Handle, command.PlaybackSettings, command.SourcePosition, command.SourceVelocity, command.AssetRecord);
                 }
 
                 else if (command.SourceKind == AudioSourceKind::Stream)
@@ -1116,7 +1152,7 @@ namespace Engine
                         break;
                     }
 
-                    voice.StartStream(command.Stream, command.Handle, command.PlaybackSettings);
+                    voice.StartStream(command.Stream, command.Handle, command.PlaybackSettings, command.AssetRecord);
                 }
                 else
                 {
@@ -1262,10 +1298,7 @@ namespace Engine
 
                 if (slotIndex >= m_Voices.size())
                 {
-                    if (command.SourceKind == AudioSourceKind::Stream && command.Stream)
-                    {
-                        command.Stream->ReleaseConsumer();
-                    }
+                    ReleaseCommandPlaybackResources(command);
 
                     QueuePlaybackEvent(AudioPlaybackEventType::FailedToStart, command.Handle);
 
@@ -1286,13 +1319,13 @@ namespace Engine
 
                 if (command.SourceKind == AudioSourceKind::Clip && command.Clip)
                 {
-                    voice.Start(command.Clip, command.Handle, command.PlaybackSettings, command.SourcePosition, command.SourceVelocity);
+                    voice.Start(command.Clip, command.Handle, command.PlaybackSettings, command.SourcePosition, command.SourceVelocity, command.AssetRecord);
 
                     started = true;
                 }
                 else if (command.SourceKind == AudioSourceKind::Stream && command.Stream && command.Stream->IsOpen())
                 {
-                    voice.StartStream(command.Stream, command.Handle, command.PlaybackSettings);
+                    voice.StartStream(command.Stream, command.Handle, command.PlaybackSettings, command.AssetRecord);
 
                     started = true;
                 }
@@ -1448,6 +1481,16 @@ namespace Engine
                 break;
             }
         }
+    }
+
+    void AudioSystem::SetResourceManager(AudioResourceManager* resourceManager)
+    {
+        m_ResourceManager = resourceManager;
+    }
+
+    AudioResourceManager* AudioSystem::GetResourceManager() const
+    {
+        return m_ResourceManager;
     }
 
     AudioVoice* AudioSystem::GetVoiceForHandle(AudioPlaybackHandle handle)
@@ -1939,5 +1982,18 @@ namespace Engine
         m_VoiceSlotStates[index] = AudioVoiceSlotState::PendingStop;
 
         return true;
+    }
+
+    void AudioSystem::ReleaseCommandPlaybackResources(const AudioCommand& command)
+    {
+        if (command.SourceKind == AudioSourceKind::Stream && command.Stream)
+        {
+            command.Stream->ReleaseConsumer();
+        }
+
+        if (command.AssetRecord)
+        {
+            command.AssetRecord->ReleasePlaybackReference();
+        }
     }
 }

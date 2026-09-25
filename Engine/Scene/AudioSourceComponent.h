@@ -4,13 +4,14 @@
 
 #include "../Audio/Playback/AudioPlaybackHandle.h"
 #include "../Audio/Playback/AudioPlaybackSettings.h"
+#include "../Audio/Assets/AudioAssetHandle.h"
 
 #include "../Math/Vector2.h"
 
 namespace Engine
 {
-    class AudioClip;
     class AudioSystem;
+    class AudioResourceManager;
 
     class AudioSourceComponent : public Component
     {
@@ -18,17 +19,15 @@ namespace Engine
 
         AudioSourceComponent() = default;
 
-        ~AudioSourceComponent() override;
+        ~AudioSourceComponent() override = default;
 
         void Update(float deltaTime) override;
+
+        void OnDestroy() override;
 
         void SetAudioSystem(AudioSystem* audioSystem);
 
         AudioSystem* GetAudioSystem() const;
-
-        void SetClip(const AudioClip* clip);
-
-        const AudioClip* GetClip() const;
 
         void SetPlaybackSettings(const AudioPlaybackSettings& settings);
 
@@ -146,6 +145,14 @@ namespace Engine
 
         void SetFadeInSeconds(float seconds);
 
+        void SetAudioResourceManager(AudioResourceManager* resourceManager);
+
+        AudioResourceManager* GetAudioResourceManager() const;
+
+        void SetAudioAsset(AudioAssetHandle asset);
+
+        AudioAssetHandle GetAudioAsset() const;
+
     private:
 
         void ClearPlaybackHandleIfInvalid();
@@ -153,8 +160,6 @@ namespace Engine
     private:
 
         AudioSystem* m_AudioSystem = nullptr;
-
-        const AudioClip* m_Clip = nullptr;
 
         AudioPlaybackSettings m_PlaybackSettings;
 
@@ -175,5 +180,9 @@ namespace Engine
         bool m_AutomaticVelocity = true;
 
         bool m_HadAutomaticMotion = false;
+
+        AudioResourceManager* m_AudioResources = nullptr;
+
+        AudioAssetHandle m_AudioAsset;
     };
 }

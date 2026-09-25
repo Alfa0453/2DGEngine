@@ -3,6 +3,8 @@
 #include "../Audio/Assets/AudioClip.h"
 #include "../Audio/Core/AudioSystem.h"
 #include "../Audio/Types/AudioLimits.h"
+#include "../Audio/Assets/AudioResourceManager.h"
+
 
 #include "TransformComponent.h"
 #include "Entity.h"
@@ -11,18 +13,8 @@
 
 namespace Engine
 {
-    AudioSourceComponent::~AudioSourceComponent()
-    {
-        if (m_StopOnDestroy && m_AudioSystem && m_PlaybackHandle.IsValid())
-        {
-            m_AudioSystem->Stop(m_PlaybackHandle);
-        }
-    }
-
     void AudioSourceComponent::Update(float deltaTime)
     {
-        (void)deltaTime;
-
         if (!m_PlaybackSettings.Spatial || !m_AudioSystem || !m_PlaybackHandle.IsValid())
         {
             return;
@@ -53,6 +45,18 @@ namespace Engine
 
         if (worldVersion == m_LastTransformWorldVersion)
         {
+            if (m_AutomaticVelocity && m_HadAutomaticMotion)
+            {
+                m_SpatialVelocity = Vector2{0.0f, 0.0f};
+
+                const Vector2 worldPosition = transform->GetWorldPosition();
+
+                if (m_AudioSystem->SetSourceSpatialState(m_PlaybackHandle, worldPosition, m_SpatialVelocity))
+                {
+                    m_HadAutomaticMotion = false;
+                }
+            }
+
             return;
         }
 
@@ -89,6 +93,11 @@ namespace Engine
             return;
         }
 
+        if (!m_AudioResources || m_AudioResources->GetType(m_AudioAsset) != AudioAssetType::Clip)
+        {
+            return;
+        }
+
         if (m_AutomaticVelocity && m_HadAutomaticMotion)
         {
             m_SpatialVelocity = Vector2{0.0f, 0.0f};
@@ -100,6 +109,16 @@ namespace Engine
                 m_HadAutomaticMotion = false;
             }
         }
+    }
+
+    void AudioSourceComponent::OnDestroy()
+    {
+        if (m_StopOnDestroy && m_AudioSystem && m_PlaybackHandle.IsValid())
+        {
+            m_AudioSystem->Stop(m_PlaybackHandle);
+        }
+
+        m_PlaybackHandle = {};
     }
 
     void AudioSourceComponent::SetAudioSystem(AudioSystem* audioSystem)
@@ -124,26 +143,6 @@ namespace Engine
         return m_AudioSystem;
     }
 
-    void AudioSourceComponent::SetClip(const AudioClip* clip)
-    {
-        if (m_Clip == clip)
-        {
-            return;
-        }
-
-        if (IsPlaying())
-        {
-            Stop();
-        }
-
-        m_Clip = clip;
-    }
-
-    const AudioClip* AudioSourceComponent::GetClip() const
-    {
-        return m_Clip;
-    }
-
     void AudioSourceComponent::SetPlaybackSettings(const AudioPlaybackSettings& settings)
     {
         m_PlaybackSettings = SanitizeAudioPlaybackSettings(settings);
@@ -156,7 +155,7 @@ namespace Engine
 
     bool AudioSourceComponent::Play()
     {
-        if (!m_AudioSystem || !m_Clip || !m_Clip->IsValid())
+        if (!m_AudioSystem || !m_AudioResources || !m_AudioAsset.IsValid() || !m_AudioResources->IsLoaded(m_AudioAsset))
         {
             return false;
         }
@@ -168,7 +167,12 @@ namespace Engine
 
         Vector2 sourcePosition{0.0f, 0.0f};
 
-        if (m_PlaybackSettings.Spatial)
+        Vector2 sourceVelocity{0.0f, 0.0f};
+
+        const AudioAssetType assetType = m_AudioResources->GetType(m_AudioAsset);
+
+        // Current streaming implementation is non-spatial.
+        if (assetType == AudioAssetType::Clip && m_PlaybackSettings.Spatial)
         {
             Entity* owner = GetOwner();
 
@@ -191,11 +195,11 @@ namespace Engine
             m_HasPreviousWorldPosition = true;
 
             m_LastTransformWorldVersion = transform->GetWorldVersion();
+
+            sourceVelocity = m_SpatialVelocity;
         }
 
-        m_SpatialVelocity = Vector2{0.0f, 0.0f};
-
-        m_PlaybackHandle = m_AudioSystem->Play(*m_Clip, m_PlaybackSettings, sourcePosition, m_SpatialVelocity);
+        m_PlaybackHandle = m_AudioSystem->PlayAsset(m_AudioAsset, m_PlaybackSettings, sourcePosition, sourceVelocity);
 
         return m_PlaybackHandle.IsValid();
     }
@@ -594,5 +598,58 @@ namespace Engine
     void AudioSourceComponent::SetFadeInSeconds(float seconds)
     {
         m_PlaybackSettings.FadeInSeconds = std::max(seconds, 0.0f);
+    }
+
+    void AudioSourceComponent::SetAudioResourceManager(AudioResourceManager *resourceManager)
+    {
+        if (m_AudioResources == resourceManager)
+        {
+            return;
+        }
+
+        if (IsPlaying())
+        {
+            Stop();
+        }
+
+        m_AudioResources = resourceManager;
+
+        if (m_AudioResources && m_AudioAsset.IsValid() && !m_AudioResources->IsValid(m_AudioAsset))
+        {
+            m_AudioAsset = {};
+        }
+    }
+
+    AudioResourceManager* AudioSourceComponent::GetAudioResourceManager() const
+    {
+        return m_AudioResources;
+    }
+
+    void AudioSourceComponent::SetAudioAsset(AudioAssetHandle asset)
+    {
+        if (m_AudioAsset == asset)
+        {
+            return;
+        }
+
+        if (IsPlaying())
+        {
+            Stop();
+        }
+
+        if (asset.IsValid())
+        {
+            if (!m_AudioResources || !m_AudioResources->IsValid(asset))
+            {
+                return;
+            }
+        }
+
+        m_AudioAsset = asset;
+    }
+
+    AudioAssetHandle AudioSourceComponent::GetAudioAsset() const
+    {
+        return m_AudioAsset;
     }
 }

@@ -14,6 +14,7 @@ namespace Engine
 {
     class AudioClip;
     class AudioStream;
+    class AudioAssetRecord;
 
 
     class AudioVoice
@@ -22,9 +23,9 @@ namespace Engine
 
         AudioVoice() = default;
 
-        void Start(const AudioClip* clip, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity);
+        void Start(const AudioClip* clip, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity, AudioAssetRecord* assetRecord = nullptr);
 
-        void StartStream(AudioStream* stream, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings);
+        void StartStream(AudioStream* stream, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings, AudioAssetRecord* assetRecord = nullptr);
 
         void Stop();
 
@@ -125,6 +126,8 @@ namespace Engine
 
         AudioStream* GetStream() const;
 
+        AudioAssetRecord* GetAssetRecord() const;
+
     private:
 
         AudioSourceKind m_SourceKind = AudioSourceKind::None;
@@ -132,6 +135,8 @@ namespace Engine
         const AudioClip* m_Clip = nullptr;
 
         AudioStream* m_Stream = nullptr;
+
+        AudioAssetRecord* m_AssetRecord = nullptr;
 
         AudioPlaybackHandle m_Handle;
 
