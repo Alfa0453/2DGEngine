@@ -23,5 +23,11 @@ namespace Engine
         float MinDopplerFactor = 0.5f;
 
         float MaxDopplerFactor = 2.0f;
+
+        std::size_t StreamBufferFrames = 24000;
+
+        std::size_t StreamDecodeChunkFrames = 1024;
+
+        std::size_t InitialBufferedFrames = 4096;
     };
 }

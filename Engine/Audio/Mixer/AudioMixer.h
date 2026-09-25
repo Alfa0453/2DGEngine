@@ -14,6 +14,7 @@ namespace Engine
     class AudioVoice;
     class AudioPlaybackHandle;
     class AudioClip;
+    class AudioStream;
     struct AudioListenerState;
     struct AudioSettings;
 
@@ -41,6 +42,10 @@ namespace Engine
 
         AudioMixVoiceResult MixVoice(AudioVoice& voice, float* output, std::size_t frameCount, float busGain, float spatialPan, float distanceGain, float dopplerFactor);
 
+        AudioMixVoiceResult MixClipVoice(AudioVoice& voice, float* output, std::size_t frameCount, float busGain, float spatialPan, float distanceGain, float dopplerFactor);
+
+        AudioMixVoiceResult MixStreamVoice(AudioVoice& voice, float* output, std::size_t frameCount, float busGain, float spatialPan, float distanceGain);
+
         float SampleChannelLinear(const AudioClip& clip, double playbackFrame, std::size_t channel, bool looping) const;
 
         void CalculateStereoPanGains(float pan, float& outLeftGain, float& outRightGain) const;
@@ -52,6 +57,8 @@ namespace Engine
         std::size_t m_FramesPerBlock = 0;
 
         std::vector<float> m_MixBuffer;
+
+        std::vector<float> m_StreamScratch;
 
         bool m_Initialized = false;
     };

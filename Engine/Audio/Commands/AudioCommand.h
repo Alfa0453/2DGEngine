@@ -3,12 +3,14 @@
 #include "../Playback/AudioPlaybackHandle.h"
 #include "../Playback/AudioPlaybackSettings.h"
 #include "../Spatial/AudioListenerState.h"
+#include "../Playback/AudioSourceKind.h"
 
 #include <type_traits>
 
 namespace Engine
 {
     class AudioClip;
+    class AudioStream;
 
     enum class AudioCommandType
     {
@@ -49,6 +51,10 @@ namespace Engine
         AudioPlaybackHandle PreviousHandle;
 
         const AudioClip* Clip = nullptr;
+
+        AudioSourceKind SourceKind = AudioSourceKind::None;
+
+        AudioStream* Stream = nullptr;
 
         AudioPlaybackSettings PlaybackSettings;
 

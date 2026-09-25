@@ -3,6 +3,8 @@
 #include "../Assets/AudioClip.h"
 
 #include "../Types/AudioLimits.h"
+#include "../Streaming/AudioStream.h"
+#include "AudioSourceKind.h"
 
 #include <algorithm>
 
@@ -57,6 +59,63 @@ namespace Engine
         m_DopplerEnabled = settings.DopplerEnabled;
 
         m_DopplerStrength = settings.DopplerStrength;
+
+        m_FadeGain = 1.0f;
+
+        m_FadeTargetGain = 1.0f;
+
+        m_FadeStepPerFrame = 0.0f;
+
+        m_FadeFramesRemaining = 0;
+
+        m_StopWhenFadeComplete = false;
+
+        m_SourceKind = AudioSourceKind::Clip;
+
+        m_Stream = nullptr;
+    }
+
+    void AudioVoice::StartStream(AudioStream* stream, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings)
+    {
+        m_SourceKind = AudioSourceKind::Stream;
+
+        m_Clip = nullptr;
+
+        m_Stream = stream;
+
+        m_Handle = handle;
+
+        m_Active = true;
+
+        m_Paused = false;
+
+        m_Looping = settings.Looping;
+
+        m_Bus = settings.Bus;
+
+        // Stream playback currently runs at native/output rate.
+        m_PlaybackFrame = 0.0;
+
+        // Normal Voice parameters
+        m_CurrentVolume = settings.Volume;
+
+        m_TargetVolume = settings.Volume;
+
+        m_CurrentPan = settings.Pan;
+
+        m_TargetPan = settings.Pan;
+
+        m_CurrentPitch = 1.0f;
+
+        m_TargetPitch = 1.0f;
+
+        m_Spatial = false;
+
+        m_SpatialPosition = Vector2{0.0f, 0.0f};
+
+        m_SpatialVelocity = Vector2{0.0f, 0.0f};
+
+        m_DopplerEnabled = false;
 
         m_FadeGain = 1.0f;
 
@@ -128,6 +187,17 @@ namespace Engine
         m_FadeFramesRemaining = 0;
 
         m_StopWhenFadeComplete = false;
+
+        if (m_SourceKind == AudioSourceKind::Stream && m_Stream)
+        {
+            m_Stream->ReleaseConsumer();
+        }
+
+        m_SourceKind = AudioSourceKind::None;
+
+        m_Clip = nullptr;
+
+        m_Stream = nullptr;
     }
 
     bool AudioVoice::IsActive() const
@@ -482,5 +552,15 @@ namespace Engine
             m_FadeStepPerFrame = 0.0f;
 
             m_FadeFramesRemaining = 0;
+    }
+
+    AudioSourceKind AudioVoice::GetSourceKind() const
+    {
+        return m_SourceKind;
+    }
+
+    AudioStream* AudioVoice::GetStream() const
+    {
+        return m_Stream;
     }
 }

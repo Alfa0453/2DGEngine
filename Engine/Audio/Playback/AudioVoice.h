@@ -6,12 +6,14 @@
 #include "../Bus/AudioBusID.h"
 #include "../Spatial/AudioAttenuationModel.h"
 #include "../../Math/Vector2.h"
+#include "AudioSourceKind.h"
 
 #include <cstddef>
 
 namespace Engine
 {
     class AudioClip;
+    class AudioStream;
 
 
     class AudioVoice
@@ -21,6 +23,8 @@ namespace Engine
         AudioVoice() = default;
 
         void Start(const AudioClip* clip, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity);
+
+        void StartStream(AudioStream* stream, AudioPlaybackHandle handle, const AudioPlaybackSettings& settings);
 
         void Stop();
 
@@ -117,9 +121,17 @@ namespace Engine
 
         void SetFadeGainImmediate(float gain);
 
+        AudioSourceKind GetSourceKind() const;
+
+        AudioStream* GetStream() const;
+
     private:
 
+        AudioSourceKind m_SourceKind = AudioSourceKind::None;
+
         const AudioClip* m_Clip = nullptr;
+
+        AudioStream* m_Stream = nullptr;
 
         AudioPlaybackHandle m_Handle;
 

@@ -34,6 +34,18 @@
     <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Audio\Spatial\AudioSpatialization2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\AudioStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\AudioStreamBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\AudioStreamDecoderFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\WavStreamDecoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Assets\AudioClip.h">
@@ -72,6 +84,9 @@
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Debug\AudioStats.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Mixer\AudioMixCompletion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Mixer\AudioMixVoiceResult.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -90,6 +105,9 @@
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Playback\AudioPlaybackSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Playback\AudioSourceKind.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Playback\AudioVoice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -99,10 +117,31 @@
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Playback\AudioVoiceSlotState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Spatial\AudioAttenuationModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Spatial\AudioListenerState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Spatial\AudioSpatialization2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\AudioStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\AudioStreamBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\AudioStreamDecoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\AudioStreamDecoderFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\AudioStreamState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\WavStreamDecoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="D:\C++_Projects\2DGEngine\Engine\Audio\Threading\SPSCQueue.h">

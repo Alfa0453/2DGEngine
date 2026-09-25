@@ -3,6 +3,7 @@
 #include "../Assets/AudioClip.h"
 #include "../Backend/SDL/SDLAudioDevice.h"
 #include "../Types/AudioLimits.h"
+#include "../Streaming/AudioStream.h"
 
 #include <algorithm>
 #include <atomic>
@@ -268,6 +269,8 @@ namespace Engine
 
             command.Type = AudioCommandType::Play;
 
+            command.SourceKind = AudioSourceKind::Clip;
+
             command.Handle = handle;
 
             command.Clip = &clip;
@@ -275,6 +278,8 @@ namespace Engine
             command.PlaybackSettings = sanitizedSettings;
 
             command.SourcePosition = sourcePosition;
+
+            command.SourceVelocity = sourceVelocity;
 
             if (!m_CommandQueue.Push(command))
             {
@@ -312,6 +317,8 @@ namespace Engine
 
         command.Type = AudioCommandType::ReplaceVoice;
 
+        command.SourceKind = AudioSourceKind::Clip;
+
         command.Handle = newHandle;
 
         command.PreviousHandle = previousHandle;
@@ -336,6 +343,130 @@ namespace Engine
         m_VoiceSlotStates[stealSlot] = AudioVoiceSlotState::PendingStart;
 
         ApplySlotMetadata(stealSlot, sanitizedSettings);
+
+        return newHandle;
+    }
+
+    AudioPlaybackHandle AudioSystem::PlayStream(AudioStream& stream, const AudioPlaybackSettings& settings)
+    {
+        if (!m_Initialized || !stream.IsOpen())
+        {
+            return {};
+        }
+
+        if (stream.GetFormat() != m_Settings.OutputFormat)
+        {
+            return {};
+        }
+
+        // One consuming Voice per AudioStream.
+        if (!stream.TryAcquireConsumer())
+        {
+            return {};
+        }
+
+        AudioPlaybackSettings sanitized = SanitizeAudioPlaybackSettings(settings);
+
+        sanitized.Spatial = false;
+
+        sanitized.DopplerEnabled = false;
+
+        sanitized.Pitch = 1.0f;
+
+        stream.SetLooping(sanitized.Looping);
+
+        const std::size_t freeSlot = FindFreeVoiceSlot();
+
+        if (freeSlot != m_VoiceSlotMetadata.size())
+        {
+            const AudioPlaybackHandle handle = CreatePlaybackHandleForSlot(freeSlot);
+
+            AudioCommand command;
+
+            command.Type = AudioCommandType::Play;
+
+            command.SourceKind = AudioSourceKind::Stream;
+
+            command.Handle = handle;
+
+            command.Stream = &stream;
+
+            command.PlaybackSettings = sanitized;
+
+            if (!m_CommandQueue.Push(command))
+            {
+                ++m_CommandQueueFullCount;
+
+                stream.ReleaseConsumer();
+
+                return {};
+            }
+
+            m_VoiceSlotStates[freeSlot] = AudioVoiceSlotState::PendingStart;
+
+            ApplySlotMetadata(freeSlot, sanitized);
+
+            return handle;
+        }
+
+        if (!sanitized.AllowVoiceSteal)
+        {
+            ++m_PlayFailuresNoVoice;
+
+            stream.ReleaseConsumer();
+
+            return {};
+        }
+
+        const std::size_t stealSlot = FindVoiceStealCandidtae(sanitized);
+
+        if (stealSlot >= m_VoiceSlotStates.size())
+        {
+            ++m_PlayFailuresNoVoice;
+
+            stream.ReleaseConsumer();
+
+            return {};
+        }
+
+        const AudioPlaybackHandle previousHandle = CreatePlaybackHandleForSlot(stealSlot);
+
+        const std::uint32_t newGeneration = GetNextGeneration(m_VoiceGenerations[stealSlot]);
+
+        const AudioPlaybackHandle newHandle = CreatePlaybackHandleForGeneration(stealSlot, newGeneration);
+
+        AudioCommand command;
+
+        command.Type = AudioCommandType::ReplaceVoice;
+
+        command.SourceKind = AudioSourceKind::Stream;
+
+        command.Handle = newHandle;
+
+        command.PreviousHandle = previousHandle;
+
+        command.Stream = &stream;
+
+        command.PlaybackSettings = sanitized;
+
+        if (!m_CommandQueue.Push(command))
+        {
+            ++m_CommandQueueFullCount;
+
+            stream.ReleaseConsumer();
+
+            return {};
+        }
+
+        // Commi generation only after successful queue push.
+
+        m_VoiceGenerations[stealSlot] = newGeneration;
+
+        m_VoiceSlotStates[stealSlot] = AudioVoiceSlotState::PendingStart;
+
+        ApplySlotMetadata(stealSlot, sanitized);
+
+        ++m_TotalVoiceSteals;
 
         return newHandle;
     }
@@ -461,7 +592,7 @@ namespace Engine
 
         command.Handle = handle;
 
-        command.PlaybackSettings.Volume = std::clamp(volume, 0.0f, 1.0f);
+        command.Value = std::clamp(volume, 0.0f, 1.0f);
 
         if (!m_CommandQueue.Push(command))
         {
@@ -572,7 +703,7 @@ namespace Engine
 
         command.Handle = handle;
 
-        command.PlaybackSettings.Looping = looping;
+        command.BoolValue = looping;
 
         if (!m_CommandQueue.Push(command))
         {
@@ -943,10 +1074,15 @@ namespace Engine
         {
             case AudioCommandType::Play:
             {
-                const std::size_t slotIndex = command.Handle.IsValid() ? static_cast<std::size_t>(command.Handle.ID -1) : m_Voices.size();
+                const std::size_t slotIndex = static_cast<std::size_t>(command.Handle.ID -1);
 
-                if (!command.Clip || !command.Clip->IsValid() || slotIndex >= m_Voices.size())
+                if (slotIndex >= m_Voices.size())
                 {
+                    if (command.SourceKind == AudioSourceKind::Stream && command.Stream)
+                    {
+                        command.Stream->ReleaseConsumer();
+                    }
+
                     QueuePlaybackEvent(AudioPlaybackEventType::FailedToStart, command.Handle);
 
                     break;
@@ -954,14 +1090,40 @@ namespace Engine
 
                 AudioVoice& voice = m_Voices[slotIndex];
 
-                if (voice.IsActive())
+                if (command.SourceKind == AudioSourceKind::Clip)
+                {
+                    if (!command.Clip)
+                    {
+                        QueuePlaybackEvent(AudioPlaybackEventType::FailedToStart, command.Handle);
+
+                        break;
+                    }
+
+                    voice.Start(command.Clip, command.Handle, command.PlaybackSettings, command.SourcePosition, command.SourceVelocity);
+                }
+
+                else if (command.SourceKind == AudioSourceKind::Stream)
+                {
+                    if (!command.Stream || !command.Stream->IsOpen())
+                    {
+                        if (command.Stream)
+                        {
+                            command.Stream->ReleaseConsumer();
+                        }
+
+                        QueuePlaybackEvent(AudioPlaybackEventType::FailedToStart, command.Handle);
+
+                        break;
+                    }
+
+                    voice.StartStream(command.Stream, command.Handle, command.PlaybackSettings);
+                }
+                else
                 {
                     QueuePlaybackEvent(AudioPlaybackEventType::FailedToStart, command.Handle);
 
                     break;
                 }
-
-                voice.Start(command.Clip, command.Handle, command.PlaybackSettings, command.SourcePosition, command.SourceVelocity);
 
                 if (command.PlaybackSettings.FadeInSeconds > 0.0f)
                 {
@@ -1017,6 +1179,16 @@ namespace Engine
                 if (voice)
                 {
                     voice->SetLooping(command.BoolValue);
+
+                    if (voice->GetSourceKind() == AudioSourceKind::Stream)
+                    {
+                        AudioStream* stream = voice->GetStream();
+
+                        if (stream)
+                        {
+                            stream->SetLooping(command.BoolValue);
+                        }
+                    }
                 }
 
                 break;
@@ -1035,7 +1207,7 @@ namespace Engine
 
                     voice.Stop();
 
-                    QueuePlaybackEvent(AudioPlaybackEventType::Stopped, command.Handle);
+                    QueuePlaybackEvent(AudioPlaybackEventType::Stopped, handle);
                 }
 
                 break;
@@ -1051,6 +1223,8 @@ namespace Engine
             case AudioCommandType::SetBusMute:
             {
                 m_BusSystem.SetMuted(command.Bus, command.BoolValue);
+
+                break;
             }
 
             case AudioCommandType::SetPan:
@@ -1088,25 +1262,9 @@ namespace Engine
 
                 if (slotIndex >= m_Voices.size())
                 {
-                    QueuePlaybackEvent(AudioPlaybackEventType::FailedToStart, command.Handle);
-
-                    break;
-                }
-
-                AudioVoice& voice = m_Voices[slotIndex];
-
-                if (voice.IsActive() && voice.GetHandle() != command.PreviousHandle)
-                {
-                    QueuePlaybackEvent(AudioPlaybackEventType::FailedToStart, command.Handle);
-
-                    break;
-                }
-
-                if (!command.Clip || !command.Clip->IsValid())
-                {
-                    if (voice.IsActive())
+                    if (command.SourceKind == AudioSourceKind::Stream && command.Stream)
                     {
-                        voice.Stop();
+                        command.Stream->ReleaseConsumer();
                     }
 
                     QueuePlaybackEvent(AudioPlaybackEventType::FailedToStart, command.Handle);
@@ -1114,18 +1272,50 @@ namespace Engine
                     break;
                 }
 
+                AudioVoice& voice = m_Voices[slotIndex];
+
+                // If the old Voice is still present, terminate it.
+                // AudioVoice::Stop() also releases an old stream
+                // consumer when appropriate.
                 if (voice.IsActive())
                 {
                     voice.Stop();
                 }
 
-                voice.Start(command.Clip, command.Handle, command.PlaybackSettings, command.SourcePosition, command.SourceVelocity);
+                bool started = false;
 
-                if (!voice.IsActive())
+                if (command.SourceKind == AudioSourceKind::Clip && command.Clip)
                 {
+                    voice.Start(command.Clip, command.Handle, command.PlaybackSettings, command.SourcePosition, command.SourceVelocity);
+
+                    started = true;
+                }
+                else if (command.SourceKind == AudioSourceKind::Stream && command.Stream && command.Stream->IsOpen())
+                {
+                    voice.StartStream(command.Stream, command.Handle, command.PlaybackSettings);
+
+                    started = true;
+                }
+
+                if (!started)
+                {
+                    if (command.SourceKind == AudioSourceKind::Stream && command.Stream)
+                    {
+                        command.Stream->ReleaseConsumer();
+                    }
+
                     QueuePlaybackEvent(AudioPlaybackEventType::FailedToStart, command.Handle);
 
                     break;
+                }
+
+                if (command.PlaybackSettings.FadeInSeconds > 0.0f)
+                {
+                    const std::uint64_t frames = static_cast<std::uint64_t>(command.PlaybackSettings.FadeInSeconds * static_cast<float>(m_Settings.OutputFormat.SampleRate));
+
+                    voice.SetFadeGainImmediate(0.0f);
+
+                    voice.StartFade(1.0f, frames, false);
                 }
 
                 QueuePlaybackEvent(AudioPlaybackEventType::Started, command.Handle);
@@ -1194,9 +1384,37 @@ namespace Engine
             {
                 AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
 
-                if (voice)
+                if (!voice)
                 {
-                    voice->SeekSeconds(command.Value);
+                    break;
+                }
+
+                switch (voice->GetSourceKind())
+                {
+                    case Engine::AudioSourceKind::Clip:
+                    {
+                        voice->SeekSeconds(command.Value);
+
+                        break;
+                    }
+
+                    case Engine::AudioSourceKind::Stream:
+                    {
+                        AudioStream* stream = voice->GetStream();
+
+                        if (stream)
+                        {
+                            stream->RequestSeekSeconds(command.Value);
+                        }
+
+                        break;
+                    }
+
+                    case Engine::AudioSourceKind::None:
+                    default:
+                    {
+                        break;
+                    }
                 }
 
                 break;
@@ -1212,6 +1430,8 @@ namespace Engine
 
                     voice->StartFade(command.Value, frames, false);
                 }
+
+                break;
             }
 
             case AudioCommandType::FadeOutAndStop:

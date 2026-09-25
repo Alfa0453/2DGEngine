@@ -9,3 +9,7 @@ D:\C++_Projects\2DGEngine\Engine\Audio\Playback\AudioPlaybackEventQueue.cpp;D:\C
 D:\C++_Projects\2DGEngine\Engine\Audio\Playback\AudioPlaybackSettings.cpp;D:\C++_Projects\2DGEngine\build\Engine\Audio\Engine_Audio.dir\Debug\AudioPlaybackSettings.obj
 D:\C++_Projects\2DGEngine\Engine\Audio\Playback\AudioVoice.cpp;D:\C++_Projects\2DGEngine\build\Engine\Audio\Engine_Audio.dir\Debug\AudioVoice.obj
 D:\C++_Projects\2DGEngine\Engine\Audio\Spatial\AudioSpatialization2D.cpp;D:\C++_Projects\2DGEngine\build\Engine\Audio\Engine_Audio.dir\Debug\AudioSpatialization2D.obj
+D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\AudioStream.cpp;D:\C++_Projects\2DGEngine\build\Engine\Audio\Engine_Audio.dir\Debug\AudioStream.obj
+D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\AudioStreamBuffer.cpp;D:\C++_Projects\2DGEngine\build\Engine\Audio\Engine_Audio.dir\Debug\AudioStreamBuffer.obj
+D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\AudioStreamDecoderFactory.cpp;D:\C++_Projects\2DGEngine\build\Engine\Audio\Engine_Audio.dir\Debug\AudioStreamDecoderFactory.obj
+D:\C++_Projects\2DGEngine\Engine\Audio\Streaming\WavStreamDecoder.cpp;D:\C++_Projects\2DGEngine\build\Engine\Audio\Engine_Audio.dir\Debug\WavStreamDecoder.obj

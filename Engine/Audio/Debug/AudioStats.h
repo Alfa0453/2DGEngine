@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <atomic>
 
 namespace Engine
 {
@@ -42,5 +43,7 @@ namespace Engine
         std::size_t ActiveUIVoices = 0;
 
         std::size_t ActiveAmbienVoices = 0;
+
+        std::atomic<std::uint64_t> StreamUnderflows{0};
     };
 }

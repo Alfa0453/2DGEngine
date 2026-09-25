@@ -26,6 +26,7 @@ namespace Engine
 {
     class AudioClip;
     class AudioDevice;
+    class AudioStream;
 
 
     class AudioSystem : public AudioRendererSource
@@ -51,6 +52,8 @@ namespace Engine
         AudioPlaybackHandle Play(const AudioClip& clip, const AudioPlaybackSettings& settings, const Vector2& sourcePosition);
 
         AudioPlaybackHandle Play(const AudioClip& clip, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity);
+
+        AudioPlaybackHandle PlayStream(AudioStream& stream, const AudioPlaybackSettings& settings);
 
         bool Stop(AudioPlaybackHandle handle);
 

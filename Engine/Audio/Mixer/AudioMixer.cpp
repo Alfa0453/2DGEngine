@@ -7,6 +7,7 @@
 #include "../Spatial/AudioSpatialization2D.h"
 #include "../Types/AudioSettings.h"
 #include "../Types/AudioLimits.h"
+#include "../Streaming/AudioStream.h"
 
 #include "AudioMixCompletion.h"
 #include "AudioMixVoiceResult.h"
@@ -34,12 +35,16 @@ namespace Engine
 
         m_MixBuffer.assign(m_FramesPerBlock * channelCount, 0.0f);
 
+        m_StreamScratch.assign(m_FramesPerBlock * channelCount, 0.0f);
+
         m_Initialized = true;
     }
 
     void AudioMixer::Shutdown()
     {
         m_MixBuffer.clear();
+
+        m_StreamScratch.clear();
 
         m_FramesPerBlock = 0;
 
@@ -124,6 +129,28 @@ namespace Engine
     }
 
     AudioMixVoiceResult AudioMixer::MixVoice(AudioVoice& voice, float* output, std::size_t frameCount, float busGain, float spatialPan, float distanceGain, float dopplerFactor)
+    {
+        switch (voice.GetSourceKind())
+        {
+            case AudioSourceKind::Clip:
+            {
+                return MixClipVoice(voice, output, frameCount, busGain, spatialPan, distanceGain, dopplerFactor);
+            }
+
+            case AudioSourceKind::Stream:
+            {
+                return MixStreamVoice(voice, output, frameCount, busGain, spatialPan, distanceGain);
+            }
+
+            case AudioSourceKind::None:
+            default:
+            {
+                return {};
+            }
+        }
+    }
+
+    AudioMixVoiceResult AudioMixer::MixClipVoice(AudioVoice &voice, float *output, std::size_t frameCount, float busGain, float spatialPan, float distanceGain, float dopplerFactor)
     {
         AudioMixVoiceResult result;
 
@@ -247,6 +274,19 @@ namespace Engine
                 }
             }
 
+            const bool fadeCompleted = voice.AdvanceFade();
+
+            if (fadeCompleted && voice.ShouldStopAfterFade())
+            {
+                result.EndReason = AudioMixVoiceEndReason::FadeStopped;
+
+                result.FinishedHandle = voice.GetHandle();
+
+                voice.Stop();
+
+                return result;
+            }
+
             playbackFrame += static_cast<double>(currentPitch);
 
             currentVolume += volumeStep;
@@ -267,17 +307,180 @@ namespace Engine
             voice.SetCurrentPitch(targetPitch);
         }
 
-        const bool fadeCompleted = voice.AdvanceFade();
+        return result;
+    }
 
-        if (fadeCompleted && voice.ShouldStopAfterFade())
+    AudioMixVoiceResult AudioMixer::MixStreamVoice(AudioVoice &voice, float *output, std::size_t frameCount, float busGain, float spatialPan, float distanceGain)
+    {
+        AudioMixVoiceResult result;
+
+        if (!voice.IsActive() || !output || frameCount == 0)
         {
-            result.EndReason = AudioMixVoiceEndReason::FadeStopped;
+            return result;
+        }
+
+        // A paused stream must not consume PCM.
+        if (voice.IsPaused())
+        {
+            return result;
+        }
+
+        AudioStream* stream = voice.GetStream();
+
+        if (!stream)
+        {
+            result.EndReason = AudioMixVoiceEndReason::Finished;
 
             result.FinishedHandle = voice.GetHandle();
 
             voice.Stop();
 
             return result;
+        }
+
+        const AudioStreamState state = stream->GetState();
+
+        if (state == AudioStreamState::Error)
+        {
+            result.EndReason = AudioMixVoiceEndReason::Finished;
+
+            result.FinishedHandle = voice.GetHandle();
+
+            voice.Stop();
+
+            return result;
+        }
+
+        // Initial buffering / seek:
+        // m_MixBuffer was already cleared by Mix(), so returning here produces silence.
+        if (state == AudioStreamState::Buffering || state == AudioStreamState::Seeking)
+        {
+            return result;
+        }
+
+        const std::size_t channelCount = static_cast<std::size_t>(m_Format.Channels);
+
+        const std::size_t requiredSamples = frameCount * channelCount;
+
+        // Never resize this from audio callback.
+        if (m_StreamScratch.size() < requiredSamples)
+        {
+            return result;
+        }
+
+        const std::size_t framesRead = stream->ReadFrames(m_StreamScratch.data(), frameCount);
+
+        // No frames available.
+        if (framesRead == 0)
+        {
+            if (stream->HasCompletelyEnded())
+            {
+                result.EndReason = AudioMixVoiceEndReason::Finished;
+
+                result.FinishedHandle = voice.GetHandle();
+
+                voice.Stop();
+
+                return result;
+            }
+
+            // Not EOF => underflow/starvation.
+            if (state == AudioStreamState::Playing)
+            {
+                stream->RecordUnderflow();
+            }
+
+            return result;
+        }
+
+        if (framesRead < frameCount && !stream->HasCompletelyEnded())
+        {
+            stream->RecordUnderflow();
+        }
+
+        float currentVolume = voice.GetCurrentVolume();
+
+        const float targetVolume = voice.GetVolume();
+
+        float currentPan = voice.GetCurrentPan();
+
+        const float targetPan = std::clamp(voice.GetPan() + spatialPan, -1.0f, 1.0f);
+
+        const float inverseFramesRead = 1.0f / static_cast<float>(framesRead);
+
+        const float volumeStep = (targetVolume - currentVolume) * inverseFramesRead;
+
+        const float panStep = (targetPan - currentPan) * inverseFramesRead;
+
+        for (std::size_t frame = 0; frame < framesRead; ++frame)
+        {
+            float leftPanGain = 1.0f;
+
+            float rightPanGain = 1.0f;
+
+            const float fadeGain = voice.GetFadeGain();
+
+            if (m_Format.Channels == 2)
+            {
+                CalculateStereoPanGains(currentPan, leftPanGain, rightPanGain);
+            }
+
+            const std::size_t outputBase = frame * channelCount;
+
+            if (m_Format.Channels == 2)
+            {
+                const float leftSample = m_StreamScratch[outputBase];
+
+                const float rightSample = m_StreamScratch[outputBase + 1];
+
+                output[outputBase] += leftSample * currentVolume * fadeGain * busGain * leftPanGain * distanceGain;
+
+                output[outputBase + 1] += rightSample * currentVolume * fadeGain * busGain * rightPanGain * distanceGain;
+            }
+            else
+            {
+                for (std::size_t channel = 0; channel < channelCount; ++channel)
+                {
+                    const float sample = m_StreamScratch[outputBase + channel];
+
+                    output[outputBase + channel] += sample * currentVolume * fadeGain * busGain * distanceGain;
+                }
+            }
+
+            // Fade progresses only when actual stream PCM was consumed.
+            const bool fadeCompleted = voice.AdvanceFade();
+
+            if (fadeCompleted && voice.ShouldStopAfterFade())
+            {
+                result.EndReason = AudioMixVoiceEndReason::FadeStopped;
+
+                result.FinishedHandle = voice.GetHandle();
+
+                voice.Stop();
+
+                return result;
+            }
+
+            currentVolume += volumeStep;
+
+            currentPan += panStep;
+        }
+
+        if (voice.IsActive())
+        {
+            voice.SetCurrenVolume(targetVolume);
+
+            voice.SetCurrentPan(targetPan);
+        }
+
+        // Decoder may have reached EOF before this block, while final buffered frames were just consumed.
+        if (stream->HasCompletelyEnded())
+        {
+            result.EndReason = AudioMixVoiceEndReason::Finished;
+
+            result.FinishedHandle = voice.GetHandle();
+
+            voice.Stop();
         }
 
         return result;
