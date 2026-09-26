@@ -3,4 +3,5 @@ add_engine_subsystem(
 
     PUBLIC_DEPENDENCIES
         SDL3::SDL3
+        Engine::Math
 )

@@ -4,6 +4,8 @@
 #include "AudioBusState.h"
 
 #include <algorithm>
+#include <cmath>
+
 
 namespace Engine
 {
@@ -115,24 +117,26 @@ namespace Engine
         return busState.CurrentVolume * master.CurrentVolume;
     }
 
-    void AudioBusSystem::AdvanceSmoothing(std::size_t frameCount)
+    void AudioBusSystem::AdvanceSmoothing(std::size_t frameCount, std::uint32_t sampleRate)
     {
-        if (frameCount == 0)
+        if (frameCount == 0 || sampleRate == 0)
         {
             return;
         }
 
-        constexpr float SmoothingFactor = 0.15f;
+        constexpr float timeConstantSeconds = 0.05f;
+
+        const float deltaTime = static_cast<float>(frameCount) / static_cast<float>(sampleRate);
+
+        const float alpha = 1.0f - std::exp(-deltaTime / timeConstantSeconds);
 
         for (AudioBusState& bus : m_Buses)
         {
-            const float difference = bus.TargetVolume - bus.CurrentVolume;
-
-            bus.CurrentVolume += difference * SmoothingFactor;
+            bus.CurrentVolume += (bus.TargetVolume - bus.CurrentVolume) * alpha;
         }
     }
 
-    void AudioBusSystem::SetVolumeImeadiate(AudioBusID bus, float volume)
+    void AudioBusSystem::SetVolumeImmediate(AudioBusID bus, float volume)
     {
         const std::size_t index = ToAudioBusIndex(bus);
 

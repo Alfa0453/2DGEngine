@@ -14,6 +14,9 @@
 #include "../Bus/AudioBusSystem.h"
 #include "../Commands/AudioCommandQueue.h"
 #include "../Assets/AudioAssetHandle.h"
+#include "../Debug/AudioVoiceDebugInfo.h"
+#include "../Debug/AudioBusDebugInfo.h"
+
 #include "AudioRendererSource.h"
 #include "AudioDevice.h"
 
@@ -40,104 +43,99 @@ namespace Engine
 
         ~AudioSystem();
 
+        // Lifetime
         bool Initialize(const AudioSettings& settings = AudioSettings{});
-
         void Shutdown();
-
         bool IsInitialized() const;
 
-        bool RenderAudioBlock(const float*& outSamples, std::size_t& outFrameCount) override;
-
+        // Playback creation
         AudioPlaybackHandle Play(const AudioClip& clip);
-
         AudioPlaybackHandle Play(const AudioClip& clip, const AudioPlaybackSettings& settings);
-
         AudioPlaybackHandle Play(const AudioClip& clip, const AudioPlaybackSettings& settings, const Vector2& sourcePosition);
-
         AudioPlaybackHandle Play(const AudioClip& clip, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity);
-
         AudioPlaybackHandle PlayStream(AudioStream& stream, const AudioPlaybackSettings& settings);
-
         AudioPlaybackHandle PlayAsset(AudioAssetHandle asset);
-
         AudioPlaybackHandle PlayAsset(AudioAssetHandle asset, const AudioPlaybackSettings& settings);
-
         AudioPlaybackHandle PlayAsset(AudioAssetHandle asset, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity);
 
+        // Playback control
         bool Stop(AudioPlaybackHandle handle);
-
-        bool IsPlaying(AudioPlaybackHandle handle) const;
-
-        bool SetVolume(AudioPlaybackHandle handle, float volume);
-
-        bool SetPan(AudioPlaybackHandle handle, float pan);
-
-        bool SetPitch(AudioPlaybackHandle handle, float pitch);
-
-        bool SetLooping(AudioPlaybackHandle handle, bool looping);
-
         void StopAll();
 
-        float GetMasterVolume() const;
-
-        bool SetMasterVolume(float volume);
-
-        std::size_t GetActiveVoiceCount() const;
-
-        const AudioSettings& GetSettings() const;
-
-        void UpdateAudio();
-
-        const AudioStats& GetStats() const;
-
-        bool GetPlaybackSeconds(AudioPlaybackHandle handle, float& outSeconds) const;
-
-        bool GetPlaybackProgress(AudioPlaybackHandle handle, float& outProgress) const;
-
-        AudioVoice* GetAudioVoiceForHandle(AudioPlaybackHandle handle);
-
-        bool SetBusVolume(AudioBusID bus, float volume);
-
-        bool SetBusMuted(AudioBusID bus, bool muted);
-
-        float GetRequestedBusVolume(AudioBusID bus) const;
-
-        bool GetRequestedBusMuted(AudioBusID bus) const;
-
-        bool SetListenerState(const AudioListenerState& state);
-
-        AudioListenerState GetRequestedListenerState() const;
-
-        bool SetSourcePosition(AudioPlaybackHandle handle, const Vector2& position);
-
-        bool SetSourceSpatialState(AudioPlaybackHandle handle, const Vector2& position, const Vector2& velocity);
-
         bool Pause(AudioPlaybackHandle handle);
-
         bool Resume(AudioPlaybackHandle handle);
-
-        bool IsPaused(AudioPlaybackHandle handle) const;
 
         bool SeekSeconds(AudioPlaybackHandle handle, float seconds);
 
         bool FadeTo(AudioPlaybackHandle handle, float targetGain, float durationSeconds);
-
-        bool FadeOut(AudioPlaybackHandle handle, float durationSeconds);
-
         bool FadeIn(AudioPlaybackHandle handle, float durationSeconds);
-
+        bool FadeOut(AudioPlaybackHandle handle, float durationSeconds);
         bool FadeOutAndStop(AudioPlaybackHandle handle, float durationSeconds);
+
+
+        // Playback parameters
+        bool SetVolume(AudioPlaybackHandle handle, float volume);
+        bool SetPan(AudioPlaybackHandle handle, float pan);
+        bool SetPitch(AudioPlaybackHandle handle, float pitch);
+        bool SetLooping(AudioPlaybackHandle handle, bool looping);
+
+
+        // Spatial state
+        bool SetSourcePosition(AudioPlaybackHandle handle, const Vector2& position);
+        bool SetSourceSpatialState(AudioPlaybackHandle handle, const Vector2& position, const Vector2& velocity);
+
+        bool SetListenerState(const AudioListenerState& state);
+
+
+        // Bus/global control
+        bool SetMasterVolume(float volume);
+        bool SetBusVolume(AudioBusID bus, float volume);
+        bool SetBusMuted(AudioBusID bus, bool muted);
+
+
+        // Game-thread state
+        bool IsPlaying(AudioPlaybackHandle handle) const;
+        bool IsPaused(AudioPlaybackHandle handle) const;
+
+        float GetRequestedBusVolume(AudioBusID bus) const;
+        bool GetRequestedBusMuted(AudioBusID bus) const;
+
+        AudioListenerState GetRequestedListenerState() const;
+
+
+        // Settings / diagnostics
+        const AudioSettings& GetSettings() const;
+
+        const AudioStats& GetStats() const;
+
+
+        // Game update
+        void UpdateAudio();
+
+
+        // Audio callback
+        bool RenderAudioBlock(const float*& outSamples, std::size_t& outFrameCount) override;
+
+
+        float GetMasterVolume() const;
+
+        std::size_t GetActiveVoiceCount() const;
 
         void SetResourceManager(AudioResourceManager* resourceManager);
 
         AudioResourceManager* GetResourceManager() const;
 
+        void GetVoiceDebugSnapshot(std::vector<AudioVoiceDebugInfo>& outVoices) const;
+
+        void GetBusDebugSnapshot(std::array<AudioBusDebugInfo, GetAudioBusCount()>& outBuses) const;
 
     private:
 
         AudioVoice* FindVoice(AudioPlaybackHandle handle);
 
         const AudioVoice* FindVoice(AudioPlaybackHandle handle) const;
+
+        AudioVoice* GetVoiceForHandle(AudioPlaybackHandle handle);
 
         std::size_t FindFreeVoiceSlot() const;
 
@@ -153,8 +151,6 @@ namespace Engine
 
         void ApplyAudioCommand(const AudioCommand& command);
 
-        AudioVoice* GetVoiceForHandle(AudioPlaybackHandle handle);
-
         void ReleaseVoiceSlot(std::size_t slotIndex);
 
         void ProcessPlaybackEvents();
@@ -167,13 +163,17 @@ namespace Engine
 
         std::uint32_t GetNextGeneration(std::uint32_t generation) const;
 
-        std::size_t FindVoiceStealCandidtae(const AudioPlaybackSettings& incomingSettings) const;
+        std::size_t FindVoiceStealCandidate(const AudioPlaybackSettings& incomingSettings) const;
 
         AudioPlaybackHandle CreatePlaybackHandleForGeneration(std::size_t slotIndex, std::uint32_t generation) const;
 
         AudioPlaybackHandle PlayInternal(AudioSourceKind sourceKind, const AudioClip* clip, AudioStream* stream, AudioAssetRecord* assetRecord, const AudioPlaybackSettings& settings, const Vector2& sourcePosition, const Vector2& sourceVelocity);
 
         void ReleaseCommandPlaybackResources(const AudioCommand& command);
+
+        void RecordRenderDuration(std::uint64_t nanoseconds);
+
+        bool PushCommand(const AudioCommand& command);
 
     private:
 
@@ -186,10 +186,6 @@ namespace Engine
         std::vector<AudioVoice> m_Voices;
 
         std::unique_ptr<AudioDevice> m_Device;
-
-        std::uint32_t m_NextPlaybackID = 1;
-
-        std::uint32_t m_Generation = 1;
 
         bool m_Initialized = false;
 
@@ -211,7 +207,7 @@ namespace Engine
 
         std::atomic<std::uint64_t> m_AudioBlocksMixed{0};
 
-        std::atomic<std::uint64_t> m_AudioFrameMixed{0};
+        std::atomic<std::uint64_t> m_AudioFramesMixed{0};
 
         std::atomic<std::uint64_t> m_AudioCommandsProcessed{0};
 
@@ -240,5 +236,19 @@ namespace Engine
         AudioListenerState m_RequestedListenerState;
 
         AudioListenerState m_AudioListenerState;
+
+        std::size_t m_PeakPendingCommandsObserved = 0;
+
+        std::size_t m_PeakPendingPlaybackEventsObserved = 0;
+
+        std::atomic<std::uint64_t> m_LastRenderNanoseconds{0};
+
+        std::atomic<std::uint64_t> m_MaxRenderNanoseconds{0};
+
+        std::atomic<std::uint64_t> m_TotalRenderNanoseconds{0};
+
+        std::atomic<std::uint64_t> m_RenderCallCount{0};
+
+        std::atomic<std::uint64_t> m_RenderFailureCount{0};
     };
 }

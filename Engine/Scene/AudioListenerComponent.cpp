@@ -1,7 +1,7 @@
 #include "AudioListenerComponent.h"
 
 #include "../Audio/Core/AudioSystem.h"
-#include "AudioSourceComponent.h"
+
 #include "Entity.h"
 #include "TransformComponent.h"
 
@@ -62,7 +62,7 @@ namespace Engine
 
         const bool transformChanged = worldVersion != m_LastTransformWorldVersion;
 
-        if (!transformChanged && !m_ListenerStateDirty)
+        if (!transformChanged && !m_ListenerStateDirty && !(m_AutomaticVelocity && m_HadAutomaticMotion))
         {
             return;
         }
@@ -75,9 +75,9 @@ namespace Engine
             {
                 m_Velocity = (currentPosition - m_PreviousWorldPosition) / deltaTime;
             }
-            else 
+            else
             {
-                m_Velocity = Vector2{0.0f, 0.0f};
+                m_Velocity = {};
             }
 
             m_PreviousWorldPosition = currentPosition;
@@ -85,6 +85,14 @@ namespace Engine
             m_HasPreviousWorldPosition = true;
 
             m_HadAutomaticMotion = m_Velocity.LengthSquared() > 0.000001f;
+
+            m_ListenerStateDirty = true;
+        }
+        else if (!transformChanged && m_AutomaticVelocity && m_HadAutomaticMotion)
+        {
+            m_Velocity = {0.0f, 0.0f};
+
+            m_HadAutomaticMotion = false;
 
             m_ListenerStateDirty = true;
         }
@@ -115,7 +123,7 @@ namespace Engine
         {
             m_Forward = forward.Normalized();
         }
-        else 
+        else
         {
             m_Forward = Vector2{1.0f, 0.0f};
         }

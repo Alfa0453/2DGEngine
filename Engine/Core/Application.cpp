@@ -278,7 +278,7 @@ namespace Engine
         {
             m_Scene.GetPhysicsWorld().RemoveJoint(m_TestSpringJoint.get());
 
-            m_TestDistanceJoint.reset();
+            m_TestSpringJoint.reset();
         }
 
         m_IsRunning = false;

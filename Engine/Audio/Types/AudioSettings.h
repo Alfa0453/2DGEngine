@@ -28,6 +28,6 @@ namespace Engine
 
         std::size_t StreamDecodeChunkFrames = 1024;
 
-        std::size_t InitialBufferedFrames = 4096;
+        std::size_t StreamInitialBufferedFrames = 4096;
     };
 }

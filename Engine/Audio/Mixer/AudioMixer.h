@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <vector>
+#include <atomic>
 
 namespace Engine
 {
@@ -38,6 +39,8 @@ namespace Engine
 
         bool Mix(std::vector<AudioVoice>& voices, const AudioBusSystem& busSystem, const AudioListenerState& listener, const AudioSettings& audioSettings, std::vector<AudioMixCompletion>& outCompletions);
 
+        std::uint64_t GetStreamUnderflowCount() const;
+
     private:
 
         AudioMixVoiceResult MixVoice(AudioVoice& voice, float* output, std::size_t frameCount, float busGain, float spatialPan, float distanceGain, float dopplerFactor);
@@ -61,5 +64,7 @@ namespace Engine
         std::vector<float> m_StreamScratch;
 
         bool m_Initialized = false;
+
+        std::atomic<std::uint64_t> m_StreamUnderflowCount{0};
     };
 }

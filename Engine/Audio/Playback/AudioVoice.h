@@ -46,7 +46,7 @@ namespace Engine
 
         float GetCurrentVolume() const;
 
-        void SetCurrenVolume(float volume);
+        void SetCurrentVolume(float volume);
 
         float GetPan() const;
 
@@ -71,10 +71,6 @@ namespace Engine
         float GetPlaybackSeconds() const;
 
         float GetProgress() const;
-
-        std::uint32_t GetGeneration() const;
-
-        void AdvanceGeneration();
 
         AudioBusID GetBus() const;
 
@@ -158,15 +154,13 @@ namespace Engine
 
         bool m_Active = false;
 
-        std::uint32_t m_Generation = 1;
-
         AudioBusID m_Bus = AudioBusID::SFX;
 
         Vector2 m_SpatialPosition{0.0f, 0.0f};
 
         float m_SpatialPanDistance = 500.0f;
 
-        float m_StatialPanStrength = 1.0f;
+        float m_SpatialPanStrength = 1.0f;
 
         bool m_Spatial = false;
 

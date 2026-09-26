@@ -13,6 +13,7 @@
 #include "AudioMixVoiceResult.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <vector>
 
@@ -37,6 +38,8 @@ namespace Engine
 
         m_StreamScratch.assign(m_FramesPerBlock * channelCount, 0.0f);
 
+        m_StreamUnderflowCount.store(0, std::memory_order_relaxed);
+
         m_Initialized = true;
     }
 
@@ -47,6 +50,8 @@ namespace Engine
         m_StreamScratch.clear();
 
         m_FramesPerBlock = 0;
+
+        m_StreamUnderflowCount.store(0, std::memory_order_relaxed);
 
         m_Initialized = false;
     }
@@ -97,7 +102,7 @@ namespace Engine
 
             if (voice.IsSpatial())
             {
-                const AudioSpatialResult2D spatialResult = AudioSpatialization2D::Calculate(voice.GetSpatialPosition(), voice.GetSpatialVelocity(), listener, voice.GetSpatialPanDistance(), voice.GetSpatialPanDistance(), voice.GetMinDistance(), voice.GetMaxDistance(), voice.GetAttenuationStrength(), voice.GetAttenuationModel(), voice.IsDopplerEnabled(), voice.GetDopplerStrength(), audioSettings.SpeedOfSound, audioSettings.MinDopplerFactor, audioSettings.MaxDopplerFactor);
+                const AudioSpatialResult2D spatialResult = AudioSpatialization2D::Calculate(voice.GetSpatialPosition(), voice.GetSpatialVelocity(), listener, voice.GetSpatialPanDistance(), voice.GetSpatialPanStrength(), voice.GetMinDistance(), voice.GetMaxDistance(), voice.GetAttenuationStrength(), voice.GetAttenuationModel(), voice.IsDopplerEnabled(), voice.GetDopplerStrength(), audioSettings.SpeedOfSound, audioSettings.MinDopplerFactor, audioSettings.MaxDopplerFactor);
 
                 spatialPan = spatialResult.Pan;
 
@@ -300,7 +305,7 @@ namespace Engine
         {
             voice.SetPlaybackFrame(playbackFrame);
 
-            voice.SetCurrenVolume(targetVolume);
+            voice.SetCurrentVolume(targetVolume);
 
             voice.SetCurrentPan(targetPan);
 
@@ -388,6 +393,8 @@ namespace Engine
             if (state == AudioStreamState::Playing)
             {
                 stream->RecordUnderflow();
+
+                m_StreamUnderflowCount.fetch_add(1, std::memory_order_relaxed);
             }
 
             return result;
@@ -396,6 +403,8 @@ namespace Engine
         if (framesRead < frameCount && !stream->HasCompletelyEnded())
         {
             stream->RecordUnderflow();
+
+            m_StreamUnderflowCount.fetch_add(1, std::memory_order_relaxed);
         }
 
         float currentVolume = voice.GetCurrentVolume();
@@ -468,7 +477,7 @@ namespace Engine
 
         if (voice.IsActive())
         {
-            voice.SetCurrenVolume(targetVolume);
+            voice.SetCurrentVolume(targetVolume);
 
             voice.SetCurrentPan(targetPan);
         }
@@ -537,5 +546,10 @@ namespace Engine
         outLeftGain = std::cos(angle);
 
         outRightGain = std::sin(angle);
+    }
+
+    std::uint64_t AudioMixer::GetStreamUnderflowCount() const
+    {
+        return m_StreamUnderflowCount.load(std::memory_order_relaxed);
     }
 }

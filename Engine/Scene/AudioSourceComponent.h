@@ -43,7 +43,7 @@ namespace Engine
 
         void SetPlayOnStart(bool playOnStart);
 
-        bool GetPLayOnStart() const;
+        bool GetPlayOnStart() const;
 
         void SetStopOnDestroy(bool stopOnDestroy);
 

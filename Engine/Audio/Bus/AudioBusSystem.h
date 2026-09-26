@@ -28,9 +28,9 @@ namespace Engine
 
         float GetEffectiveVolume(AudioBusID bus) const;
 
-        void AdvanceSmoothing(std::size_t frameCount);
+        void AdvanceSmoothing(std::size_t frameCount, std::uint32_t sampleRate);
 
-        void SetVolumeImeadiate(AudioBusID bus, float volume);
+        void SetVolumeImmediate(AudioBusID bus, float volume);
 
     private:
 

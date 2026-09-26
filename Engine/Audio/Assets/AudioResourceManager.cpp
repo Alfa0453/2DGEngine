@@ -234,7 +234,7 @@ namespace Engine
 
         auto stream = std::make_unique<AudioStream>();
 
-        if (!stream->Open(normalizedPath, m_Settings.OutputFormat, m_Settings.StreamBufferFrames, m_Settings.StreamDecodeChunkFrames, m_Settings.InitialBufferedFrames))
+        if (!stream->Open(normalizedPath, m_Settings.OutputFormat, m_Settings.StreamBufferFrames, m_Settings.StreamDecodeChunkFrames, m_Settings.StreamInitialBufferedFrames))
         {
             return {};
         }
@@ -474,5 +474,97 @@ namespace Engine
         }
 
         return count;
+    }
+
+    AudioResourceStats AudioResourceManager::GetStats() const
+    {
+        AudioResourceStats stats;
+
+        for (const auto& assetPtr : m_Assets)
+        {
+            if (!assetPtr)
+            {
+                continue;
+            }
+
+            const AudioAssetRecord& asset = *assetPtr;
+
+            ++stats.LoadedAssets;
+
+            switch (asset.GetType())
+            {
+                case AudioAssetType::Clip:
+                {
+                    ++stats.LoadedClips;
+                    break;
+                }
+
+                case AudioAssetType::Stream:
+                {
+                    ++stats.LoadedStreams;
+
+                    const AudioStream* stream = asset.GetStream();
+
+                    if (stream && stream->HasConsumer())
+                    {
+                        ++stats.ActiveStreamConsumers;
+                    }
+
+                    break;
+                }
+
+                default:
+                    break;
+            }
+
+            if (asset.IsUnloadRequested())
+            {
+                ++stats.PendingUnloadAssets;
+            }
+
+            stats.TotalPlaybackReferences += asset.GetPlaybackReferenceCount();
+        }
+
+        return stats;
+    }
+
+    void AudioResourceManager::GetStreamDebugSnapshot(std::vector<AudioStreamDebugInfo>& outStreams) const
+    {
+        outStreams.clear();
+
+        for (const auto& assetPtr : m_Assets)
+        {
+            if (!assetPtr || assetPtr->GetType() != AudioAssetType::Stream)
+            {
+                continue;
+            }
+
+            const AudioStream* stream = assetPtr->GetStream();
+
+            if (!stream)
+            {
+                continue;
+            }
+
+            AudioStreamDebugInfo info;
+
+            info.Asset = assetPtr->GetHandle();
+
+            info.Path = assetPtr->GetPath();
+
+            info.State = stream->GetState();
+
+            info.AvailableFrames = stream->GetAvailableFrames();
+
+            info.Underflows = stream->GetUnderflowCount();
+
+            info.Looping = stream->IsLooping();
+
+            info.HasConsumer = stream->HasConsumer();
+
+            info.DurationSeconds = stream->GetDurationSeconds();
+
+            outStreams.push_back(std::move(info));
+        }
     }
 }

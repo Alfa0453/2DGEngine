@@ -52,7 +52,7 @@ namespace Engine
 
         m_SpatialPanDistance = settings.SpatialPanDistance;
 
-        m_StatialPanStrength = settings.SpatialPanStrength;
+        m_SpatialPanStrength = settings.SpatialPanStrength;
 
         m_MinDistance = settings.MinDistance;
 
@@ -102,6 +102,8 @@ namespace Engine
         // Stream playback currently runs at native/output rate.
         m_PlaybackFrame = 0.0;
 
+        m_Active = stream != nullptr;
+
         // Normal Voice parameters
         m_CurrentVolume = settings.Volume;
 
@@ -136,7 +138,12 @@ namespace Engine
 
     void AudioVoice::Stop()
     {
-        AudioStream* streamToRelease = m_Stream;
+        AudioStream* streamToRelease = nullptr;
+
+        if (m_SourceKind == AudioSourceKind::Stream)
+        {
+            streamToRelease = m_Stream;
+        }
 
         AudioAssetRecord* assetRecordToRelease = m_AssetRecord;
 
@@ -178,7 +185,7 @@ namespace Engine
 
         m_SpatialPanDistance = 500.0f;
 
-        m_StatialPanStrength = 1.0f;
+        m_SpatialPanStrength = 1.0f;
 
         m_MinDistance = 100.0f;
 
@@ -204,9 +211,9 @@ namespace Engine
 
         m_StopWhenFadeComplete = false;
 
-        if (m_SourceKind == AudioSourceKind::Stream && m_Stream)
+        if (streamToRelease)
         {
-            m_Stream->ReleaseConsumer();
+            streamToRelease->ReleaseConsumer();
         }
 
         if (assetRecordToRelease)
@@ -270,7 +277,7 @@ namespace Engine
         return m_CurrentVolume;
     }
 
-    void AudioVoice::SetCurrenVolume(float volume)
+    void AudioVoice::SetCurrentVolume(float volume)
     {
         m_CurrentVolume = std::clamp(volume, 0.0f, 1.0f);
     }
@@ -351,20 +358,7 @@ namespace Engine
         return std::clamp(static_cast<float>(progress), 0.0f, 1.0f);
     }
 
-    std::uint32_t AudioVoice::GetGeneration() const
-    {
-        return m_Generation;
-    }
 
-    void AudioVoice::AdvanceGeneration()
-    {
-        ++m_Generation;
-
-        if (m_Generation == 0)
-        {
-            m_Generation = 1;
-        }
-    }
 
     AudioBusID AudioVoice::GetBus() const
     {
@@ -393,7 +387,7 @@ namespace Engine
 
     float AudioVoice::GetSpatialPanStrength() const
     {
-        return m_StatialPanStrength;
+        return m_SpatialPanStrength;
     }
 
     float AudioVoice::GetMinDistance() const

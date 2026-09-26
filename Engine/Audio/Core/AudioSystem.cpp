@@ -13,6 +13,9 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include <chrono>
+#include <array>
+
 
 namespace Engine
 {
@@ -66,6 +69,18 @@ namespace Engine
 
         if (!m_Mixer.IsInitialized())
         {
+            m_PlaybackEventQueue.Shutdown();
+
+            m_CommandQueue.Shutdown();
+
+            m_Voices.clear();
+
+            m_VoiceSlotStates.clear();
+
+            m_VoiceSlotMetadata.clear();
+
+            m_VoiceGenerations.clear();
+
             return false;
         }
 
@@ -75,7 +90,7 @@ namespace Engine
 
         m_BusSystem.Reset();
 
-        m_BusSystem.SetVolumeImeadiate(AudioBusID::Master, m_Settings.MasterVolume);
+        m_BusSystem.SetVolumeImmediate(AudioBusID::Master, m_Settings.MasterVolume);
 
         m_RequestedMasterVolume = m_Settings.MasterVolume;
 
@@ -87,9 +102,31 @@ namespace Engine
 
         m_AudioBlocksMixed.store(0, std::memory_order_relaxed);
 
-        m_AudioFrameMixed.store(0, std::memory_order_relaxed);
+        m_AudioFramesMixed.store(0, std::memory_order_relaxed);
 
         m_AudioCommandsProcessed.store(0, std::memory_order_relaxed);
+
+        m_LastRenderNanoseconds.store(0, std::memory_order_relaxed);
+
+        m_MaxRenderNanoseconds.store(0, std::memory_order_relaxed);
+
+        m_TotalRenderNanoseconds.store(0, std::memory_order_relaxed);
+
+        m_RenderCallCount.store(0, std::memory_order_relaxed);
+
+        m_RenderFailureCount.store(0, std::memory_order_relaxed);
+
+        m_PreviousAudioFramesMixed = 0;
+
+        m_PreviousAudioBlocksMixed = 0;
+
+        m_PreviousCommandsProcessed = 0;
+
+        m_PeakPendingCommandsObserved = 0;
+
+        m_PeakPendingPlaybackEventsObserved = 0;
+
+        m_Stats = AudioStats{};
 
         m_RequestedListenerState = AudioListenerState{};
 
@@ -97,18 +134,32 @@ namespace Engine
 
         m_Device = std::make_unique<SDLAudioDevice>();
 
-        m_Initialized = true;
-
         if (!m_Device->Initialize(m_Settings.OutputFormat, this))
         {
-            m_Initialized = false;
-
             m_Device.reset();
 
             m_Mixer.Shutdown();
 
+            m_PlaybackEventQueue.Shutdown();
+
+            m_CommandQueue.Shutdown();
+
+            m_AudioCompletionScratch.clear();
+
+            m_Voices.clear();
+
+            m_VoiceSlotStates.clear();
+
+            m_VoiceSlotMetadata.clear();
+
+            m_VoiceGenerations.clear();
+
+            m_Initialized = false;
+
             return false;
         }
+
+        m_Initialized = true;
 
         return true;
     }
@@ -131,16 +182,19 @@ namespace Engine
 
         for (AudioVoice& voice : m_Voices)
         {
-            voice.Stop();
+            if (voice.IsActive())
+            {
+                voice.Stop();
+            }
         }
-
-        m_Voices.clear();
 
         m_CommandQueue.Shutdown();
 
         m_PlaybackEventQueue.Shutdown();
 
         m_AudioCompletionScratch.clear();
+
+        m_Voices.clear();
 
         m_VoiceSlotMetadata.clear();
 
@@ -154,6 +208,18 @@ namespace Engine
 
         m_ResourceManager = nullptr;
 
+        m_RequestedMasterVolume = 1.0f;
+
+        m_RequestedBusVolumes.fill(1.0f);
+
+        m_RequestedBusMuted.fill(false);
+
+        m_RequestedListenerState = {};
+
+        m_AudioListenerState = {};
+
+        m_Stats = {};
+
         m_Initialized = false;
     }
 
@@ -164,18 +230,28 @@ namespace Engine
 
     bool AudioSystem::RenderAudioBlock(const float*& outSamples, std::size_t& outFrameCount)
     {
+        const auto renderStart = std::chrono::steady_clock::now();
+
         outSamples = nullptr;
 
         outFrameCount = 0;
 
         ProcessAudioCommands();
 
-        m_BusSystem.AdvanceSmoothing(m_Mixer.GetFramesPerBlock());
+        m_BusSystem.AdvanceSmoothing(m_Mixer.GetFramesPerBlock(), m_Settings.OutputFormat.SampleRate);
 
         m_AudioCompletionScratch.clear();
 
         if (!m_Mixer.Mix(m_Voices, m_BusSystem, m_AudioListenerState, m_Settings, m_AudioCompletionScratch))
         {
+            m_RenderFailureCount.fetch_add(1, std::memory_order_relaxed);
+
+            const auto renderEnd = std::chrono::steady_clock::now();
+
+            const auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(renderEnd - renderStart);
+
+            RecordRenderDuration(static_cast<std::uint64_t>(duration.count()));
+
             return false;
         }
 
@@ -212,7 +288,13 @@ namespace Engine
 
         m_AudioBlocksMixed.fetch_add(1, std::memory_order_relaxed);
 
-        m_AudioFrameMixed.fetch_add(static_cast<std::uint64_t>(m_Mixer.GetFramesPerBlock()), std::memory_order_relaxed);
+        m_AudioFramesMixed.fetch_add(static_cast<std::uint64_t>(m_Mixer.GetFramesPerBlock()), std::memory_order_relaxed);
+
+        const auto renderEnd = std::chrono::steady_clock::now();
+
+        const auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(renderEnd - renderStart);
+
+        RecordRenderDuration(static_cast<std::uint64_t>(duration.count()));
 
         return true;
     }
@@ -420,10 +502,8 @@ namespace Engine
 
             command.SourceVelocity = sourceVelocity;
 
-            if (!m_CommandQueue.Push(command))
+            if (!PushCommand(command))
             {
-                ++m_CommandQueueFullCount;
-
                 rollback();
 
                 return {};
@@ -448,7 +528,7 @@ namespace Engine
             return {};
         }
 
-        const std::size_t stealSlot = FindVoiceStealCandidtae(sanitized);
+        const std::size_t stealSlot = FindVoiceStealCandidate(sanitized);
 
         if (stealSlot >= m_VoiceSlotStates.size())
         {
@@ -488,10 +568,8 @@ namespace Engine
 
         command.SourceVelocity = sourceVelocity;
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             rollback();
 
             return {};
@@ -575,10 +653,8 @@ namespace Engine
 
         command.Handle = handle;
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             m_VoiceSlotStates[slotIndex] = previousState;
 
             return false;
@@ -633,10 +709,8 @@ namespace Engine
 
         command.Value = std::clamp(volume, 0.0f, 1.0f);
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -670,10 +744,8 @@ namespace Engine
 
         command.PlaybackSettings.Pan = std::clamp(pan, -1.0f, 1.0f);
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -707,10 +779,8 @@ namespace Engine
 
         command.PlaybackSettings.Pitch = std::clamp(pitch, 0.25f, 4.0f);
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -744,10 +814,8 @@ namespace Engine
 
         command.BoolValue = looping;
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -765,7 +833,7 @@ namespace Engine
 
         command.Type = AudioCommandType::StopAll;
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
             return;
         }
@@ -821,13 +889,25 @@ namespace Engine
             m_Settings.OutputFormat.Channels = 2;
         }
 
-        m_Settings.MaxPendingCommands = std::max<std::size_t>(64, m_Settings.MaxPendingCommands);
-
         m_Settings.MaxVoices = std::max<std::size_t>(1, m_Settings.MaxVoices);
+
+        m_Settings.MixFramesPerBlock = std::max<std::size_t>(64, m_Settings.MixFramesPerBlock);
+
+        m_Settings.MaxPendingCommands = std::max<std::size_t>(64, m_Settings.MaxPendingCommands);
 
         m_Settings.MasterVolume = std::clamp(m_Settings.MasterVolume, 0.0f, 1.0f);
 
-        m_Settings.MixFramesPerBlock = std::max<std::size_t>(64, m_Settings.MixFramesPerBlock);
+        m_Settings.SpeedOfSound = std::max(m_Settings.SpeedOfSound, 1.0f);
+
+        m_Settings.MinDopplerFactor = std::max(m_Settings.MinDopplerFactor, 0.01f);
+
+        m_Settings.MaxDopplerFactor = std::max(m_Settings.MaxDopplerFactor, m_Settings.MinDopplerFactor);
+
+        m_Settings.StreamBufferFrames = std::max<std::size_t>(1024, m_Settings.StreamBufferFrames);
+
+        m_Settings.StreamDecodeChunkFrames = std::max<std::size_t>(64, m_Settings.StreamDecodeChunkFrames);
+
+        m_Settings.StreamInitialBufferedFrames = std::min(std::max<std::size_t>(1, m_Settings.StreamInitialBufferedFrames), m_Settings.StreamBufferFrames);
     }
 
     void AudioSystem::UpdateAudio()
@@ -837,35 +917,51 @@ namespace Engine
             return;
         }
 
-        m_Stats.CommandsProcessedThisUpdate = 0;
-
-        m_Stats.FinishedVoicesThisUpdate = 0;
-
-        m_Stats.TotalFramesMixed = m_AudioFrameMixed.load(std::memory_order_relaxed);
-
-        m_Stats.TotalCommandsProcessed = m_AudioCommandsProcessed.load(std::memory_order_relaxed);
-
-        const std::uint64_t blocks = m_AudioBlocksMixed.load(std::memory_order_relaxed);
-
-        m_Stats.BlocksMixedThisUpdate = static_cast<std::size_t>(blocks - m_PreviousAudioFramesMixed);
-
-        m_PreviousAudioBlocksMixed = blocks;
+        // Consume audio-thread playback events.
 
         ProcessPlaybackEvents();
 
-        m_Stats.ActiveVoices = GetActiveVoiceCount();
+        // Atomic cumulative counters.
 
-        m_Stats.PendingCommands = m_CommandQueue.GetPendingCount();
+        const std::uint64_t totalBlocks = m_AudioBlocksMixed.load(std::memory_order_relaxed);
 
-        m_Stats.PendingPlaybackEvents = m_PlaybackEventQueue.GetPendingCount();
+        const std::uint64_t totalFrames = m_AudioFramesMixed.load(std::memory_order_relaxed);
 
-        m_Stats.CommandQueueFullCount = m_CommandQueueFullCount;
+        const std::uint64_t totalCommands = m_AudioCommandsProcessed.load(std::memory_order_relaxed);
 
-        m_Stats.PlaybackEventQueueOverflowCount = m_PlaybackEventQueueOverflowCount.load(std::memory_order_relaxed);
+        // Pre-game-update deltas
 
-        m_Stats.TotalVoiceSteals = m_TotalVoiceSteals;
+        m_Stats.BlocksMixedThisUpdate = static_cast<std::size_t>(totalBlocks - m_PreviousAudioBlocksMixed);
 
-        m_Stats.PlayFailuresNoVoice = m_PlayFailuresNoVoice;
+        m_Stats.FramesMixedThisUpdate = static_cast<std::size_t>(totalFrames - m_PreviousAudioFramesMixed);
+
+        m_Stats.CommandsProcessedThisUpdate = static_cast<std::size_t>(totalCommands - m_PreviousCommandsProcessed);
+
+        m_PreviousAudioBlocksMixed = totalBlocks;
+
+        m_PreviousAudioFramesMixed = totalFrames;
+
+        m_PreviousCommandsProcessed = totalCommands;
+
+        // Totals
+
+        m_Stats.TotalBlocksMixed = totalBlocks;
+
+        m_Stats.TotalFramesMixed = totalFrames;
+
+        m_Stats.TotalCommandsProcessed = totalCommands;
+
+        m_Stats.FinishedVoicesThisUpdate = 0;
+
+        // Voice states
+
+        m_Stats.ActiveVoices = 0;
+
+        m_Stats.PendingStartVoices = 0;
+
+        m_Stats.PendingStopVoices = 0;
+
+        m_Stats.PausedVoices = 0;
 
         m_Stats.ActiveMusicVoices = 0;
 
@@ -873,11 +969,36 @@ namespace Engine
 
         m_Stats.ActiveUIVoices = 0;
 
-        m_Stats.ActiveAmbienVoices = 0;
+        m_Stats.ActiveAmbientVoices = 0;
+
+        m_Stats.FailedStartsThisUpdate = 0;
 
         for (std::size_t i = 0; i < m_VoiceSlotStates.size(); ++i)
         {
-            if (m_VoiceSlotStates[i] == AudioVoiceSlotState::Free)
+            const AudioVoiceSlotState state = m_VoiceSlotStates[i];
+
+            if (state == AudioVoiceSlotState::Free)
+            {
+                continue;
+            }
+
+            ++m_Stats.ActiveVoices;
+
+            if (state == AudioVoiceSlotState::PendingStart)
+            {
+                ++m_Stats.PendingStartVoices;
+            }
+            else if (state == AudioVoiceSlotState::PendingStop)
+            {
+                ++m_Stats.PendingStopVoices;
+            }
+
+            if (i < m_VoiceSlotMetadata.size() && m_VoiceSlotMetadata[i].Paused)
+            {
+                ++m_Stats.PausedVoices;
+            }
+
+            if (i >= m_VoiceSlotMetadata.size())
             {
                 continue;
             }
@@ -907,7 +1028,7 @@ namespace Engine
 
                 case AudioBusID::Ambient:
                 {
-                    ++m_Stats.ActiveAmbienVoices;
+                    ++m_Stats.ActiveAmbientVoices;
 
                     break;
                 }
@@ -917,6 +1038,88 @@ namespace Engine
                     break;
                 }
             }
+
+            // Queue pressure
+
+            m_Stats.PendingCommands = m_CommandQueue.GetPendingCount();
+
+            m_Stats.CommandQueueCapacity = m_CommandQueue.GetCapacity();
+
+            m_Stats.PeakPendingCommandsObserved = m_PeakPendingCommandsObserved;
+
+            m_Stats.PendingPlaybackEvents = m_PlaybackEventQueue.GetPendingCount();
+
+            m_Stats.PlaybackEventQueueCapacity = m_PlaybackEventQueue.GetCapacity();
+
+            m_PeakPendingPlaybackEventsObserved = std::max(m_PeakPendingPlaybackEventsObserved, m_Stats.PendingPlaybackEvents);
+
+            m_Stats.PeakPendingPlaybackEventsObserved = m_PeakPendingPlaybackEventsObserved;
+
+            // Failure / allocator statistics
+
+            m_Stats.CommandQueueFullCount = m_CommandQueueFullCount;
+
+            m_Stats.PlaybackEventQueueOverflowCount = m_PlaybackEventQueueOverflowCount.load(std::memory_order_relaxed);
+
+            m_Stats.TotalVoiceSteals = m_TotalVoiceSteals;
+
+            m_Stats.PlayFailuresNoVoice = m_PlayFailuresNoVoice;
+
+            // Streaming
+
+            m_Stats.StreamUnderflows = m_Mixer.GetStreamUnderflowCount();
+
+            // Audio render profiling
+
+            const std::uint64_t lastNanoseconds = m_LastRenderNanoseconds.load(std::memory_order_relaxed);
+
+            const std::uint64_t maxNanoseconds = m_MaxRenderNanoseconds.load(std::memory_order_relaxed);
+
+            const std::uint64_t totalNanoseconds = m_TotalRenderNanoseconds.load(std::memory_order_relaxed);
+
+            const std::uint64_t renderCalls = m_RenderCallCount.load(std::memory_order_relaxed);
+
+
+            m_Stats.LastRenderMilliseconds = static_cast<double>(lastNanoseconds) / 1'000'000.0;
+
+            m_Stats.MaximumRenderMilliseconds = static_cast<double>(maxNanoseconds) / 1'000'000.0;
+
+            m_Stats.RenderCallCount = renderCalls;
+
+            m_Stats.RenderFailureCount = m_RenderFailureCount.load(std::memory_order_relaxed);
+
+            if (renderCalls > 0)
+            {
+                const double averageNanoseconds = static_cast<double>(totalNanoseconds) / static_cast<double>(renderCalls);
+
+                m_Stats.AverageRenderMilliseconds = averageNanoseconds / 1'000'000.0;
+            }
+            else
+            {
+                m_Stats.AverageRenderMilliseconds = 0.0;
+            }
+
+            if (m_Settings.OutputFormat.SampleRate > 0)
+            {
+                m_Stats.RenderBudgetMilliseconds = (static_cast<double>(m_Settings.MixFramesPerBlock) / static_cast<double>(m_Settings.OutputFormat.SampleRate)) * 1000.0;
+            }
+            else
+            {
+                m_Stats.RenderBudgetMilliseconds = 0.0;
+            }
+
+            if (m_Stats.RenderBudgetMilliseconds > 0.0)
+            {
+                m_Stats.LastRenderBudgetUsagePercent = (m_Stats.LastRenderMilliseconds / m_Stats.RenderBudgetMilliseconds) * 100.0;
+
+                m_Stats.MaximumRenderBudgetUsagePercent = (m_Stats.MaximumRenderMilliseconds / m_Stats.RenderBudgetMilliseconds) * 100.0;
+            }
+            else
+            {
+                m_Stats.LastRenderBudgetUsagePercent = 0.0;
+
+                m_Stats.MaximumRenderBudgetUsagePercent = 0.0;
+            }
         }
     }
 
@@ -925,62 +1128,6 @@ namespace Engine
         return m_Stats;
     }
 
-    bool AudioSystem::GetPlaybackSeconds(AudioPlaybackHandle handle, float& outSeconds) const
-    {
-        const AudioVoice* voice = FindVoice(handle);
-
-        if (!voice)
-        {
-            return false;
-        }
-
-        outSeconds = voice->GetPlaybackSeconds();
-
-        return true;
-    }
-
-    bool AudioSystem::GetPlaybackProgress(AudioPlaybackHandle handle, float& outProgress) const
-    {
-        const AudioVoice* voice = FindVoice(handle);
-
-        if (!voice)
-        {
-            return false;
-        }
-
-        outProgress = voice->GetProgress();
-
-        return true;
-    }
-
-    AudioVoice* AudioSystem::GetAudioVoiceForHandle(AudioPlaybackHandle handle)
-    {
-        if (!handle.IsValid())
-        {
-            return nullptr;
-        }
-
-        const std::size_t slotIndex = static_cast<std::size_t>(handle.ID - 1);
-
-        if (slotIndex >= m_Voices.size())
-        {
-            return nullptr;
-        }
-
-        AudioVoice& voice = m_Voices[slotIndex];
-
-        if (!voice.IsActive())
-        {
-            return nullptr;
-        }
-
-        if (voice.GetHandle() != handle)
-        {
-            return nullptr;
-        }
-
-        return &voice;
-    }
 
     bool AudioSystem::SetBusVolume(AudioBusID bus, float volume)
     {
@@ -1001,10 +1148,8 @@ namespace Engine
 
         command.Value = clamped;
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -1030,10 +1175,8 @@ namespace Engine
 
         command.BoolValue = muted;
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -1265,7 +1408,7 @@ namespace Engine
 
             case AudioCommandType::SetPan:
             {
-                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+                AudioVoice* voice = GetVoiceForHandle(command.Handle);
 
                 if (voice)
                 {
@@ -1277,7 +1420,7 @@ namespace Engine
 
             case AudioCommandType::SetPitch:
             {
-                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+                AudioVoice* voice = GetVoiceForHandle(command.Handle);
 
                 if (voice)
                 {
@@ -1365,7 +1508,7 @@ namespace Engine
 
             case AudioCommandType::SetSourcePosition:
             {
-                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+                AudioVoice* voice = GetVoiceForHandle(command.Handle);
 
                 if (voice)
                 {
@@ -1377,7 +1520,7 @@ namespace Engine
 
             case AudioCommandType::SetSourceSpatialState:
             {
-                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+                AudioVoice* voice = GetVoiceForHandle(command.Handle);
 
                 if (voice)
                 {
@@ -1391,7 +1534,7 @@ namespace Engine
 
             case AudioCommandType::Pause:
             {
-                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+                AudioVoice* voice = GetVoiceForHandle(command.Handle);
 
                 if (voice)
                 {
@@ -1403,7 +1546,7 @@ namespace Engine
 
             case AudioCommandType::Resume:
             {
-                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+                AudioVoice* voice = GetVoiceForHandle(command.Handle);
 
                 if (voice)
                 {
@@ -1415,7 +1558,7 @@ namespace Engine
 
             case AudioCommandType::SeekSeconds:
             {
-                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+                AudioVoice* voice = GetVoiceForHandle(command.Handle);
 
                 if (!voice)
                 {
@@ -1455,7 +1598,7 @@ namespace Engine
 
             case AudioCommandType::FadeTo:
             {
-                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+                AudioVoice* voice = GetVoiceForHandle(command.Handle);
 
                 if (voice)
                 {
@@ -1469,7 +1612,7 @@ namespace Engine
 
             case AudioCommandType::FadeOutAndStop:
             {
-                AudioVoice* voice = GetAudioVoiceForHandle(command.Handle);
+                AudioVoice* voice = GetVoiceForHandle(command.Handle);
 
                 if (voice)
                 {
@@ -1507,12 +1650,14 @@ namespace Engine
             return nullptr;
         }
 
-        if (m_VoiceGenerations[slotIndex] != handle.Generation)
+        AudioVoice& voice = m_Voices[slotIndex];
+
+        if (!voice.IsActive() || voice.GetHandle() != handle)
         {
             return nullptr;
         }
 
-        return &m_Voices[slotIndex];
+        return &voice;
     }
 
     void AudioSystem::ReleaseVoiceSlot(std::size_t slotIndex)
@@ -1536,7 +1681,13 @@ namespace Engine
 
     void AudioSystem::ProcessPlaybackEvents()
     {
+        m_Stats.StartedVoicesThisUpdate = 0;
+
         m_Stats.FinishedVoicesThisUpdate = 0;
+
+        m_Stats.StoppedVoicesThisUpdate = 0;
+
+        m_Stats.FailedStartsThisUpdate = 0;
 
         AudioPlaybackEvent event;
 
@@ -1556,6 +1707,8 @@ namespace Engine
                     if (m_VoiceSlotStates[slotIndex] == AudioVoiceSlotState::PendingStart)
                     {
                         m_VoiceSlotStates[slotIndex] = AudioVoiceSlotState::Active;
+
+                        ++m_Stats.StartedVoicesThisUpdate;
                     }
 
                     break;
@@ -1563,6 +1716,8 @@ namespace Engine
 
                 case AudioPlaybackEventType::Stopped:
                 {
+                    ++m_Stats.StoppedVoicesThisUpdate;
+
                     ReleaseVoiceSlot(slotIndex);
 
                     break;
@@ -1570,6 +1725,8 @@ namespace Engine
 
                 case AudioPlaybackEventType::Finished:
                 {
+                    ++m_Stats.FinishedVoicesThisUpdate;
+
                     ReleaseVoiceSlot(slotIndex);
 
                     break;
@@ -1577,6 +1734,8 @@ namespace Engine
 
                 case AudioPlaybackEventType::FailedToStart:
                 {
+                    ++m_Stats.FailedStartsThisUpdate;
+
                     ReleaseVoiceSlot(slotIndex);
 
                     break;
@@ -1645,7 +1804,7 @@ namespace Engine
         return generation;
     }
 
-    std::size_t AudioSystem::FindVoiceStealCandidtae(const AudioPlaybackSettings& incomingSettings) const
+    std::size_t AudioSystem::FindVoiceStealCandidate(const AudioPlaybackSettings& incomingSettings) const
     {
         const std::size_t invalidIndex = m_VoiceSlotStates.size();
 
@@ -1735,10 +1894,8 @@ namespace Engine
 
         command.ListenerState = state;
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -1767,10 +1924,8 @@ namespace Engine
 
         command.SourcePosition = position;
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -1794,10 +1949,8 @@ namespace Engine
 
         command.SourceVelocity = velocity;
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -1830,10 +1983,8 @@ namespace Engine
 
         command.Handle = handle;
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -1867,10 +2018,8 @@ namespace Engine
 
         command.Handle = handle;
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -1906,10 +2055,8 @@ namespace Engine
 
         command.Value = std::max(seconds, 0.0f);
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -1933,10 +2080,8 @@ namespace Engine
 
         command.DurationSeconds = std::max(durationSeconds, 0.0f);
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -1970,10 +2115,8 @@ namespace Engine
 
         command.DurationSeconds = std::max(durationSeconds, 0.0f);
 
-        if (!m_CommandQueue.Push(command))
+        if (!PushCommand(command))
         {
-            ++m_CommandQueueFullCount;
-
             return false;
         }
 
@@ -1995,5 +2138,90 @@ namespace Engine
         {
             command.AssetRecord->ReleasePlaybackReference();
         }
+    }
+
+    void AudioSystem::RecordRenderDuration(std::uint64_t nanoseconds)
+    {
+        m_LastRenderNanoseconds.store(nanoseconds, std::memory_order_relaxed);
+
+        m_TotalRenderNanoseconds.fetch_add(nanoseconds, std::memory_order_relaxed);
+
+        m_RenderCallCount.fetch_add(1, std::memory_order_relaxed);
+
+        std::uint64_t previousMaximum = m_MaxRenderNanoseconds.load(std::memory_order_relaxed);
+
+        while (nanoseconds > previousMaximum && !m_MaxRenderNanoseconds.compare_exchange_weak(previousMaximum, nanoseconds, std::memory_order_relaxed, std::memory_order_relaxed))
+        {
+        }
+    }
+
+    void AudioSystem::GetVoiceDebugSnapshot(std::vector<AudioVoiceDebugInfo>& outVoices) const
+    {
+        outVoices.clear();
+
+        outVoices.reserve(m_VoiceSlotStates.size());
+
+        for (std::size_t i = 0; i < m_VoiceSlotStates.size(); ++i)
+        {
+            if (m_VoiceSlotStates[i] == AudioVoiceSlotState::Free)
+            {
+                continue;
+            }
+
+            AudioVoiceDebugInfo info;
+
+            info.Handle.ID = static_cast<std::uint32_t>(i + 1);
+
+            info.Handle.Generation = m_VoiceGenerations[i];
+
+            info.State = m_VoiceSlotStates[i];
+
+            if (i < m_VoiceSlotMetadata.size())
+            {
+                const AudioVoiceSlotMetadata& metadata = m_VoiceSlotMetadata[i];
+
+                info.Bus = metadata.Bus;
+
+                info.Priority = metadata.Priority;
+
+                info.Stealable = metadata.Stealable;
+
+                info.Looping = metadata.Looping;
+
+                info.Paused = metadata.Paused;
+
+                info.StartSequence = metadata.StartSequence;
+            }
+
+            outVoices.push_back(info);
+        }
+    }
+
+    void AudioSystem::GetBusDebugSnapshot(std::array<AudioBusDebugInfo, GetAudioBusCount()>& outBuses) const
+    {
+        for (std::size_t i = 0; i < GetAudioBusCount(); ++i)
+        {
+            AudioBusDebugInfo info;
+
+            info.Bus = static_cast<AudioBusID>(i);
+
+            info.RequestedVolume = m_RequestedBusVolumes[i];
+
+            info.RequestedMuted = m_RequestedBusMuted[i];
+
+            outBuses[i] = info;
+        }
+    }
+
+    bool AudioSystem::PushCommand(const AudioCommand& command)
+    {
+        if (!m_CommandQueue.Push(command))
+        {
+            ++m_CommandQueueFullCount;
+
+            return false;
+        }
+
+        return true;
     }
 }

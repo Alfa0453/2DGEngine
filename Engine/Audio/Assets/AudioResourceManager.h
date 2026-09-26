@@ -5,6 +5,8 @@
 #include "AudioAssetType.h"
 
 #include "../Types/AudioSettings.h"
+#include "../Debug/AudioResourceStats.h"
+#include "../Debug/AudioStreamDebugInfo.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -60,6 +62,10 @@ namespace Engine
         const AudioStream* GetStream(AudioAssetHandle handle) const;
 
         std::size_t GetLoadedAssetCount() const;
+
+        AudioResourceStats GetStats() const;
+
+        void GetStreamDebugSnapshot(std::vector<AudioStreamDebugInfo>& outStreams) const;
 
     private:
 

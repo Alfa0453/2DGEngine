@@ -43,33 +43,15 @@ namespace Engine
 
         const std::uint64_t worldVersion = transform->GetWorldVersion();
 
-        if (worldVersion == m_LastTransformWorldVersion)
-        {
-            if (m_AutomaticVelocity && m_HadAutomaticMotion)
-            {
-                m_SpatialVelocity = Vector2{0.0f, 0.0f};
-
-                const Vector2 worldPosition = transform->GetWorldPosition();
-
-                if (m_AudioSystem->SetSourceSpatialState(m_PlaybackHandle, worldPosition, m_SpatialVelocity))
-                {
-                    m_HadAutomaticMotion = false;
-                }
-            }
-
-            return;
-        }
-
         const Vector2 worldPosition = transform->GetWorldPosition();
 
         const bool transformChanged = worldVersion != m_LastTransformWorldVersion;
 
         if (transformChanged)
         {
-            const Vector2 worldPosition = transform->GetWorldPosition();
-
             if (m_AutomaticVelocity && deltaTime > 0.000001f)
             {
+
                 if (m_HasPreviousWorldPosition)
                 {
                     m_SpatialVelocity = (worldPosition - m_PreviousWorldPosition) / deltaTime;
@@ -93,19 +75,16 @@ namespace Engine
             return;
         }
 
-        if (!m_AudioResources || m_AudioResources->GetType(m_AudioAsset) != AudioAssetType::Clip)
-        {
-            return;
-        }
-
+        // Transform didn't change after previously moving. Send one zero-velocity state.
+        //
         if (m_AutomaticVelocity && m_HadAutomaticMotion)
         {
-            m_SpatialVelocity = Vector2{0.0f, 0.0f};
-
-            const Vector2 worldPosition = transform->GetWorldPosition();
+            const Vector2 zeroVelocity{0.0f, 0.0f};
 
             if (m_AudioSystem->SetSourceSpatialState(m_PlaybackHandle, worldPosition, m_SpatialVelocity))
             {
+                m_SpatialVelocity = zeroVelocity;
+
                 m_HadAutomaticMotion = false;
             }
         }
@@ -254,13 +233,25 @@ namespace Engine
         m_PlayOnStart = playOnStart;
     }
 
-    bool AudioSourceComponent::GetPLayOnStart() const
+    bool AudioSourceComponent::GetPlayOnStart() const
     {
         return m_PlayOnStart;
     }
 
     void AudioSourceComponent::Start()
     {
+        m_PlaybackHandle = {};
+
+        m_LastTransformWorldVersion = 0;
+
+        m_PreviousWorldPosition = {0.0f, 0.0f};
+
+        m_SpatialVelocity = {0.0f, 0.0f};
+
+        m_HasPreviousWorldPosition = false;
+
+        m_HadAutomaticMotion = false;
+
         if (m_PlayOnStart)
         {
             Play();

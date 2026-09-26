@@ -6,7 +6,7 @@ namespace Engine
 {
     struct AudioFormat
     {
-        std::uint32_t SampleRate = 480000;
+        std::uint32_t SampleRate = 48000;
 
         std::uint16_t Channels = 2;
 
